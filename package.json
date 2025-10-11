@@ -1,11 +1,8 @@
 {
   "name": "dy_vscode",
   "version": "1.0.0",
+  "description": "덕영고등학교 VS Code - 웹 기반 코드 에디터",
   "main": "electron-main.js",
-  "directories": {
-    "doc": "docs",
-    "test": "tests"
-  },
   "scripts": {
     "test": "jest",
     "start": "node server.js",
@@ -75,7 +72,6 @@
     "url": "https://github.com/NiceTop1027/DY_VScode/issues"
   },
   "homepage": "https://github.com/NiceTop1027/DY_VScode#readme",
-  "description": "",
   "devDependencies": {
     "@babel/core": "^7.28.4",
     "@babel/preset-env": "^7.28.3",
