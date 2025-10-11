@@ -418,7 +418,18 @@ export function initUI() {
 
         const editor = getEditor();
         if (editor) requestAnimationFrame(() => editor.layout());
-        if (xterm && fitAddon) requestAnimationFrame(() => fitAddon.fit());
+        
+        // 터미널이 활성화된 탭일 때만 fit 호출
+        const activeTab = document.querySelector('.panel-tab.active');
+        if (activeTab && activeTab.dataset.panel === 'terminal' && xterm && fitAddon) {
+            requestAnimationFrame(() => {
+                try {
+                    fitAddon.fit();
+                } catch (err) {
+                    console.warn('Terminal fit error:', err);
+                }
+            });
+        }
     }
 
     function stopPanelResize(handleMove, handleUp) {
@@ -427,6 +438,19 @@ export function initUI() {
         document.body.style.userSelect = '';
         document.removeEventListener('mousemove', handleMove);
         document.removeEventListener('mouseup', handleUp);
+        
+        // 리사이즈 완료 후 터미널 크기 재조정
+        const activeTab = document.querySelector('.panel-tab.active');
+        if (activeTab && activeTab.dataset.panel === 'terminal' && xterm && fitAddon) {
+            setTimeout(() => {
+                try {
+                    fitAddon.fit();
+                    console.log('Terminal resized to fit panel');
+                } catch (err) {
+                    console.warn('Terminal fit error:', err);
+                }
+            }, 100);
+        }
     }
 
     // File Upload - Use File System Access API for real file system access
@@ -509,7 +533,7 @@ export function initUI() {
 
             if (panelId === 'terminal') {
                 if (!xterm) {
-                    // Initialize terminal only once
+                    // 🌐 로컬 브라우저 터미널 초기화
                     xterm = new Terminal({
                         convertEol: true,
                         fontFamily: 'Consolas, "Courier New", monospace',
@@ -522,16 +546,36 @@ export function initUI() {
                     xterm.loadAddon(fitAddon);
                     xterm.open(terminalEl);
 
-                    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                    // Get or create session ID
-                    let sessionId = localStorage.getItem('terminalSessionId');
-                    if (!sessionId) {
-                        sessionId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-                        localStorage.setItem('terminalSessionId', sessionId);
-                    }
-                    const socket = new WebSocket(`${wsProtocol}//${window.location.host}/terminal?sessionId=${sessionId}`);
-                    socket.onopen = () => xterm.onData(data => socket.send(data));
-                    socket.onmessage = event => xterm.write(event.data);
+                    // 환영 메시지
+                    xterm.writeln('\x1b[1;32m🌐 로컬 브라우저 터미널\x1b[0m');
+                    xterm.writeln('이 터미널은 당신의 브라우저에서 실행됩니다.');
+                    xterm.writeln('서버가 아닌 로컬 환경입니다.\n');
+                    xterm.write('$ ');
+
+                    let currentLine = '';
+
+                    // 키보드 입력 처리
+                    xterm.onData(data => {
+                        const code = data.charCodeAt(0);
+
+                        if (code === 13) { // Enter
+                            xterm.write('\r\n');
+                            if (currentLine.trim()) {
+                                executeLocalCommand(currentLine.trim(), xterm);
+                            } else {
+                                xterm.write('$ ');
+                            }
+                            currentLine = '';
+                        } else if (code === 127) { // Backspace
+                            if (currentLine.length > 0) {
+                                currentLine = currentLine.slice(0, -1);
+                                xterm.write('\b \b');
+                            }
+                        } else if (code >= 32) { // 일반 문자
+                            currentLine += data;
+                            xterm.write(data);
+                        }
+                    });
                 }
                 // Always try to fit the terminal when its tab is shown
                 setTimeout(() => {
@@ -933,6 +977,26 @@ function openClientFile(filePath, fileName) {
     setActiveTab(filePath);
 }
 
+// Window resize handler - 터미널 크기 자동 조정
+let resizeTimeout;
+window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+        const editor = getEditor();
+        if (editor) editor.layout();
+        
+        const activeTab = document.querySelector('.panel-tab.active');
+        if (activeTab && activeTab.dataset.panel === 'terminal' && xterm && fitAddon) {
+            try {
+                fitAddon.fit();
+                console.log('Terminal auto-resized on window resize');
+            } catch (err) {
+                console.warn('Terminal fit error:', err);
+            }
+        }
+    }, 100);
+});
+
 // Suppress ResizeObserver errors
 const resizeObserverLoopErrRe = /^[^(ResizeObserver loop limit exceeded)]/;
 window.addEventListener('error', (e) => {
@@ -974,6 +1038,81 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }, 3300); // 3.3 seconds (animation duration + fade out)
 });
+
+// --- Local Terminal Commands ---
+function executeLocalCommand(command, terminal) {
+    try {
+        // 기본 명령어 처리
+        if (command === 'clear') {
+            terminal.clear();
+            terminal.write('$ ');
+            return;
+        }
+
+        if (command === 'help') {
+            terminal.writeln('사용 가능한 명령어:');
+            terminal.writeln('  ls       - 파일 목록');
+            terminal.writeln('  pwd      - 현재 디렉토리');
+            terminal.writeln('  echo     - 텍스트 출력');
+            terminal.writeln('  clear    - 화면 지우기');
+            terminal.writeln('  help     - 도움말');
+            terminal.writeln('  whoami   - 사용자 정보');
+            terminal.writeln('  date     - 현재 시간');
+            terminal.write('\n$ ');
+            return;
+        }
+
+        // 간단한 명령어 구현
+        const parts = command.split(' ');
+        const cmd = parts[0];
+        const args = parts.slice(1);
+
+        switch (cmd) {
+            case 'ls':
+                terminal.writeln('📁 workspace/');
+                terminal.writeln('📄 README.md');
+                terminal.writeln('📄 index.html');
+                terminal.writeln('📄 app.js');
+                break;
+
+            case 'pwd':
+                terminal.writeln('/home/user/workspace');
+                break;
+
+            case 'echo':
+                terminal.writeln(args.join(' '));
+                break;
+
+            case 'whoami':
+                terminal.writeln('user (로컬 브라우저)');
+                break;
+
+            case 'date':
+                terminal.writeln(new Date().toString());
+                break;
+
+            case 'uname':
+                terminal.writeln('Browser (WebAssembly)');
+                break;
+
+            case 'node':
+            case 'python':
+            case 'npm':
+                terminal.writeln(`\x1b[1;33m⚠️  ${cmd}는 아직 지원되지 않습니다.\x1b[0m`);
+                terminal.writeln('WebAssembly 기반 런타임을 추가하면 사용 가능합니다.');
+                break;
+
+            default:
+                terminal.writeln(`bash: ${cmd}: command not found`);
+                terminal.writeln('사용 가능한 명령어를 보려면 "help"를 입력하세요.');
+        }
+
+        terminal.write('$ ');
+    } catch (err) {
+        terminal.writeln(`\x1b[1;31mError: ${err.message}\x1b[0m`);
+        terminal.write('$ ');
+    }
+}
 
 // --- Code Execution ---
 async function runCode() {

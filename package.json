@@ -60,6 +60,7 @@
   },
   "dependencies": {
     "axios": "^1.12.2",
+    "browser-shell": "^0.0.1-pre-alpha",
     "express": "^5.1.0",
     "express-ws": "^5.0.2",
     "fs-extra": "^11.3.2",

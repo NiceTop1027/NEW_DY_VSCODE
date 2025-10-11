@@ -319,19 +319,50 @@ app.ws('/terminal', (ws, req) => {
         fsSync.mkdirSync(userWorkspace, { recursive: true });
     }
     
+    // 보안: 제한된 환경 변수 설정
+    const restrictedEnv = {
+        ...process.env,
+        HOME: userWorkspace,
+        PWD: userWorkspace,
+        OLDPWD: userWorkspace,
+        // 경고 메시지 표시
+        PS1: `\\[\\033[1;33m\\][ISOLATED]\\[\\033[0m\\] \\w $ `
+    };
+    
     const ptyProcess = pty.spawn(shell, [], {
         name: 'xterm-color',
         cols: 80,
         rows: 30,
         cwd: userWorkspace, // 세션별 작업 디렉토리
-        env: process.env
+        env: restrictedEnv
     });
 
-    terminalSessions.set(sessionId, ptyProcess);
+    // 세션 타임아웃 설정 (30분)
+    const sessionTimeout = setTimeout(() => {
+        ptyProcess.kill();
+        ws.send(`\r\n\x1b[1;33m⏱️  세션 타임아웃 (30분). 연결이 종료됩니다.\x1b[0m\r\n`);
+        ws.close();
+        terminalSessions.delete(sessionId);
+        console.log(`Session timeout: ${sessionId}`);
+    }, 30 * 60 * 1000); // 30분
+    
+    terminalSessions.set(sessionId, {
+        ptyProcess,
+        userWorkspace,
+        sessionId,
+        timeout: sessionTimeout
+    });
+    
     console.log(`Terminal WebSocket connected. Session: ${sessionId}`);
     
-    // Send session ID to client
+    // Send session ID and warning to client
     ws.send(JSON.stringify({ type: 'session', sessionId }));
+    
+    // 보안 경고 메시지
+    const warningMessage = `\r\n\x1b[1;33m⚠️  보안 격리 모드\x1b[0m\r\n` +
+                          `작업 디렉토리: ${userWorkspace}\r\n` +
+                          `상위 디렉토리 접근이 제한됩니다.\r\n\r\n`;
+    ws.send(warningMessage);
 
     ptyProcess.onData(data => {
         ws.send(data); // Send data from pty to websocket
@@ -343,6 +374,46 @@ app.ws('/terminal', (ws, req) => {
             if (data.type === 'resize') {
                 ptyProcess.resize(data.cols, data.rows);
             } else {
+                // 보안: 위험한 명령어 필터링
+                const command = msg.data.toString().trim();
+                
+                // 상위 디렉토리 접근 시도 감지
+                if (command.includes('cd ..') || command.includes('cd /') || 
+                    command.includes('cd ~') || command.match(/cd\s+\.\./)) {
+                    const warning = `\r\n\x1b[1;31m❌ 보안: 상위 디렉토리 접근이 제한됩니다.\x1b[0m\r\n`;
+                    ws.send(warning);
+                    ws.send(`${restrictedEnv.PS1}`);
+                    return;
+                }
+                
+                // 절대 경로 접근 차단
+                if (command.match(/\/[a-zA-Z]/)) {
+                    const warning = `\r\n\x1b[1;31m❌ 보안: 절대 경로 접근이 차단되었습니다.\x1b[0m\r\n`;
+                    ws.send(warning);
+                    ws.send(`${restrictedEnv.PS1}`);
+                    return;
+                }
+                
+                // 심볼릭 링크 생성 차단
+                if (command.includes('ln -s') || command.includes('ln -sf')) {
+                    const warning = `\r\n\x1b[1;31m❌ 보안: 심볼릭 링크 생성이 차단되었습니다.\x1b[0m\r\n`;
+                    ws.send(warning);
+                    ws.send(`${restrictedEnv.PS1}`);
+                    return;
+                }
+                
+                // 위험한 시스템 명령어 차단
+                const dangerousCommands = [
+                    'rm -rf /', 'mkfs', 'dd if=', 'chmod 777', ':(){:|:&};:',
+                    'sudo', 'su -', 'chroot', 'mount', 'umount'
+                ];
+                if (dangerousCommands.some(cmd => command.includes(cmd))) {
+                    const warning = `\r\n\x1b[1;31m❌ 보안: 위험한 명령어가 차단되었습니다.\x1b[0m\r\n`;
+                    ws.send(warning);
+                    ws.send(`${restrictedEnv.PS1}`);
+                    return;
+                }
+                
                 ptyProcess.write(msg.data);
             }
         } catch (e) {
@@ -351,8 +422,12 @@ app.ws('/terminal', (ws, req) => {
     };
 
     ws.onclose = () => {
-        ptyProcess.kill();
-        terminalSessions.delete(sessionId);
+        const session = terminalSessions.get(sessionId);
+        if (session) {
+            clearTimeout(session.timeout);
+            session.ptyProcess.kill();
+            terminalSessions.delete(sessionId);
+        }
         console.log(`Terminal WebSocket disconnected. Session: ${sessionId}`);
     };
 
