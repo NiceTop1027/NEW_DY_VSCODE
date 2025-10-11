@@ -1378,7 +1378,23 @@ async function runCode() {
 
     const filePath = activeTab.dataset.filePath;
     const fileName = filePath.split('/').pop();
-    showNotification(`${fileName} 실행 중...`, 'info');
+    
+    // 실행 전에 자동 저장
+    const editor = window.monaco?.editor?.getModels()[0];
+    if (editor && openFiles.has(filePath)) {
+        const content = editor.getValue();
+        try {
+            const { saveFile } = await import('./api.js');
+            await saveFile(filePath, content);
+            activeTab.classList.remove('dirty');
+            showNotification(`${fileName} 저장 후 실행 중...`, 'info');
+        } catch (err) {
+            console.error('Auto-save failed:', err);
+            showNotification(`${fileName} 실행 중...`, 'info');
+        }
+    } else {
+        showNotification(`${fileName} 실행 중...`, 'info');
+    }
 
     // Switch to OUTPUT tab
     const outputTab = document.querySelector('.panel-tab[data-panel-id="output"]');
