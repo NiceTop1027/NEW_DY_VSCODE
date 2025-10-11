@@ -153,27 +153,27 @@ export function initEditor(editorEl, tabsEl, openFilesMap) {
     
     // Format Document: Shift+Alt+F
     editor.addCommand(monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.KeyF, () => {
-        formatDocument();
+        editor.getAction('editor.action.formatDocument')?.run();
     });
     
     // Rename Symbol: F2
     editor.addCommand(monaco.KeyCode.F2, () => {
-        renameSymbol();
+        editor.getAction('editor.action.rename')?.run();
     });
     
     // Go to Definition: F12
     editor.addCommand(monaco.KeyCode.F12, () => {
-        goToDefinition();
+        editor.getAction('editor.action.revealDefinition')?.run();
     });
     
     // Command Palette: Ctrl+Shift+P
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyP, () => {
-        showCommandPalette();
+        editor.getAction('editor.action.quickCommand')?.run();
     });
     
     // Quick Fix: Ctrl+.
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Period, () => {
-        showQuickFix();
+        editor.getAction('editor.action.quickFix')?.run();
     });
 
     editor.onDidChangeModelContent(() => {
@@ -436,9 +436,9 @@ export function getCurrentEditorMode() {
 
 // 테마 토글
 export function toggleTheme() {
-    if (!editor) return;
+    if (!editor) return 'vs-dark';
     
-    const currentTheme = editor.getModel()?._languageId || 'vs-dark';
+    const currentTheme = localStorage.getItem('editor-theme') || 'vs-dark';
     const newTheme = currentTheme === 'vs-dark' ? 'vs-light' : 'vs-dark';
     
     monaco.editor.setTheme(newTheme);

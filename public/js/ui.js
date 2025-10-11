@@ -346,22 +346,28 @@ export function initUI() {
     // Theme Toggle Button
     const themeToggleBtn = document.getElementById('theme-toggle-btn');
     if (themeToggleBtn) {
-        themeToggleBtn.addEventListener('click', () => {
-            import('./editor.js').then(({ toggleTheme }) => {
+        themeToggleBtn.addEventListener('click', async () => {
+            try {
+                const { toggleTheme } = await import('./editor.js');
                 const newTheme = toggleTheme();
                 showNotification(`테마 변경: ${newTheme === 'vs-dark' ? '다크' : '라이트'}`, 'info');
-            });
+            } catch (err) {
+                console.error('Theme toggle error:', err);
+            }
         });
     }
     
     // Minimap Toggle Button
     const minimapToggleBtn = document.getElementById('minimap-toggle-btn');
     if (minimapToggleBtn) {
-        minimapToggleBtn.addEventListener('click', () => {
-            import('./editor.js').then(({ toggleMinimap }) => {
+        minimapToggleBtn.addEventListener('click', async () => {
+            try {
+                const { toggleMinimap } = await import('./editor.js');
                 const enabled = toggleMinimap();
                 showNotification(`미니맵: ${enabled ? 'ON' : 'OFF'}`, 'info');
-            });
+            } catch (err) {
+                console.error('Minimap toggle error:', err);
+            }
         });
     }
     
@@ -376,22 +382,29 @@ export function initUI() {
     // Format Button
     const formatBtn = document.getElementById('format-btn');
     if (formatBtn) {
-        formatBtn.addEventListener('click', () => {
-            import('./editor.js').then(({ formatDocument }) => {
+        formatBtn.addEventListener('click', async () => {
+            try {
+                const { formatDocument } = await import('./editor.js');
                 formatDocument();
                 showNotification('코드 포맷팅 완료', 'success');
-            });
+            } catch (err) {
+                console.error('Format error:', err);
+                showNotification('포맷팅 실패', 'error');
+            }
         });
     }
     
     // Zen Mode Button
     const zenModeBtn = document.getElementById('zen-mode-btn');
     if (zenModeBtn) {
-        zenModeBtn.addEventListener('click', () => {
-            import('./editor.js').then(({ toggleZenMode }) => {
+        zenModeBtn.addEventListener('click', async () => {
+            try {
+                const { toggleZenMode } = await import('./editor.js');
                 const isZen = toggleZenMode();
                 showNotification(`Zen 모드: ${isZen ? 'ON' : 'OFF'}`, 'info');
-            });
+            } catch (err) {
+                console.error('Zen mode error:', err);
+            }
         });
     }
     
