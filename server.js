@@ -868,17 +868,42 @@ app.post('/api/sandbox/create', async (req, res) => {
     }
     
     try {
-        // Docker 컨테이너 생성
-        const container = await createUserContainer(sessionId);
-        dockerContainers.set(sessionId, container);
-        
-        console.log(`✅ Sandbox created for session: ${sessionId}`);
-        
-        res.json({ 
-            success: true, 
-            containerName: container.containerName,
-            message: 'Sandbox environment created successfully'
+        // Docker가 사용 가능한지 확인
+        const isDockerAvailable = await new Promise((resolve) => {
+            exec('docker --version', (error) => {
+                resolve(!error);
+            });
         });
+        
+        if (isDockerAvailable) {
+            // Docker 모드: 컨테이너 생성
+            const container = await createUserContainer(sessionId);
+            dockerContainers.set(sessionId, container);
+            
+            console.log(`✅ Docker sandbox created for session: ${sessionId}`);
+            
+            res.json({ 
+                success: true, 
+                mode: 'docker',
+                containerName: container.containerName,
+                message: 'Docker sandbox environment created successfully'
+            });
+        } else {
+            // 일반 모드: 격리된 디렉토리만 생성
+            const userWorkspace = path.join(PROJECT_ROOT, sessionId);
+            if (!fs.existsSync(userWorkspace)) {
+                fs.mkdirSync(userWorkspace, { recursive: true });
+            }
+            
+            console.log(`✅ Isolated workspace created for session: ${sessionId}`);
+            
+            res.json({ 
+                success: true, 
+                mode: 'isolated',
+                workspace: userWorkspace,
+                message: 'Isolated workspace created successfully'
+            });
+        }
     } catch (error) {
         console.error('Sandbox creation error:', error);
         res.status(500).json({ 

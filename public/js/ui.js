@@ -1099,20 +1099,38 @@ async function createSandboxEnvironment() {
         const result = await response.json();
         
         if (result.success) {
-            statusText.textContent = '🐳 Docker 가상환경';
-            statusText.style.color = '#4ec9b0';
-            btn.textContent = '✅ 가상환경 활성화됨';
-            btn.style.background = 'linear-gradient(135deg, #16c79a 0%, #19456b 100%)';
-            
-            showNotification('✅ 격리된 가상환경이 생성되었습니다!', 'success');
-            
-            // 터미널에 메시지 출력
-            if (xterm) {
-                xterm.write('\r\n\x1b[1;32m✅ Docker 가상환경이 생성되었습니다!\x1b[0m\r\n');
-                xterm.write('\x1b[1;36m이제 완전히 격리된 우분투 환경에서 작업할 수 있습니다.\x1b[0m\r\n');
-                xterm.write('- Python3, Node.js, npm 사용 가능\r\n');
-                xterm.write('- apt, pip, npm으로 패키지 설치 가능\r\n');
-                xterm.write('- 다른 사용자와 완전히 격리됨\r\n\r\n');
+            if (result.mode === 'docker') {
+                // Docker 모드
+                statusText.textContent = '🐳 Docker 가상환경';
+                statusText.style.color = '#4ec9b0';
+                btn.textContent = '✅ Docker 활성화됨';
+                btn.style.background = 'linear-gradient(135deg, #16c79a 0%, #19456b 100%)';
+                
+                showNotification('✅ Docker 가상환경이 생성되었습니다!', 'success');
+                
+                if (xterm) {
+                    xterm.write('\r\n\x1b[1;32m✅ Docker 가상환경이 생성되었습니다!\x1b[0m\r\n');
+                    xterm.write('\x1b[1;36m완전히 격리된 우분투 컨테이너에서 작업합니다.\x1b[0m\r\n');
+                    xterm.write('- Python3, Node.js, npm 사용 가능\r\n');
+                    xterm.write('- apt, pip, npm으로 패키지 설치 가능\r\n');
+                    xterm.write('- 다른 사용자와 완전히 격리됨\r\n\r\n');
+                }
+            } else {
+                // 격리 모드 (Docker 없음)
+                statusText.textContent = '🔒 격리된 작업공간';
+                statusText.style.color = '#ce9178';
+                btn.textContent = '✅ 격리 활성화됨';
+                btn.style.background = 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)';
+                
+                showNotification('✅ 격리된 작업공간이 생성되었습니다!', 'success');
+                
+                if (xterm) {
+                    xterm.write('\r\n\x1b[1;32m✅ 격리된 작업공간이 생성되었습니다!\x1b[0m\r\n');
+                    xterm.write('\x1b[1;33m독립된 디렉토리에서 작업합니다.\x1b[0m\r\n');
+                    xterm.write('- 다른 사용자와 파일 격리\r\n');
+                    xterm.write('- 세션별 독립된 작업 공간\r\n');
+                    xterm.write('- 보안 명령어 필터링 적용\r\n\r\n');
+                }
             }
         } else {
             throw new Error(result.error || '가상환경 생성 실패');
