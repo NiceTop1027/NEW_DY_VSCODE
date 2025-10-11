@@ -1,7 +1,7 @@
 // API Configuration
 const API_BASE_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000'
-    : 'https://dy-vscode.up.railway.app'; // Railway 배포 후 실제 URL로 변경
+    : 'https://web-production-87bbd.up.railway.app';
 
 window.API_CONFIG = {
     BASE_URL: API_BASE_URL,

@@ -35,7 +35,7 @@ NODE_ENV=production
 
 ### 4. 도메인 확인
 - Railway가 자동으로 도메인 생성
-- 예: `https://dy-vscode.up.railway.app`
+- **실제 도메인:** `https://web-production-87bbd.up.railway.app`
 - 이 URL을 복사해두세요!
 
 ---
@@ -58,7 +58,7 @@ NODE_ENV=production
 ### 3. 환경 변수 설정
 Vercel 대시보드 → Settings → Environment Variables:
 ```
-NEXT_PUBLIC_API_URL=https://dy-vscode.up.railway.app
+NEXT_PUBLIC_API_URL=https://web-production-87bbd.up.railway.app
 ```
 
 ### 4. 배포 완료
@@ -74,7 +74,7 @@ NEXT_PUBLIC_API_URL=https://dy-vscode.up.railway.app
 ```javascript
 const API_BASE_URL = window.location.hostname === 'localhost' 
     ? 'http://localhost:3000'
-    : 'https://dy-vscode.up.railway.app'; // ← Railway URL로 변경
+    : 'https://web-production-87bbd.up.railway.app'; // ✅ 완료
 ```
 
 ### 2. server.js CORS 업데이트
@@ -91,7 +91,7 @@ const allowedOrigins = [
 GitHub OAuth 앱 설정 (https://github.com/settings/developers):
 ```
 Homepage URL: https://dy-vscode.vercel.app
-Authorization callback URL: https://dy-vscode.up.railway.app/api/github/callback
+Authorization callback URL: https://web-production-87bbd.up.railway.app/api/github/callback
 ```
 
 ### 4. 변경사항 커밋 & 푸시
