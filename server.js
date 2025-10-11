@@ -146,6 +146,12 @@ app.post('/api/save-file', async (req, res) => {
     const absoluteFilePath = path.join(PROJECT_ROOT, relativeFilePath);
 
     try {
+        // 상위 디렉토리가 없으면 생성
+        const dir = path.dirname(absoluteFilePath);
+        if (!fsSync.existsSync(dir)) {
+            await fs.mkdir(dir, { recursive: true });
+        }
+        
         await fs.writeFile(absoluteFilePath, content, 'utf8');
         res.json({ success: true, message: 'File saved successfully' });
     } catch (error) {
