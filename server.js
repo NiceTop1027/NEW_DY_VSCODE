@@ -831,8 +831,8 @@ app.post('/api/github/clone', async (req, res) => {
     
     try {
         // 이미 존재하면 삭제
-        if (fs.existsSync(repoPath)) {
-            fs.rmSync(repoPath, { recursive: true, force: true });
+        if (fsSync.existsSync(repoPath)) {
+            fsSync.rmSync(repoPath, { recursive: true, force: true });
         }
         
         // Git clone 실행
@@ -933,7 +933,7 @@ app.post('/api/github/push', async (req, res) => {
     
     const absoluteRepoPath = path.join(workingDir, repoPath);
     
-    if (!fs.existsSync(absoluteRepoPath)) {
+    if (!fsSync.existsSync(absoluteRepoPath)) {
         return res.status(404).json({ error: 'Repository not found' });
     }
     
@@ -1008,7 +1008,7 @@ app.post('/api/run', (req, res) => {
     const fileExtension = path.extname(absoluteFilePath);
 
     // 파일 존재 확인
-    if (!fs.existsSync(absoluteFilePath)) {
+    if (!fsSync.existsSync(absoluteFilePath)) {
         return res.status(404).json({ 
             error: `File not found: ${filePath}`,
             execError: `파일을 찾을 수 없습니다: ${filePath}\n작업 디렉토리: ${workingDir}`
