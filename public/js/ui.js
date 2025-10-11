@@ -1,0 +1,1942 @@
+// public/js/ui.js
+import { fetchFileTree, uploadFile, fetchFileContent } from './api.js';
+import { initEditor, setEditorContent, clearEditorContent, getEditor, showDiffEditor, hideDiffEditor } from './editor.js';
+import { showNotification, getLanguageIdFromFilePath } from './utils.js';
+import { Terminal } from 'xterm';
+import { FitAddon } from 'xterm-addon-fit';
+import { clientFS } from './fileSystem.js';
+
+// DOM Elements
+let fileExplorerEl;
+let activityBar;
+let tabsContainer;
+let statusLeft;
+let statusRight;
+let sidebar;
+let resizeHandle;
+let fileUploadInput;
+let panelResizeHandle;
+let panel;
+let editorGroup;
+let breadcrumb;
+let fileSearchInput;
+
+// Global State
+let openFiles = new Map(); // Map of filePath -> content
+let activeFile = null;
+let fileChanges = new Map(); // Map of filePath -> { status: 'modified'|'added'|'deleted', originalContent: string }
+let currentView = 'explorer'; // 'explorer', 'source-control', 'debug'
+
+// Terminal state
+let xterm = null;
+let fitAddon = null;
+
+// -----------------------------
+// Helper Functions
+// -----------------------------
+function renderFileTree(node, parentEl, depth = 0) {
+    const item = document.createElement('div');
+    item.className = `tree-item ${node.type}`;
+    item.style.paddingLeft = `${depth * 15}px`;
+    item.dataset.path = node.path || node.name;
+
+    const label = document.createElement('span');
+    label.textContent = node.name;
+    item.appendChild(label);
+
+    const childrenContainer = document.createElement('div');
+    childrenContainer.className = 'tree-children';
+    item.appendChild(childrenContainer);
+
+    if (node.type === 'directory') {
+        item.classList.add('closed');
+        label.addEventListener('click', e => {
+            e.stopPropagation();
+            item.classList.toggle('closed');
+            renderVisibleFileItems();
+        });
+        if (node.children) node.children.forEach(child => renderFileTree(child, childrenContainer, depth + 1));
+    } else { // file
+        label.addEventListener('click', () => openFile(node.path, node.name));
+    }
+
+    parentEl.appendChild(item);
+    allFileItems.push(item);
+}
+
+const FILE_ITEM_HEIGHT = 22;
+let allFileItems = [];
+
+function renderVisibleFileItems() {
+    const scrollTop = sidebar.scrollTop;
+    const viewportHeight = sidebar.clientHeight;
+    const startIndex = Math.floor(scrollTop / FILE_ITEM_HEIGHT);
+    const endIndex = Math.min(allFileItems.length, startIndex + Math.ceil(viewportHeight / FILE_ITEM_HEIGHT) + 5); // +5 for buffer
+
+    fileExplorerEl.innerHTML = '<h3>Project Files</h3>';
+    for (let i = startIndex; i < endIndex; i++) {
+        fileExplorerEl.appendChild(allFileItems[i]);
+    }
+
+    const totalHeight = allFileItems.length * FILE_ITEM_HEIGHT;
+    fileExplorerEl.style.paddingTop = `${startIndex * FILE_ITEM_HEIGHT}px`;
+    fileExplorerEl.style.paddingBottom = `${totalHeight - endIndex * FILE_ITEM_HEIGHT}px`;
+}
+
+async function fetchAndRenderFileTree() {
+    try {
+        const fileTree = await fetchFileTree();
+        if (fileExplorerEl) {
+            fileExplorerEl.innerHTML = '<h3>Project Files</h3>';
+            allFileItems = []; // Clear previous items
+            renderFileTree(fileTree, fileExplorerEl);
+            renderVisibleFileItems();
+        }
+    } catch (err) {
+        showNotification(`Error fetching file tree: ${err.message}`, 'error');
+        if (fileExplorerEl) fileExplorerEl.innerHTML = '<p>Error loading file explorer.</p>';
+    }
+}
+
+// -----------------------------
+// File Tabs & Editor Functions
+// -----------------------------
+export function openFile(filePath, fileName) {
+    if (openFiles.has(filePath)) {
+        setActiveTab(filePath);
+        return;
+    }
+
+    fetchFileContent(filePath)
+        .then(data => {
+            const newTab = document.createElement('div');
+            newTab.className = 'tab';
+            newTab.dataset.filePath = filePath;
+
+            const tabLabel = document.createElement('span');
+            tabLabel.textContent = fileName;
+            newTab.appendChild(tabLabel);
+
+            const closeBtn = document.createElement('i');
+            closeBtn.className = 'codicon codicon-close';
+            closeBtn.addEventListener('click', e => {
+                e.stopPropagation();
+                closeFile(filePath);
+            });
+            newTab.appendChild(closeBtn);
+
+            newTab.addEventListener('click', () => setActiveTab(filePath));
+
+            tabsContainer.appendChild(newTab);
+            openFiles.set(filePath, { tabEl: newTab, content: data.content });
+
+            setActiveTab(filePath);
+        })
+        .catch(err => showNotification(`Error opening file: ${filePath}`, 'error'));
+}
+
+export function setActiveTab(filePath) {
+    openFiles.forEach((file, path) => {
+        if (path === filePath) {
+            file.tabEl.classList.add('active');
+            setEditorContent(file.content, filePath); // Use editor.js function
+            const language = getLanguageIdFromFilePath(filePath);
+            const languageStatusItem = document.querySelector('#status-right .status-item:nth-child(4)');
+            if (languageStatusItem) languageStatusItem.textContent = language.charAt(0).toUpperCase() + language.slice(1);
+            const pathStatusItem = document.querySelector('#status-left .status-item:nth-child(1)');
+            if (pathStatusItem) pathStatusItem.textContent = `Path: ${filePath}`;
+            
+            // Update breadcrumb
+            updateBreadcrumb(filePath);
+        } else {
+            file.tabEl.classList.remove('active');
+        }
+    });
+    const lnColStatusItem = document.querySelector('#status-right .status-item:nth-child(1)');
+    if (lnColStatusItem) lnColStatusItem.textContent = "Ln 1, Col 1";
+}
+
+function updateBreadcrumb(filePath) {
+    if (!breadcrumb) return;
+    const parts = filePath.split('/');
+    breadcrumb.innerHTML = '';
+    parts.forEach((part, index) => {
+        if (index > 0) {
+            const separator = document.createElement('span');
+            separator.className = 'breadcrumb-separator';
+            separator.textContent = '/';
+            breadcrumb.appendChild(separator);
+        }
+        const item = document.createElement('span');
+        item.className = 'breadcrumb-item';
+        item.textContent = part;
+        breadcrumb.appendChild(item);
+    });
+}
+
+export function closeFile(filePath) {
+    const file = openFiles.get(filePath);
+    if (!file) return;
+    file.tabEl.remove();
+    openFiles.delete(filePath);
+    if (file.tabEl.classList.contains('active')) {
+        if (openFiles.size > 0) setActiveTab(openFiles.keys().next().value);
+        else clearEditorContent(); // Use editor.js function
+    }
+}
+
+// -----------------------------
+// Main UI Initialization
+// -----------------------------
+export function initUI() {
+    // Initialize DOM elements
+    fileExplorerEl = document.getElementById('file-explorer');
+    activityBar = document.getElementById('activity-bar');
+    tabsContainer = document.getElementById('tabs');
+    statusLeft = document.getElementById('status-left');
+    statusRight = document.getElementById('status-right');
+    sidebar = document.getElementById('sidebar');
+    resizeHandle = document.getElementById('resize-handle');
+    fileUploadInput = document.getElementById('file-upload-input');
+    panelResizeHandle = document.getElementById('panel-resize-handle');
+    panel = document.getElementById('panel');
+    editorGroup = document.getElementById('editor-group');
+    breadcrumb = document.getElementById('breadcrumb');
+    fileSearchInput = document.getElementById('file-search');
+
+    initEditor(document.getElementById('editor'), tabsContainer, openFiles); // Initialize editor
+
+    // Activity Bar Icons
+    const activityIcons = [
+        { name: 'Explorer', icon: 'files', action: 'explorer' },
+        { name: 'Source Control', icon: 'source-control', action: 'source-control' },
+        { name: 'GitHub', icon: 'github', action: 'github' },
+        { name: 'Search', icon: 'search', action: 'search' },
+        { name: 'Run and Debug', icon: 'debug-alt', action: 'debug' },
+        { name: 'Upload Folder', icon: 'folder-opened', action: 'upload' }
+    ];
+
+    activityIcons.forEach(({name, icon, action}) => {
+        const iconEl = document.createElement('div');
+        iconEl.className = 'activity-icon';
+        iconEl.title = name;
+        iconEl.dataset.action = action;
+        
+        let badgeHtml = '';
+        if (action === 'source-control') {
+            badgeHtml = '<span class="activity-badge" style="display: none;"></span>';
+        }
+        
+        iconEl.innerHTML = `<i class="codicon codicon-${icon}"></i>${badgeHtml}`;
+        
+        iconEl.addEventListener('click', async () => {
+            document.querySelectorAll('.activity-icon').forEach(el => el.classList.remove('active'));
+            iconEl.classList.add('active');
+
+                const fileExplorerView = document.getElementById('file-explorer');
+                const sourceControlView = document.getElementById('source-control-view');
+                const githubView = document.getElementById('github-view');
+                const debugView = document.getElementById('debug-view');
+                const searchBox = document.querySelector('.search-box');
+
+                // Hide all sidebar views
+                fileExplorerView.style.display = 'none';
+                sourceControlView.style.display = 'none';
+                githubView.style.display = 'none';
+                debugView.style.display = 'none';
+                searchBox.style.display = 'none';
+
+            switch (action) {
+                case 'explorer':
+                    fileExplorerView.style.display = 'block';
+                    searchBox.style.display = 'block';
+                    currentView = 'explorer';
+                    break;
+                case 'source-control':
+                    sourceControlView.style.display = 'block';
+                    currentView = 'source-control';
+                    renderSourceControlView();
+                    break;
+                case 'github':
+                    githubView.style.display = 'block';
+                    currentView = 'github';
+                    renderGitHubView();
+                    break;
+                case 'search':
+                    // For now, just show explorer and focus search
+                    fileExplorerView.style.display = 'block';
+                    searchBox.style.display = 'block';
+                    if (fileSearchInput) fileSearchInput.focus();
+                    currentView = 'explorer';
+                    break;
+                case 'debug':
+                    debugView.style.display = 'block';
+                    currentView = 'debug';
+                    renderDebugView(); // Render the debug UI
+                    break;
+                case 'upload':
+                    if ('showDirectoryPicker' in window) {
+                        try {
+                            const dirHandle = await window.showDirectoryPicker({ mode: 'readwrite' });
+                            showNotification('폴더 로드 중...', 'info');
+                            await loadDirectoryWithHandles(dirHandle);
+                            showNotification('✓ 폴더 로드 완료', 'success');
+                        } catch (err) {
+                            if (err.name !== 'AbortError') {
+                                console.error('Directory picker error:', err);
+                                showNotification(`폴더 선택 실패: ${err.message}`, 'error');
+                            }
+                        }
+                    } else {
+                        fileUploadInput.click();
+                    }
+                    break;
+            }
+        });
+        
+        activityBar.appendChild(iconEl);
+    });
+    
+    // Set explorer as active by default
+    document.querySelector('.activity-icon[data-action="explorer"]')?.classList.add('active');
+
+    // Run Code Button
+    const runCodeBtn = document.getElementById('run-code-btn');
+    if (runCodeBtn) {
+        runCodeBtn.addEventListener('click', runCode);
+    }
+
+    // Panel toggle buttons
+    const togglePanelBtn = document.getElementById('toggle-panel-btn');
+    const openPanelBtn = document.getElementById('panel-open-btn');
+    
+    if (togglePanelBtn) {
+        togglePanelBtn.addEventListener('click', togglePanel);
+    }
+    
+    if (openPanelBtn) {
+        openPanelBtn.addEventListener('click', togglePanel);
+    }
+
+    // Mobile menu toggle
+    const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', toggleMobileSidebar);
+    }
+
+    // Close mobile sidebar when clicking outside
+    document.addEventListener('click', (e) => {
+        if (window.innerWidth <= 768) {
+            const sidebar = document.getElementById('sidebar');
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            if (sidebar && sidebar.classList.contains('mobile-open')) {
+                if (!sidebar.contains(e.target) && !mobileMenuBtn.contains(e.target)) {
+                    sidebar.classList.remove('mobile-open');
+                }
+            }
+        }
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        // F5: Run code
+        if (e.key === 'F5') {
+            e.preventDefault();
+            runCode();
+        }
+        // Ctrl+J: Toggle panel
+        if (e.ctrlKey && e.key === 'j') {
+            e.preventDefault();
+            togglePanel();
+        }
+    });
+
+    // Sidebar Resize
+    let isResizingSidebar = false;
+    const MIN_SIDEBAR_WIDTH = 150;
+    const MAX_SIDEBAR_WIDTH = 600;
+
+    resizeHandle.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isResizingSidebar = true;
+        document.body.style.cursor = 'col-resize';
+        document.body.style.userSelect = 'none';
+        document.addEventListener('mousemove', handleSidebarMouseMove);
+        document.addEventListener('mouseup', stopSidebarResize);
+    });
+
+    function handleSidebarMouseMove(e) {
+        if (!isResizingSidebar) return;
+        let newWidth = e.clientX - sidebar.getBoundingClientRect().left;
+        newWidth = Math.max(MIN_SIDEBAR_WIDTH, Math.min(MAX_SIDEBAR_WIDTH, newWidth));
+        sidebar.style.width = `${newWidth}px`;
+    }
+
+    function stopSidebarResize() {
+        isResizingSidebar = false;
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        document.removeEventListener('mousemove', handleSidebarMouseMove);
+        document.removeEventListener('mouseup', stopSidebarResize);
+    }
+
+    // Panel Resize
+    let isResizingPanel = false;
+    let startY = 0;
+    let startPanelHeight = 0;
+    const MIN_PANEL_HEIGHT = 100;
+    const MIN_EDITOR_HEIGHT = 150;
+
+    panelResizeHandle.addEventListener('mousedown', (e) => {
+        e.preventDefault();
+        isResizingPanel = true;
+        startY = e.clientY;
+        startPanelHeight = panel.offsetHeight;
+        document.body.style.cursor = 'ns-resize';
+        document.body.style.userSelect = 'none';
+        
+        const handleMove = (e) => handlePanelMouseMove(e);
+        const handleUp = () => stopPanelResize(handleMove, handleUp);
+        
+        document.addEventListener('mousemove', handleMove);
+        document.addEventListener('mouseup', handleUp);
+    });
+
+    function handlePanelMouseMove(e) {
+        if (!isResizingPanel) return;
+        e.preventDefault();
+        
+        const deltaY = startY - e.clientY;
+        let newPanelHeight = startPanelHeight + deltaY;
+        
+        const containerHeight = document.getElementById('main-content').offsetHeight;
+        const maxPanelHeight = containerHeight - MIN_EDITOR_HEIGHT;
+        
+        newPanelHeight = Math.max(MIN_PANEL_HEIGHT, Math.min(maxPanelHeight, newPanelHeight));
+        
+        panel.style.height = `${newPanelHeight}px`;
+
+        const editor = getEditor();
+        if (editor) requestAnimationFrame(() => editor.layout());
+        if (xterm && fitAddon) requestAnimationFrame(() => fitAddon.fit());
+    }
+
+    function stopPanelResize(handleMove, handleUp) {
+        isResizingPanel = false;
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        document.removeEventListener('mousemove', handleMove);
+        document.removeEventListener('mouseup', handleUp);
+    }
+
+    // File Upload - Use File System Access API for real file system access
+    fileUploadInput.addEventListener('change', async (e) => {
+        // Try to use File System Access API if available
+        if ('showDirectoryPicker' in window) {
+            try {
+                const dirHandle = await window.showDirectoryPicker({
+                    mode: 'readwrite' // Request write permission
+                });
+                
+                clientFS.setDirectoryHandle(dirHandle);
+                await loadDirectoryWithHandles(dirHandle);
+                
+                showNotification(`✓ 폴더 로드 완료 (실시간 저장 가능)`, 'success');
+            } catch (err) {
+                if (err.name !== 'AbortError') {
+                    console.error('Directory picker error:', err);
+                    showNotification(`폴더 선택 실패: ${err.message}`, 'error');
+                }
+            }
+            fileUploadInput.value = '';
+            return;
+        }
+
+        // Fallback to traditional file input
+        const files = Array.from(fileUploadInput.files);
+        if (files.length === 0) return;
+
+        showNotification(`업로드 중... ${files.length}개 파일`, 'info');
+
+        let successCount = 0;
+        let errorCount = 0;
+
+        for (const file of files) {
+            try {
+                const content = await readFileAsText(file);
+                const path = file.webkitRelativePath || file.name;
+                clientFS.addFile(path, content);
+                successCount++;
+            } catch (err) {
+                console.error(`Error reading file ${file.name}:`, err);
+                errorCount++;
+            }
+        }
+
+        clientFS.sortChildren(clientFS.root);
+        renderClientFileTree();
+
+        if (errorCount === 0) {
+            showNotification(`✓ ${successCount}개 파일 업로드 완료 (메모리만)`, 'success');
+        } else {
+            showNotification(`${successCount}개 성공, ${errorCount}개 실패`, 'error');
+        }
+
+        fileUploadInput.value = '';
+    });
+
+    // Panel Tabs
+    const panelTabs = document.querySelectorAll('.panel-tab');
+    const panelViews = document.querySelectorAll('.panel-view');
+    const terminalEl = document.getElementById('terminal');
+
+    panelTabs.forEach(tab => {
+        tab.addEventListener('click', (e) => {
+            e.preventDefault();
+
+            const panelId = tab.dataset.panelId;
+            
+            // Deactivate all tabs and views
+            panelTabs.forEach(t => t.classList.remove('active'));
+            panelViews.forEach(v => v.classList.remove('active'));
+
+            // Activate the clicked tab and corresponding view
+            tab.classList.add('active');
+            const activeView = document.getElementById(panelId);
+            if (activeView) {
+                activeView.classList.add('active');
+            }
+
+            if (panelId === 'terminal') {
+                if (!xterm) {
+                    // Initialize terminal only once
+                    xterm = new Terminal({
+                        convertEol: true,
+                        fontFamily: 'Consolas, "Courier New", monospace',
+                        fontSize: 14,
+                        cursorBlink: true,
+                        rendererType: 'canvas',
+                        theme: { background: '#1e1e1e', foreground: '#cccccc' }
+                    });
+                    fitAddon = new FitAddon();
+                    xterm.loadAddon(fitAddon);
+                    xterm.open(terminalEl);
+
+                    const socket = new WebSocket(`ws://${window.location.host}/terminal`);
+                    socket.onopen = () => xterm.onData(data => socket.send(data));
+                    socket.onmessage = event => xterm.write(event.data);
+                }
+                // Always try to fit the terminal when its tab is shown
+                setTimeout(() => {
+                    if (fitAddon) fitAddon.fit();
+                }, 1);
+            }
+            // Relayout editor whenever panel visibility changes
+            const editor = getEditor();
+            if (editor) setTimeout(() => editor.layout(), 1);
+        });
+    });
+
+    // File Search
+    if (fileSearchInput) {
+        fileSearchInput.addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            filterFileTree(searchTerm);
+        });
+    }
+
+    // Context Menu
+    document.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        // Close any existing context menu
+        const existingMenu = document.querySelector('.context-menu');
+        if (existingMenu) existingMenu.remove();
+    });
+
+    // Click outside to close context menu
+    document.addEventListener('click', () => {
+        const existingMenu = document.querySelector('.context-menu');
+        if (existingMenu) existingMenu.remove();
+    });
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        // Ctrl/Cmd + W: Close current tab
+        if ((e.ctrlKey || e.metaKey) && e.key === 'w') {
+            e.preventDefault();
+            const activeTab = tabsContainer.querySelector('.tab.active');
+            if (activeTab) {
+                const filePath = activeTab.dataset.filePath;
+                closeFile(filePath);
+            }
+        }
+        // Ctrl/Cmd + P: Quick file open (placeholder)
+        if ((e.ctrlKey || e.metaKey) && e.key === 'p') {
+            e.preventDefault();
+            if (fileSearchInput) fileSearchInput.focus();
+        }
+    });
+
+    // Listen for notification events from other modules
+    document.addEventListener('showNotification', (e) => {
+        if (e.detail) {
+            showNotification(e.detail.message, e.detail.type);
+        }
+    });
+
+    // Try to restore previous directory on load
+    restorePreviousDirectory();
+
+    // Initial: show client file tree (empty initially)
+    renderClientFileTree();
+}
+
+// Filter file tree based on search term
+function filterFileTree(searchTerm) {
+    const allItems = document.querySelectorAll('.tree-item');
+    allItems.forEach(item => {
+        const fileName = item.textContent.toLowerCase();
+        if (fileName.includes(searchTerm) || searchTerm === '') {
+            item.style.display = '';
+        } else {
+            item.style.display = 'none';
+        }
+    });
+}
+
+// Read file as text
+function readFileAsText(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = (e) => resolve(e.target.result);
+        reader.onerror = (e) => reject(e);
+        reader.readAsText(file);
+    });
+}
+
+// Load directory with file handles (File System Access API) - Simplified Sequential Approach
+async function loadDirectoryWithHandles(dirHandle) {
+    // Close all open tabs before loading new directory
+    const openFilePaths = Array.from(openFiles.keys());
+    openFilePaths.forEach(filePath => {
+        closeFile(filePath);
+    });
+    
+    // Clear file system
+    clientFS.clear();
+    clientFS.setDirectoryHandle(dirHandle);
+
+    // Process directory with parallel file reading
+    async function processDirectory(directoryHandle, path) {
+        const entries = [];
+        for await (const entry of directoryHandle.values()) {
+            entries.push(entry);
+        }
+        
+        // Process all entries in parallel
+        await Promise.all(entries.map(async (entry) => {
+            const entryPath = path ? `${path}/${entry.name}` : entry.name;
+            if (entry.kind === 'file') {
+                try {
+                    const file = await entry.getFile();
+                    let content = '[Binary File]';
+                    // Only read text files
+                    if (file.size < 5000000 && (file.type.startsWith('text/') || !file.type || 
+                        entry.name.match(/\.(js|ts|jsx|tsx|html|css|json|md|txt|py|java|c|cpp|h|go|rs)$/i))) {
+                        content = await file.text();
+                    }
+                    clientFS.addFile(entryPath, content);
+                    clientFS.setFileHandle(entryPath, entry);
+                } catch (e) {
+                    console.error(`Could not read file: ${entryPath}`, e);
+                    clientFS.addFile(entryPath, '[Error Reading File]');
+                }
+            } else if (entry.kind === 'directory') {
+                clientFS.createDirectory(entryPath);
+                await processDirectory(entry, entryPath);
+            }
+        }));
+    }
+
+    await processDirectory(dirHandle, '');
+
+    // Final step: sort and render
+    clientFS.sortChildren(clientFS.root);
+    renderClientFileTree();
+    await saveDirHandleToStorage(dirHandle);
+}
+
+// Save directory handle and file tree to IndexedDB
+async function saveDirHandleToStorage(dirHandle) {
+    try {
+        const db = await openDB();
+        
+        // Save handle
+        try {
+            const handleTx = db.transaction('handles', 'readwrite');
+            await handleTx.objectStore('handles').put(dirHandle, 'rootDir');
+            await handleTx.done;
+        } catch (e) {
+            // Handle might not be serializable, continue
+        }
+        
+        // Save file tree data (serializable)
+        const filesData = {
+            root: clientFS.root,
+            timestamp: Date.now()
+        };
+        
+        const dataTx = db.transaction('fileData', 'readwrite');
+        await dataTx.objectStore('fileData').put(filesData, 'currentProject');
+        await dataTx.done;
+    } catch (err) {
+        console.error('Failed to save directory:', err);
+    }
+}
+
+// Open IndexedDB
+function openDB() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open('VSCodeCloneDB', 2);
+        
+        request.onerror = () => reject(request.error);
+        request.onsuccess = () => resolve(request.result);
+        
+        request.onupgradeneeded = (event) => {
+            const db = event.target.result;
+            if (!db.objectStoreNames.contains('handles')) {
+                db.createObjectStore('handles');
+            }
+            if (!db.objectStoreNames.contains('fileData')) {
+                db.createObjectStore('fileData');
+            }
+        };
+    });
+}
+
+// Restore previous directory
+async function restorePreviousDirectory() {
+    try {
+        const db = await openDB();
+        
+        // Try to restore from saved file data first
+        const dataTx = db.transaction('fileData', 'readonly');
+        const filesData = await dataTx.objectStore('fileData').get('currentProject');
+        
+        if (filesData && filesData.root) {
+            // Restore from saved data
+            clientFS.clear();
+            clientFS.root = filesData.root;
+            
+            renderClientFileTree();
+            return;
+        }
+        
+        // Fallback: try handle-based restoration (for same session)
+        if ('showDirectoryPicker' in window) {
+            try {
+                const handleTx = db.transaction('handles', 'readonly');
+                const dirHandle = await handleTx.objectStore('handles').get('rootDir');
+                
+                if (dirHandle) {
+                    const permission = await dirHandle.queryPermission({ mode: 'readwrite' });
+                    if (permission === 'granted') {
+                        await loadDirectoryWithHandles(dirHandle);
+                        return;
+                    }
+                }
+            } catch (err) {
+                // Handle invalid, continue to welcome
+            }
+        }
+        
+        // No saved data, show welcome
+        showWelcomeMessage();
+    } catch (err) {
+        console.error('Failed to restore directory:', err);
+        showWelcomeMessage();
+    }
+}
+
+// Show welcome message
+function showWelcomeMessage() {
+    if (!fileExplorerEl) return;
+    
+    const welcomeDiv = document.createElement('div');
+    welcomeDiv.style.padding = '20px';
+    welcomeDiv.style.textAlign = 'center';
+    
+    const title = document.createElement('h3');
+    title.style.color = 'var(--text-color)';
+    title.style.marginBottom = '15px';
+    title.textContent = '환영합니다! 👋';
+    
+    const description = document.createElement('p');
+    description.style.color = 'var(--text-color-light)';
+    description.style.marginBottom = '20px';
+    description.textContent = '시작하려면 폴더를 선택하세요';
+    
+    const button = document.createElement('button');
+    button.textContent = '📁 폴더 선택';
+    button.style.padding = '10px 20px';
+    button.style.background = 'var(--active-item-border)';
+    button.style.color = 'white';
+    button.style.border = 'none';
+    button.style.borderRadius = '4px';
+    button.style.cursor = 'pointer';
+    button.style.fontSize = '14px';
+    button.addEventListener('click', () => {
+        const uploadIcon = document.querySelector('.activity-icon[data-action="upload"]');
+        if (uploadIcon) uploadIcon.click();
+    });
+    
+    welcomeDiv.appendChild(title);
+    welcomeDiv.appendChild(description);
+    welcomeDiv.appendChild(button);
+    
+    fileExplorerEl.innerHTML = '';
+    fileExplorerEl.appendChild(welcomeDiv);
+}
+
+// Render client-side file tree
+function renderClientFileTree() {
+    if (!fileExplorerEl) return;
+    
+    fileExplorerEl.innerHTML = '<h3>Uploaded Files</h3>';
+    const tree = clientFS.getTree();
+
+    if (tree.children.length === 0) {
+        const emptyMsg = document.createElement('div');
+        emptyMsg.style.padding = '20px';
+        emptyMsg.style.textAlign = 'center';
+        emptyMsg.style.color = 'var(--text-color-light)';
+        emptyMsg.innerHTML = '<p>파일이나 폴더를 업로드하세요</p>';
+        fileExplorerEl.appendChild(emptyMsg);
+        return;
+    }
+    
+    tree.children.forEach(child => renderClientFileNode(child, fileExplorerEl, 0));
+    
+    // Add context menu to file explorer background
+    fileExplorerEl.addEventListener('contextmenu', (e) => {
+        // Only show if clicking on the file explorer itself, not on a file/folder
+        if (e.target === fileExplorerEl || e.target.tagName === 'H3') {
+            e.preventDefault();
+            showFileExplorerContextMenu(e);
+        }
+    });
+    
+    // Close context menu when clicking elsewhere
+    document.addEventListener('click', closeContextMenu);
+}
+
+// Render a single file/directory node
+function renderClientFileNode(node, parentEl, depth = 0) {
+    const item = document.createElement('div');
+    item.className = `tree-item ${node.type}`;
+    item.style.paddingLeft = `${depth * 15}px`;
+    item.dataset.path = node.path;
+
+    const label = document.createElement('span');
+    label.textContent = node.name;
+    item.appendChild(label);
+
+    if (node.type === 'directory') {
+        item.classList.add('closed');
+
+        const childrenContainer = document.createElement('div');
+        childrenContainer.className = 'tree-children';
+
+        const toggleFolder = (e) => {
+            e.stopPropagation();
+            item.classList.toggle('closed');
+        };
+
+        label.addEventListener('click', toggleFolder);
+        item.addEventListener('click', toggleFolder);
+
+        // Right-click context menu for directory
+        item.addEventListener('contextmenu', (e) => {
+            e.stopPropagation();
+            showFileContextMenu(e, node.path, node.name, true);
+        });
+
+        if (node.children && node.children.length > 0) {
+            node.children.forEach(child => renderClientFileNode(child, childrenContainer, depth + 1));
+        }
+
+        item.appendChild(childrenContainer);
+    } else {
+        // File - click to open
+        const openFile = () => openClientFile(node.path, node.name);
+        label.addEventListener('click', openFile);
+        item.addEventListener('click', openFile);
+
+        // Right-click context menu for file
+        item.addEventListener('contextmenu', (e) => {
+            e.stopPropagation();
+            showFileContextMenu(e, node.path, node.name, false);
+        });
+    }
+
+    parentEl.appendChild(item);
+}
+
+
+// Open a file from client file system
+function openClientFile(filePath, fileName) {
+    if (openFiles.has(filePath)) {
+        setActiveTab(filePath);
+        return;
+    }
+
+    const file = clientFS.getFile(filePath);
+    if (!file) {
+        showNotification(`파일을 찾을 수 없습니다: ${filePath}`, 'error');
+        return;
+    }
+
+    // Prevent opening binary files in the editor
+    if (file.content === '[Binary File]' || file.content === '[Error Reading File]') {
+        showNotification(`바이너리 파일은 열 수 없습니다: ${fileName}`, 'info');
+        return;
+    }
+
+    const newTab = document.createElement('div');
+    newTab.className = 'tab';
+    newTab.dataset.filePath = filePath;
+
+    const tabLabel = document.createElement('span');
+    tabLabel.textContent = fileName;
+    newTab.appendChild(tabLabel);
+
+    const closeBtn = document.createElement('i');
+    closeBtn.className = 'codicon codicon-close';
+    closeBtn.addEventListener('click', e => {
+        e.stopPropagation();
+        closeFile(filePath);
+    });
+    newTab.appendChild(closeBtn);
+
+    newTab.addEventListener('click', () => setActiveTab(filePath));
+
+    tabsContainer.appendChild(newTab);
+    openFiles.set(filePath, { tabEl: newTab, content: file.content, isClientFile: true });
+
+    setActiveTab(filePath);
+}
+
+// Suppress ResizeObserver errors
+const resizeObserverLoopErrRe = /^[^(ResizeObserver loop limit exceeded)]/;
+window.addEventListener('error', (e) => {
+    if (resizeObserverLoopErrRe.test(e.message)) {
+        const resizeObserverErrDiv = document.getElementById('webpack-dev-server-client-overlay-div');
+        const resizeObserverErr = document.getElementById('webpack-dev-server-client-overlay');
+        if (resizeObserverErr) {
+            resizeObserverErr.setAttribute('style', 'display: none');
+        }
+        if (resizeObserverErrDiv) {
+            resizeObserverErrDiv.setAttribute('style', 'display: none');
+        }
+    }
+    if (e.message.includes('ResizeObserver')) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+        return false;
+    }
+});
+
+// Also suppress in console
+const originalError = console.error;
+console.error = (...args) => {
+    if (args[0] && typeof args[0] === 'string' && args[0].includes('ResizeObserver')) {
+        return;
+    }
+    originalError.apply(console, args);
+};
+
+// Initialize UI when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    initUI();
+    
+    // Hide splash screen after animation
+    setTimeout(() => {
+        const splashScreen = document.getElementById('splash-screen');
+        if (splashScreen) {
+            splashScreen.classList.add('hidden');
+        }
+    }, 3300); // 3.3 seconds (animation duration + fade out)
+});
+
+// --- Code Execution ---
+async function runCode() {
+    const activeTab = document.querySelector('.tab.active');
+    if (!activeTab) {
+        showNotification('실행할 파일이 없습니다.', 'error');
+        return;
+    }
+
+    const filePath = activeTab.dataset.filePath;
+    const fileName = filePath.split('/').pop();
+    showNotification(`${fileName} 실행 중...`, 'info');
+
+    // Switch to OUTPUT tab
+    const outputTab = document.querySelector('.panel-tab[data-panel-id="output"]');
+    if (outputTab) {
+        outputTab.click();
+    }
+
+    try {
+        const response = await fetch('/api/run', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ filePath }),
+        });
+
+        const result = await response.json();
+        displayOutput(result, fileName);
+
+    } catch (error) {
+        console.error('Failed to run code:', error);
+        displayOutput({ error: `Failed to connect to the server: ${error.message}` }, fileName);
+    }
+}
+
+function displayOutput(result, fileName) {
+    const outputView = document.getElementById('output');
+    if (!outputView) return;
+
+    // Clear previous output
+    outputView.innerHTML = '';
+
+    const pre = document.createElement('pre');
+    pre.style.whiteSpace = 'pre-wrap';
+    pre.style.wordWrap = 'break-word';
+    pre.style.padding = '10px';
+    pre.style.fontFamily = 'monospace';
+
+    let outputContent = `[Running] ${fileName}\n\n`;
+
+    if (result.output) {
+        outputContent += result.output;
+    }
+    if (result.error) {
+        outputContent += `\n[Error]\n${result.error}`;
+    }
+    if (result.execError) {
+        outputContent += `\n[Execution Error]\n${result.execError}`;
+    }
+
+    outputContent += `\n\n[Done]`;
+
+    pre.textContent = outputContent;
+    outputView.appendChild(pre);
+}
+
+// --- Debugging --- 
+function renderDebugView() {
+    const debugView = document.getElementById('debug-view');
+    if (!debugView) return;
+
+    debugView.innerHTML = `
+        <div class="debug-controls">
+            <button class="debug-btn" id="debug-start-btn" title="Start Debugging (F5)">
+                <i class="codicon codicon-debug-start"></i>
+            </button>
+            <button class="debug-btn" id="debug-stop-btn" title="Stop" disabled>
+                <i class="codicon codicon-debug-stop"></i>
+            </button>
+            <button class="debug-btn" id="debug-continue-btn" title="Continue (F5)" disabled>
+                <i class="codicon codicon-debug-continue"></i>
+            </button>
+            <button class="debug-btn" id="debug-step-over-btn" title="Step Over (F10)" disabled>
+                <i class="codicon codicon-debug-step-over"></i>
+            </button>
+            <button class="debug-btn" id="debug-step-into-btn" title="Step Into (F11)" disabled>
+                <i class="codicon codicon-debug-step-into"></i>
+            </button>
+            <button class="debug-btn" id="debug-step-out-btn" title="Step Out (Shift+F11)" disabled>
+                <i class="codicon codicon-debug-step-out"></i>
+            </button>
+        </div>
+        <div class="debug-section">
+            <div class="debug-section-header">VARIABLES</div>
+            <div class="debug-content" id="debug-variables">No active debug session</div>
+        </div>
+        <div class="debug-section">
+            <div class="debug-section-header">WATCH</div>
+            <div class="debug-content" id="debug-watch">No expressions</div>
+        </div>
+        <div class="debug-section">
+            <div class="debug-section-header">CALL STACK</div>
+            <div class="debug-content" id="debug-callstack">No active debug session</div>
+        </div>
+        <div class="debug-section">
+            <div class="debug-section-header">BREAKPOINTS</div>
+            <div class="debug-content" id="debug-breakpoints">No breakpoints set</div>
+        </div>
+    `;
+
+    // Attach event listeners
+    document.getElementById('debug-start-btn')?.addEventListener('click', startDebugging);
+    document.getElementById('debug-stop-btn')?.addEventListener('click', stopDebugging);
+    document.getElementById('debug-continue-btn')?.addEventListener('click', () => sendDebugCommand('continue'));
+    document.getElementById('debug-step-over-btn')?.addEventListener('click', () => sendDebugCommand('stepOver'));
+    document.getElementById('debug-step-into-btn')?.addEventListener('click', () => sendDebugCommand('stepInto'));
+    document.getElementById('debug-step-out-btn')?.addEventListener('click', () => sendDebugCommand('stepOut'));
+}
+
+async function startDebugging() {
+    const activeTab = document.querySelector('.tab.active');
+    if (!activeTab) {
+        showNotification('디버깅할 파일을 먼저 열어주세요', 'error');
+        return;
+    }
+
+    const filePath = activeTab.dataset.filePath;
+    const breakpoints = Array.from((await import('./editor.js')).getBreakpoints().get(filePath) || []);
+
+    try {
+        const response = await fetch('/api/debug/start', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ filePath, breakpoints })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showNotification('디버깅 시작됨', 'success');
+            updateDebugControls(true);
+            connectDebugWebSocket();
+        } else {
+            showNotification('디버깅 시작 실패', 'error');
+        }
+    } catch (error) {
+        console.error('Failed to start debugging:', error);
+        showNotification('디버깅 시작 실패', 'error');
+    }
+}
+
+async function stopDebugging() {
+    try {
+        const response = await fetch('/api/debug/stop', {
+            method: 'POST'
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            showNotification('디버깅 중지됨', 'info');
+            updateDebugControls(false);
+        }
+    } catch (error) {
+        console.error('Failed to stop debugging:', error);
+    }
+}
+
+function updateDebugControls(isDebugging) {
+    document.getElementById('debug-start-btn').disabled = isDebugging;
+    document.getElementById('debug-stop-btn').disabled = !isDebugging;
+    document.getElementById('debug-continue-btn').disabled = !isDebugging;
+    document.getElementById('debug-step-over-btn').disabled = !isDebugging;
+    document.getElementById('debug-step-into-btn').disabled = !isDebugging;
+    document.getElementById('debug-step-out-btn').disabled = !isDebugging;
+}
+
+let debugWebSocket = null;
+
+function connectDebugWebSocket() {
+    debugWebSocket = new WebSocket(`ws://${window.location.host}/debug`);
+    
+    debugWebSocket.onopen = () => {
+        // Debug WebSocket connected
+    };
+
+    debugWebSocket.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        // Handle debug events (breakpoint hit, variable updates, etc.)
+    };
+
+    debugWebSocket.onclose = () => {
+        debugWebSocket = null;
+    };
+}
+
+function sendDebugCommand(command) {
+    if (debugWebSocket && debugWebSocket.readyState === WebSocket.OPEN) {
+        debugWebSocket.send(JSON.stringify({ command }));
+    }
+}
+
+// --- Context Menu for Files ---
+function showFileContextMenu(event, filePath, fileName, isDirectory) {
+    event.preventDefault();
+    closeContextMenu();
+
+    const menu = document.createElement('div');
+    menu.className = 'context-menu';
+    menu.id = 'file-context-menu';
+    menu.style.left = `${event.pageX}px`;
+    menu.style.top = `${event.pageY}px`;
+
+    const menuItems = [
+        { icon: 'edit', label: '이름 바꾸기', action: () => renameFile(filePath, fileName, isDirectory) },
+        { icon: 'trash', label: '삭제', action: () => deleteFile(filePath, fileName, isDirectory) },
+        { separator: true },
+        { icon: 'file', label: '새 파일', action: () => createNewFile(filePath, isDirectory) },
+        { icon: 'folder', label: '새 폴더', action: () => createNewFolder(filePath, isDirectory) }
+    ];
+
+    menuItems.forEach(item => {
+        if (item.separator) {
+            const separator = document.createElement('div');
+            separator.className = 'context-menu-separator';
+            menu.appendChild(separator);
+        } else {
+            const menuItem = document.createElement('div');
+            menuItem.className = 'context-menu-item';
+            menuItem.innerHTML = `<i class="codicon codicon-${item.icon}"></i> ${item.label}`;
+            menuItem.addEventListener('click', (e) => {
+                e.stopPropagation();
+                item.action();
+                closeContextMenu();
+            });
+            menu.appendChild(menuItem);
+        }
+    });
+
+    document.body.appendChild(menu);
+}
+
+// Context menu for file explorer background
+function showFileExplorerContextMenu(event) {
+    event.preventDefault();
+    closeContextMenu();
+
+    const menu = document.createElement('div');
+    menu.className = 'context-menu';
+    menu.id = 'file-context-menu';
+    menu.style.left = `${event.pageX}px`;
+    menu.style.top = `${event.pageY}px`;
+
+    const menuItems = [
+        { icon: 'file', label: '새 파일', action: () => createNewFile('', true) },
+        { icon: 'folder', label: '새 폴더', action: () => createNewFolder('', true) }
+    ];
+
+    menuItems.forEach(item => {
+        const menuItem = document.createElement('div');
+        menuItem.className = 'context-menu-item';
+        menuItem.innerHTML = `<i class="codicon codicon-${item.icon}"></i> ${item.label}`;
+        menuItem.addEventListener('click', (e) => {
+            e.stopPropagation();
+            item.action();
+            closeContextMenu();
+        });
+        menu.appendChild(menuItem);
+    });
+
+    document.body.appendChild(menu);
+}
+
+function closeContextMenu() {
+    const existingMenu = document.getElementById('file-context-menu');
+    if (existingMenu) {
+        existingMenu.remove();
+    }
+}
+
+async function deleteFile(filePath, fileName, isDirectory) {
+    const type = isDirectory ? '폴더' : '파일';
+    if (!confirm(`정말로 "${fileName}" ${type}를 삭제하시겠습니까?\n\n⚠️ 이 작업은 실제 로컬 파일을 삭제합니다!`)) {
+        return;
+    }
+
+    // Use File System Access API to delete from disk
+    const result = await clientFS.deleteFileFromDisk(filePath);
+    
+    if (result.success && result.deletedFromDisk) {
+        showNotification(`${type} 삭제됨: ${fileName}`, 'success');
+        
+        // Close tab if file is open
+        if (openFiles.has(filePath)) {
+            closeFile(filePath);
+        }
+        
+        // Reload file tree
+        const dirHandle = clientFS.getDirectoryHandle();
+        if (dirHandle) {
+            await loadDirectoryWithHandles(dirHandle);
+        }
+    } else {
+        showNotification(`삭제 실패: ${result.error || '알 수 없는 오류'}`, 'error');
+    }
+}
+
+async function renameFile(filePath, fileName, isDirectory) {
+    const type = isDirectory ? '폴더' : '파일';
+    const newName = prompt(`${type} 이름 변경:`, fileName);
+    if (!newName || newName === fileName) {
+        return;
+    }
+
+    showNotification(`${type} 이름 변경 중...`, 'info');
+    
+    const result = await clientFS.renameEntry(filePath, newName);
+    
+    if (result.success && result.renamed) {
+        showNotification(`이름 변경됨: ${fileName} → ${newName}`, 'success');
+        
+        // Close tab if file is open
+        if (openFiles.has(filePath)) {
+            closeFile(filePath);
+        }
+        
+        // Reload file tree
+        const dirHandle = clientFS.getDirectoryHandle();
+        if (dirHandle) {
+            await loadDirectoryWithHandles(dirHandle);
+        }
+    } else {
+        showNotification(`이름 변경 실패: ${result.error || '알 수 없는 오류'}`, 'error');
+    }
+}
+
+async function createNewFile(parentPath, isDirectory) {
+    const fileName = prompt('새 파일 이름:');
+    if (!fileName) return;
+
+    const basePath = isDirectory ? parentPath : parentPath.split('/').slice(0, -1).join('/');
+    
+    const result = await clientFS.createNewFile(basePath, fileName);
+    
+    if (result.success && result.createdFile) {
+        showNotification(`파일 생성됨: ${fileName}`, 'success');
+        
+        // Reload file tree
+        const dirHandle = clientFS.getDirectoryHandle();
+        if (dirHandle) {
+            await loadDirectoryWithHandles(dirHandle);
+        }
+    } else {
+        showNotification(`파일 생성 실패: ${result.error || '알 수 없는 오류'}`, 'error');
+    }
+}
+
+async function createNewFolder(parentPath, isDirectory) {
+    const folderName = prompt('새 폴더 이름:');
+    if (!folderName) return;
+
+    const basePath = isDirectory ? parentPath : parentPath.split('/').slice(0, -1).join('/');
+    
+    const result = await clientFS.createNewDirectory(basePath, folderName);
+    
+    if (result.success && result.createdDirectory) {
+        showNotification(`폴더 생성됨: ${folderName}`, 'success');
+        
+        // Reload file tree
+        const dirHandle = clientFS.getDirectoryHandle();
+        if (dirHandle) {
+            await loadDirectoryWithHandles(dirHandle);
+        }
+    } else {
+        showNotification(`폴더 생성 실패: ${result.error || '알 수 없는 오류'}`, 'error');
+    }
+}
+
+// --- Source Control Functions ---
+export function trackFileChange(filePath, currentContent) {
+    const originalFile = clientFS.getFile(filePath);
+    if (!originalFile) {
+        // New file
+        fileChanges.set(filePath, { status: 'added', originalContent: '' });
+    } else if (originalFile.content !== currentContent) {
+        // Modified file
+        fileChanges.set(filePath, { status: 'modified', originalContent: originalFile.content });
+    } else {
+        // No changes
+        fileChanges.delete(filePath);
+    }
+    
+    updateSourceControlView();
+    updateSourceControlBadge();
+}
+
+function renderSourceControlView() {
+    const sourceControlView = document.getElementById('source-control-view');
+    if (!sourceControlView) return;
+
+    const changesCount = fileChanges.size;
+    
+    sourceControlView.innerHTML = `
+        <h3>소스 제어</h3>
+        <div class="source-control-header">
+            <div class="source-control-message">
+                <input type="text" id="commit-message" placeholder="메시지 (Ctrl+Enter로 커밋)" />
+                <button id="commit-btn" class="commit-btn" ${changesCount === 0 ? 'disabled' : ''}>
+                    <i class="codicon codicon-check"></i> 커밋
+                </button>
+            </div>
+        </div>
+        <div class="source-control-changes">
+            <div class="changes-header">변경사항 (${changesCount})</div>
+            <div class="changes-list" id="changes-list">
+                ${changesCount === 0 ? '<div class="no-changes">변경사항이 없습니다</div>' : ''}
+            </div>
+        </div>
+    `;
+
+    // Render changes
+    if (changesCount > 0) {
+        const changesList = document.getElementById('changes-list');
+        fileChanges.forEach((change, filePath) => {
+            const changeItem = document.createElement('div');
+            changeItem.className = 'change-item';
+            
+            const fileName = filePath.split('/').pop();
+            const statusIcon = change.status === 'modified' ? 'codicon-edit' : 'codicon-add';
+            const statusLabel = change.status === 'modified' ? 'M' : 'A';
+            
+            changeItem.innerHTML = `
+                <i class="codicon ${statusIcon}"></i>
+                <span class="change-file-name">${fileName}</span>
+                <span class="change-status ${change.status}">${statusLabel}</span>
+            `;
+            
+            changeItem.addEventListener('click', () => {
+                showFileDiff(filePath, fileName, change);
+            });
+            
+            changesList.appendChild(changeItem);
+        });
+    }
+
+    // Commit button event
+    const commitBtn = document.getElementById('commit-btn');
+    const commitMessage = document.getElementById('commit-message');
+    
+    if (commitBtn && commitMessage) {
+        commitBtn.addEventListener('click', () => commitChanges());
+        commitMessage.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                commitChanges();
+            }
+        });
+    }
+}
+
+function updateSourceControlView() {
+    if (currentView === 'source-control') {
+        renderSourceControlView();
+    }
+}
+
+function updateSourceControlBadge() {
+    const badge = document.querySelector('.activity-icon[data-action="source-control"] .activity-badge');
+    if (badge) {
+        const count = fileChanges.size;
+        if (count > 0) {
+            badge.textContent = count;
+            badge.style.display = 'flex';
+        } else {
+            badge.style.display = 'none';
+        }
+    }
+}
+
+function showFileDiff(filePath, fileName, change) {
+    const originalContent = change.originalContent || '';
+    const currentContent = openFiles.get(filePath)?.content || clientFS.getFile(filePath)?.content || '';
+    
+    // Update breadcrumb
+    const breadcrumb = document.getElementById('breadcrumb');
+    if (breadcrumb) {
+        breadcrumb.innerHTML = `
+            <span class="breadcrumb-item">${fileName}</span>
+            <span class="breadcrumb-separator">›</span>
+            <span class="breadcrumb-item">변경사항 비교</span>
+        `;
+    }
+    
+    // Show diff editor
+    showDiffEditor(originalContent, currentContent, filePath);
+    
+    // Update tabs to show diff view
+    const existingTab = document.querySelector(`.tab[data-file-path="${filePath}"]`);
+    if (existingTab) {
+        // Update existing tab
+        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+        existingTab.classList.add('active');
+    } else {
+        // Create new tab for diff view
+        const newTab = document.createElement('div');
+        newTab.className = 'tab active';
+        newTab.dataset.filePath = filePath;
+        newTab.dataset.isDiff = 'true';
+        
+        const tabLabel = document.createElement('span');
+        tabLabel.textContent = `${fileName} (비교)`;
+        newTab.appendChild(tabLabel);
+        
+        const closeBtn = document.createElement('i');
+        closeBtn.className = 'codicon codicon-close';
+        closeBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            newTab.remove();
+            hideDiffEditor();
+        });
+        newTab.appendChild(closeBtn);
+        
+        newTab.addEventListener('click', () => {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            newTab.classList.add('active');
+            showDiffEditor(originalContent, currentContent, filePath);
+        });
+        
+        // Remove active from other tabs
+        document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+        
+        tabsContainer.appendChild(newTab);
+    }
+}
+
+async function commitChanges() {
+    const commitMessage = document.getElementById('commit-message');
+    if (!commitMessage || !commitMessage.value.trim()) {
+        showNotification('커밋 메시지를 입력하세요', 'error');
+        return;
+    }
+
+    const message = commitMessage.value.trim();
+    const changesArray = Array.from(fileChanges.entries());
+    
+    showNotification(`${changesArray.length}개 파일 커밋 중...`, 'info');
+    
+    // Save all changes to disk
+    for (const [filePath, change] of changesArray) {
+        if (change.status === 'modified' || change.status === 'added') {
+            const content = openFiles.get(filePath)?.content || clientFS.getFile(filePath)?.content || '';
+            const fileHandle = clientFS.fileHandles.get(filePath);
+            
+            if (fileHandle) {
+                try {
+                    const writable = await fileHandle.createWritable();
+                    await writable.write(content);
+                    await writable.close();
+                    
+                    // Update original content
+                    clientFS.files.set(filePath, { content, type: 'file' });
+                } catch (err) {
+                    console.error('Failed to save file:', filePath, err);
+                }
+            }
+        }
+    }
+    
+    // Clear changes
+    fileChanges.clear();
+    commitMessage.value = '';
+    
+    // Close all diff tabs
+    document.querySelectorAll('.tab[data-is-diff="true"]').forEach(tab => tab.remove());
+    hideDiffEditor();
+    
+    showNotification(`커밋 완료: "${message}"`, 'success');
+    updateSourceControlView();
+    updateSourceControlBadge();
+}
+
+// Toggle mobile sidebar
+function toggleMobileSidebar(e) {
+    if (e) e.stopPropagation();
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        sidebar.classList.toggle('mobile-open');
+    }
+}
+
+// ===== GitHub Integration =====
+let githubToken = localStorage.getItem('github_token');
+let githubUser = null;
+
+function renderGitHubView() {
+    const githubView = document.getElementById('github-view');
+    if (!githubView) return;
+
+    if (!githubToken) {
+        // Show login screen
+        githubView.innerHTML = `
+            <div class="github-login">
+                <h3>GitHub</h3>
+                <div class="github-login-content">
+                    <i class="codicon codicon-github" style="font-size: 64px; margin-bottom: 20px;"></i>
+                    <p>GitHub에 연결하여 레포지토리를 관리하세요</p>
+                    <button class="github-login-btn" id="github-login-btn">
+                        <i class="codicon codicon-github"></i>
+                        GitHub로 로그인
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('github-login-btn')?.addEventListener('click', loginToGitHub);
+    } else {
+        // Show repositories
+        loadGitHubRepositories();
+    }
+}
+
+function loginToGitHub() {
+    const clientId = 'Ov23li22YDn5ymGp9viB'; // GitHub OAuth App Client ID
+    const redirectUri = `${window.location.origin}/api/github/callback`;
+    const scope = 'repo,user,delete_repo';
+    
+    const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+    
+    // Open popup window
+    const width = 600;
+    const height = 700;
+    const left = (screen.width - width) / 2;
+    const top = (screen.height - height) / 2;
+    
+    const popup = window.open(
+        authUrl,
+        'GitHub Login',
+        `width=${width},height=${height},left=${left},top=${top}`
+    );
+    
+    // Listen for callback
+    window.addEventListener('message', async (event) => {
+        if (event.data.type === 'github-auth') {
+            githubToken = event.data.token;
+            githubUser = event.data.user;
+            localStorage.setItem('github_token', githubToken);
+            localStorage.setItem('github_user', JSON.stringify(githubUser));
+            
+            showNotification(`✓ ${githubUser.login}님 환영합니다!`, 'success');
+            renderGitHubView();
+        }
+    });
+}
+
+async function loadGitHubRepositories() {
+    const githubView = document.getElementById('github-view');
+    if (!githubView) return;
+
+    githubView.innerHTML = `
+        <div class="github-header">
+            <h3>GitHub 레포지토리</h3>
+            <div class="github-user">
+                <img src="${githubUser?.avatar_url || ''}" alt="avatar" class="github-avatar">
+                <span>${githubUser?.login || 'User'}</span>
+                <button class="github-logout-btn" id="github-logout-btn" title="로그아웃">
+                    <i class="codicon codicon-sign-out"></i>
+                </button>
+            </div>
+        </div>
+        <div class="github-actions">
+            <button class="github-action-btn" id="create-repo-btn">
+                <i class="codicon codicon-add"></i> 새 레포지토리
+            </button>
+            <button class="github-action-btn" id="refresh-repos-btn">
+                <i class="codicon codicon-refresh"></i> 새로고침
+            </button>
+        </div>
+        <div class="github-repos-list" id="github-repos-list">
+            <div class="loading">레포지토리 로딩 중...</div>
+        </div>
+    `;
+
+    document.getElementById('github-logout-btn')?.addEventListener('click', logoutFromGitHub);
+    document.getElementById('create-repo-btn')?.addEventListener('click', showCreateRepoDialog);
+    document.getElementById('refresh-repos-btn')?.addEventListener('click', loadGitHubRepositories);
+
+    try {
+        const response = await fetch('/api/github/repos', {
+            headers: { 'Authorization': `Bearer ${githubToken}` }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch repositories');
+
+        const repos = await response.json();
+        renderRepositories(repos);
+    } catch (error) {
+        console.error('GitHub API error:', error);
+        document.getElementById('github-repos-list').innerHTML = `
+            <div class="error-message">레포지토리를 불러오는데 실패했습니다</div>
+        `;
+    }
+}
+
+function renderRepositories(repos) {
+    const reposList = document.getElementById('github-repos-list');
+    if (!reposList) return;
+
+    if (repos.length === 0) {
+        reposList.innerHTML = '<div class="no-repos">레포지토리가 없습니다</div>';
+        return;
+    }
+
+    reposList.innerHTML = '';
+    repos.forEach(repo => {
+        const repoItem = document.createElement('div');
+        repoItem.className = 'github-repo-item';
+        repoItem.innerHTML = `
+            <div class="repo-info">
+                <i class="codicon codicon-repo"></i>
+                <div class="repo-details">
+                    <div class="repo-name">${repo.name}</div>
+                    <div class="repo-description">${repo.description || '설명 없음'}</div>
+                </div>
+            </div>
+            <div class="repo-actions">
+                <button class="repo-action-btn" title="열기" data-action="open" data-repo="${repo.full_name}">
+                    <i class="codicon codicon-folder-opened"></i>
+                </button>
+                <button class="repo-action-btn" title="커밋 보기" data-action="commits" data-repo="${repo.full_name}">
+                    <i class="codicon codicon-git-commit"></i>
+                </button>
+                <button class="repo-action-btn" title="삭제" data-action="delete" data-repo="${repo.full_name}">
+                    <i class="codicon codicon-trash"></i>
+                </button>
+            </div>
+        `;
+
+        repoItem.querySelectorAll('.repo-action-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const action = btn.dataset.action;
+                const repoFullName = btn.dataset.repo;
+                handleRepoAction(action, repoFullName);
+            });
+        });
+
+        reposList.appendChild(repoItem);
+    });
+}
+
+async function handleRepoAction(action, repoFullName) {
+    const [owner, repo] = repoFullName.split('/');
+
+    switch (action) {
+        case 'open':
+            await loadRepositoryFiles(owner, repo);
+            break;
+        case 'commits':
+            await showCommits(owner, repo);
+            break;
+        case 'delete':
+            if (confirm(`정말로 "${repoFullName}" 레포지토리를 삭제하시겠습니까?`)) {
+                await deleteRepository(owner, repo);
+            }
+            break;
+    }
+}
+
+async function loadRepositoryFiles(owner, repo) {
+    showNotification(`${repo} 로딩 중...`, 'info');
+    
+    try {
+        const response = await fetch(`/api/github/repos/${owner}/${repo}/contents/`, {
+            headers: { 'Authorization': `Bearer ${githubToken}` }
+        });
+
+        if (!response.ok) throw new Error('Failed to load repository');
+
+        const files = await response.json();
+        
+        // Clear and load files into editor
+        clientFS.clear();
+        await loadGitHubFilesRecursive(owner, repo, '', files);
+        clientFS.sortChildren(clientFS.root);
+        renderClientFileTree();
+        
+        // Switch to explorer view
+        document.querySelector('.activity-icon[data-action="explorer"]')?.click();
+        
+        showNotification(`✓ ${repo} 로드 완료`, 'success');
+    } catch (error) {
+        console.error('Failed to load repository:', error);
+        showNotification('레포지토리 로드 실패', 'error');
+    }
+}
+
+async function loadGitHubFilesRecursive(owner, repo, path, items) {
+    for (const item of items) {
+        if (item.type === 'file') {
+            try {
+                const response = await fetch(item.url, {
+                    headers: { 'Authorization': `Bearer ${githubToken}` }
+                });
+                const data = await response.json();
+                const content = atob(data.content);
+                clientFS.addFile(item.path, content);
+            } catch (error) {
+                console.error(`Failed to load file: ${item.path}`, error);
+            }
+        } else if (item.type === 'dir') {
+            clientFS.createDirectory(item.path);
+            try {
+                const response = await fetch(item.url, {
+                    headers: { 'Authorization': `Bearer ${githubToken}` }
+                });
+                const subItems = await response.json();
+                await loadGitHubFilesRecursive(owner, repo, item.path, subItems);
+            } catch (error) {
+                console.error(`Failed to load directory: ${item.path}`, error);
+            }
+        }
+    }
+}
+
+async function showCommits(owner, repo) {
+    try {
+        const response = await fetch(`/api/github/repos/${owner}/${repo}/commits`, {
+            headers: { 'Authorization': `Bearer ${githubToken}` }
+        });
+
+        if (!response.ok) throw new Error('Failed to fetch commits');
+
+        const commits = await response.json();
+        
+        const commitsHtml = commits.map(commit => `
+            <div class="commit-item">
+                <div class="commit-message">${commit.commit.message}</div>
+                <div class="commit-meta">
+                    <span>${commit.commit.author.name}</span>
+                    <span>${new Date(commit.commit.author.date).toLocaleString()}</span>
+                </div>
+            </div>
+        `).join('');
+
+        showNotification(`${repo} 커밋 히스토리`, 'info');
+        
+        // Could show in a modal or panel
+        alert(`최근 커밋:\n\n${commits.slice(0, 5).map(c => `• ${c.commit.message}`).join('\n')}`);
+    } catch (error) {
+        console.error('Failed to fetch commits:', error);
+        showNotification('커밋 조회 실패', 'error');
+    }
+}
+
+async function deleteRepository(owner, repo) {
+    try {
+        const response = await fetch(`/api/github/repos/${owner}/${repo}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${githubToken}` }
+        });
+
+        if (!response.ok) throw new Error('Failed to delete repository');
+
+        showNotification(`✓ ${repo} 삭제 완료`, 'success');
+        loadGitHubRepositories();
+    } catch (error) {
+        console.error('Failed to delete repository:', error);
+        showNotification('레포지토리 삭제 실패', 'error');
+    }
+}
+
+function showCreateRepoDialog() {
+    const name = prompt('새 레포지토리 이름:');
+    if (!name) return;
+
+    const description = prompt('설명 (선택사항):');
+    const isPrivate = confirm('비공개 레포지토리로 만드시겠습니까?');
+
+    createRepository(name, description, isPrivate);
+}
+
+async function createRepository(name, description, isPrivate) {
+    try {
+        const response = await fetch('/api/github/repos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${githubToken}`
+            },
+            body: JSON.stringify({ name, description, private: isPrivate })
+        });
+
+        if (!response.ok) throw new Error('Failed to create repository');
+
+        const repo = await response.json();
+        showNotification(`✓ ${repo.name} 생성 완료`, 'success');
+        loadGitHubRepositories();
+    } catch (error) {
+        console.error('Failed to create repository:', error);
+        showNotification('레포지토리 생성 실패', 'error');
+    }
+}
+
+function logoutFromGitHub() {
+    githubToken = null;
+    githubUser = null;
+    localStorage.removeItem('github_token');
+    localStorage.removeItem('github_user');
+    showNotification('로그아웃되었습니다', 'info');
+    renderGitHubView();
+}
+
+// Load user info on startup if token exists
+if (githubToken) {
+    const storedUser = localStorage.getItem('github_user');
+    if (storedUser) {
+        try {
+            githubUser = JSON.parse(storedUser);
+        } catch (e) {
+            console.error('Failed to parse stored user:', e);
+        }
+    }
+}
+
+// Toggle panel visibility
+function togglePanel() {
+    const panel = document.getElementById('panel');
+    const toggleBtn = document.getElementById('toggle-panel-btn');
+    const openBtn = document.getElementById('panel-open-btn');
+    const icon = toggleBtn?.querySelector('i');
+    
+    if (panel.classList.contains('panel-visible')) {
+        // Hide panel
+        panel.classList.remove('panel-visible');
+        panel.classList.add('panel-hidden');
+        if (icon) {
+            icon.className = 'codicon codicon-chevron-up';
+        }
+        if (toggleBtn) {
+            toggleBtn.title = '패널 열기 (Ctrl+J)';
+        }
+        // Show open button
+        if (openBtn) {
+            openBtn.style.display = 'flex';
+        }
+    } else {
+        // Show panel
+        panel.classList.remove('panel-hidden');
+        panel.classList.add('panel-visible');
+        if (icon) {
+            icon.className = 'codicon codicon-chevron-down';
+        }
+        if (toggleBtn) {
+            toggleBtn.title = '패널 닫기 (Ctrl+J)';
+        }
+        // Hide open button
+        if (openBtn) {
+            openBtn.style.display = 'none';
+        }
+        
+        // Refit terminal when panel opens
+        setTimeout(() => {
+            if (fitAddon && xterm) {
+                fitAddon.fit();
+            }
+            // Relayout editor
+            const editor = getEditor();
+            if (editor) {
+                editor.layout();
+            }
+        }, 160); // Wait for animation to complete (150ms + 10ms buffer)
+    }
+}
+

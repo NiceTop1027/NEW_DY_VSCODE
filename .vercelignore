@@ -1,0 +1,11 @@
+node_modules
+server.js
+uploads
+*.log
+.env
+.DS_Store
+tests
+docs
+jest.config.js
+jest.setup.js
+__mocks__

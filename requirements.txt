@@ -1,0 +1,2 @@
+# Core dependencies for cross-platform compatibility in Speckit environment
+# Further dependencies will be added as specific technologies are chosen.
