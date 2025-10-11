@@ -355,12 +355,17 @@ app.ws('/terminal', async (ws, req) => {
             containerName = container.containerName;
             dockerContainers.set(sessionId, container);
             
-            // Docker 컨테이너 내부에서 bash 실행
-            ptyProcess = pty.spawn('docker', ['exec', '-it', containerName, 'bash'], {
+            // Docker 컨테이너 내부에서 bash 실행 (탈출 방지)
+            ptyProcess = pty.spawn('docker', ['exec', '-it', containerName, 'bash', '--noprofile', '--norc'], {
                 name: 'xterm-color',
                 cols: 80,
                 rows: 30,
-                env: process.env
+                env: {
+                    TERM: 'xterm-color',
+                    PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+                    HOME: '/workspace',
+                    PWD: '/workspace'
+                }
             });
             
             ws.send(`\r\n\x1b[1;32m🐳 Docker 컨테이너 환경\x1b[0m\r\n`);
@@ -391,20 +396,11 @@ app.ws('/terminal', async (ws, req) => {
         return; // 실제 pty 생성하지 않음
     }
 
-    // 세션 타임아웃 설정 (30분)
-    const sessionTimeout = setTimeout(() => {
-        ptyProcess.kill();
-        ws.send(`\r\n\x1b[1;33m⏱️  세션 타임아웃 (30분). 연결이 종료됩니다.\x1b[0m\r\n`);
-        ws.close();
-        terminalSessions.delete(sessionId);
-        console.log(`Session timeout: ${sessionId}`);
-    }, 30 * 60 * 1000); // 30분
-    
+    // 세션 정보 저장 (타임아웃 없음 - 웹 나가면 자동 삭제)
     terminalSessions.set(sessionId, {
         ptyProcess,
         userWorkspace,
-        sessionId,
-        timeout: sessionTimeout
+        sessionId
     });
     
     console.log(`Terminal WebSocket connected. Session: ${sessionId}`);
@@ -489,7 +485,6 @@ app.ws('/terminal', async (ws, req) => {
     ws.onclose = () => {
         const session = terminalSessions.get(sessionId);
         if (session) {
-            clearTimeout(session.timeout);
             session.ptyProcess.kill();
             terminalSessions.delete(sessionId);
         }
@@ -505,6 +500,13 @@ app.ws('/terminal', async (ws, req) => {
                 }
             });
             dockerContainers.delete(sessionId);
+        }
+        
+        // 세션 디렉토리 삭제
+        const userWorkspace = path.join(PROJECT_ROOT, sessionId);
+        if (fsSync.existsSync(userWorkspace)) {
+            fsSync.rmSync(userWorkspace, { recursive: true, force: true });
+            console.log(`✅ 세션 디렉토리 삭제됨: ${userWorkspace}`);
         }
         
         console.log(`Terminal WebSocket disconnected. Session: ${sessionId}`);
