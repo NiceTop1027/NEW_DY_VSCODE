@@ -831,13 +831,16 @@ async function saveDirHandleToStorage(dirHandle) {
 // Open IndexedDB
 function openDB() {
     return new Promise((resolve, reject) => {
-        const request = indexedDB.open('VSCodeCloneDB', 2);
+        const request = indexedDB.open('VSCodeCloneDB', 3);
         
         request.onerror = () => reject(request.error);
         request.onsuccess = () => resolve(request.result);
         
         request.onupgradeneeded = (event) => {
             const db = event.target.result;
+            if (!db.objectStoreNames.contains('files')) {
+                db.createObjectStore('files', { keyPath: 'id' });
+            }
             if (!db.objectStoreNames.contains('handles')) {
                 db.createObjectStore('handles');
             }
