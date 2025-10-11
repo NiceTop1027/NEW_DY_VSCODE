@@ -48,6 +48,9 @@ class ClientFileSystem {
             path: filePath,
             content: content
         };
+        
+        // IndexedDB에 저장
+        this.saveToIndexedDB();
 
         // Remove existing file if any
         const existingIndex = current.children.findIndex(c => c.name === fileName && c.type === 'file');
@@ -379,6 +382,81 @@ class ClientFileSystem {
                 await this.copyDirectory(entry, newDirHandle);
             }
         }
+    }
+    
+    // IndexedDB에 파일 시스템 저장
+    async saveToIndexedDB() {
+        try {
+            const db = await this.openDB();
+            const tx = db.transaction('files', 'readwrite');
+            const store = tx.objectStore('files');
+            
+            // root 구조를 직렬화하여 저장
+            await store.put({
+                id: 'fileSystem',
+                root: this.root,
+                timestamp: Date.now()
+            });
+            
+            await tx.done;
+        } catch (err) {
+            console.error('Failed to save to IndexedDB:', err);
+        }
+    }
+    
+    // IndexedDB에서 파일 시스템 로드
+    async loadFromIndexedDB() {
+        try {
+            const db = await this.openDB();
+            const tx = db.transaction('files', 'readonly');
+            const store = tx.objectStore('files');
+            
+            const data = await store.get('fileSystem');
+            
+            if (data && data.root) {
+                this.root = data.root;
+                // files Map 재구성
+                this.rebuildFilesMap(this.root);
+                console.log('✅ Loaded files from IndexedDB');
+                return true;
+            }
+            return false;
+        } catch (err) {
+            console.error('Failed to load from IndexedDB:', err);
+            return false;
+        }
+    }
+    
+    // files Map 재구성
+    rebuildFilesMap(node) {
+        if (node.type === 'file') {
+            this.files.set(node.path, node);
+        } else if (node.type === 'directory' && node.children) {
+            node.children.forEach(child => this.rebuildFilesMap(child));
+        }
+    }
+    
+    // IndexedDB 열기
+    openDB() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open('VSCodeCloneDB', 3);
+            
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => resolve(request.result);
+            
+            request.onupgradeneeded = (event) => {
+                const db = event.target.result;
+                if (!db.objectStoreNames.contains('files')) {
+                    db.createObjectStore('files', { keyPath: 'id' });
+                }
+                if (!db.objectStoreNames.contains('handles')) {
+                    db.createObjectStore('handles');
+                }
+                if (!db.objectStoreNames.contains('fileData')) {
+                    db.createObjectStore('fileData');
+                }
+            };
+        });
     }
 }
 

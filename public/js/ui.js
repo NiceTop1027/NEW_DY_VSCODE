@@ -721,8 +721,8 @@ export function initUI() {
     // Try to restore previous directory on load
     restorePreviousDirectory();
 
-    // Initial: show client file tree (empty initially)
-    renderClientFileTree();
+    // IndexedDB에서 파일 복원
+    loadFilesFromIndexedDB();
 }
 
 // Filter file tree based on search term
@@ -2362,5 +2362,22 @@ function togglePanel() {
                 editor.layout();
             }
         }, 160); // Wait for animation to complete (150ms + 10ms buffer)
+    }
+}
+
+// IndexedDB에서 파일 로드
+async function loadFilesFromIndexedDB() {
+    try {
+        const loaded = await clientFS.loadFromIndexedDB();
+        if (loaded) {
+            renderClientFileTree();
+            showNotification('✅ 이전 파일 복원 완료', 'success');
+        } else {
+            // 파일이 없으면 빈 트리 표시
+            renderClientFileTree();
+        }
+    } catch (err) {
+        console.error('Failed to load files:', err);
+        renderClientFileTree();
     }
 }
