@@ -76,7 +76,20 @@ export function initGitHub() {
                 const [owner, repo] = selectedRepo.split('/');
                 const result = await githubCloneRepo(owner, repo, githubToken);
                 
-                alert(`✅ ${selectedRepo} 클론 완료!`);
+                // 클론한 레포지토리 정보 저장
+                const clonedRepos = JSON.parse(localStorage.getItem('clonedRepos') || '[]');
+                if (!clonedRepos.find(r => r.fullName === selectedRepo)) {
+                    clonedRepos.push({
+                        fullName: selectedRepo,
+                        owner,
+                        repo,
+                        path: result.path,
+                        clonedAt: new Date().toISOString()
+                    });
+                    localStorage.setItem('clonedRepos', JSON.stringify(clonedRepos));
+                }
+                
+                alert(`✅ ${selectedRepo} 클론 완료!\n경로: ${result.path}`);
                 githubModal.style.display = 'none';
                 
                 // Refresh file tree
@@ -94,8 +107,32 @@ export function initGitHub() {
     // Push changes
     if (githubPushBtn) {
         githubPushBtn.addEventListener('click', async () => {
-            const repoPath = prompt('레포지토리 경로를 입력하세요 (예: my-repo):');
-            if (!repoPath) return;
+            // 클론한 레포지토리 목록 가져오기
+            const clonedRepos = JSON.parse(localStorage.getItem('clonedRepos') || '[]');
+            
+            if (clonedRepos.length === 0) {
+                alert('먼저 레포지토리를 클론하세요!');
+                return;
+            }
+            
+            // 레포지토리 선택 다이얼로그
+            let repoOptions = '클론한 레포지토리:\n\n';
+            clonedRepos.forEach((repo, index) => {
+                repoOptions += `${index + 1}. ${repo.fullName} (${repo.path})\n`;
+            });
+            repoOptions += '\n푸시할 레포지토리 번호를 입력하세요:';
+            
+            const repoIndex = prompt(repoOptions);
+            if (!repoIndex) return;
+            
+            const selectedRepoIndex = parseInt(repoIndex) - 1;
+            if (selectedRepoIndex < 0 || selectedRepoIndex >= clonedRepos.length) {
+                alert('잘못된 번호입니다.');
+                return;
+            }
+            
+            const selectedRepoInfo = clonedRepos[selectedRepoIndex];
+            const repoPath = selectedRepoInfo.path;
             
             const message = prompt('커밋 메시지를 입력하세요:', 'Update from web IDE');
             if (!message) return;
@@ -106,7 +143,7 @@ export function initGitHub() {
                 
                 const result = await githubPush(repoPath, message, githubToken);
                 
-                alert(`✅ ${result.message}`);
+                alert(`✅ ${selectedRepoInfo.fullName}\n${result.message}`);
             } catch (error) {
                 console.error('Push error:', error);
                 alert(`❌ 푸시 실패: ${error.message}`);
@@ -125,10 +162,53 @@ function updateGitHubUI() {
     if (githubToken && githubUser) {
         authSection.style.display = 'none';
         reposSection.style.display = 'block';
+        
+        // 클론한 레포지토리 목록 표시
+        displayClonedRepos();
     } else {
         authSection.style.display = 'block';
         reposSection.style.display = 'none';
     }
+}
+
+function displayClonedRepos() {
+    const clonedReposList = document.getElementById('cloned-repos-list');
+    if (!clonedReposList) return;
+    
+    const clonedRepos = JSON.parse(localStorage.getItem('clonedRepos') || '[]');
+    
+    if (clonedRepos.length === 0) {
+        clonedReposList.innerHTML = '<p style="color: #888; font-size: 12px; padding: 10px;">클론한 레포지토리가 없습니다.</p>';
+        return;
+    }
+    
+    clonedReposList.innerHTML = '';
+    clonedRepos.forEach((repo, index) => {
+        const repoItem = document.createElement('div');
+        repoItem.className = 'cloned-repo-item';
+        repoItem.innerHTML = `
+            <div class="cloned-repo-info">
+                <strong>${repo.fullName}</strong>
+                <span>📁 ${repo.path}</span>
+                <small>클론: ${new Date(repo.clonedAt).toLocaleString('ko-KR')}</small>
+            </div>
+            <button class="remove-repo-btn" data-index="${index}" title="목록에서 제거">
+                ✕
+            </button>
+        `;
+        
+        // 제거 버튼 이벤트
+        const removeBtn = repoItem.querySelector('.remove-repo-btn');
+        removeBtn.addEventListener('click', () => {
+            if (confirm(`${repo.fullName}을(를) 목록에서 제거하시겠습니까?\n(파일은 삭제되지 않습니다)`)) {
+                clonedRepos.splice(index, 1);
+                localStorage.setItem('clonedRepos', JSON.stringify(clonedRepos));
+                displayClonedRepos();
+            }
+        });
+        
+        clonedReposList.appendChild(repoItem);
+    });
 }
 
 async function loadRepositories() {

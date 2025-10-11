@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs').promises;
+const fsSync = require('fs');
 const expressWs = require('express-ws');
 const pty = require('node-pty');
 const axios = require('axios');
@@ -41,7 +42,6 @@ const PROJECT_ROOT = process.env.RAILWAY_VOLUME_MOUNT_PATH
     : (process.env.NODE_ENV === 'production' ? '/tmp/workspace' : path.resolve(__dirname, './'));
 
 // Ensure workspace directory exists
-const fsSync = require('fs');
 if (!fsSync.existsSync(PROJECT_ROOT)) {
     fsSync.mkdirSync(PROJECT_ROOT, { recursive: true });
     console.log(`✅ Workspace directory created: ${PROJECT_ROOT}`);
@@ -341,7 +341,6 @@ app.ws('/terminal', async (ws, req) => {
     
     // Create user-specific workspace directory
     const userWorkspace = path.join(PROJECT_ROOT, sessionId);
-    const fsSync = require('fs');
     if (!fsSync.existsSync(userWorkspace)) {
         fsSync.mkdirSync(userWorkspace, { recursive: true });
     }
@@ -891,8 +890,8 @@ app.post('/api/sandbox/create', async (req, res) => {
         } else {
             // 일반 모드: 격리된 디렉토리만 생성
             const userWorkspace = path.join(PROJECT_ROOT, sessionId);
-            if (!fs.existsSync(userWorkspace)) {
-                fs.mkdirSync(userWorkspace, { recursive: true });
+            if (!fsSync.existsSync(userWorkspace)) {
+                fsSync.mkdirSync(userWorkspace, { recursive: true });
             }
             
             console.log(`✅ Isolated workspace created for session: ${sessionId}`);

@@ -2006,3 +2006,82 @@ body {
 #terminal-container {
     height: calc(100% - 40px);
 }
+
+/* GitHub Sections */
+.github-section {
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.github-section h3 {
+    margin: 0 0 15px 0;
+    font-size: 14px;
+    color: var(--text-color);
+}
+
+.github-section button {
+    width: 100%;
+    margin-top: 10px;
+}
+
+#cloned-repos-list {
+    max-height: 250px;
+    overflow-y: auto;
+    margin-bottom: 10px;
+}
+
+.cloned-repo-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    transition: background 0.2s;
+}
+
+.cloned-repo-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.cloned-repo-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.cloned-repo-info strong {
+    color: var(--text-color);
+    font-size: 13px;
+}
+
+.cloned-repo-info span {
+    color: var(--text-color-light);
+    font-size: 11px;
+}
+
+.cloned-repo-info small {
+    color: var(--text-color-light);
+    font-size: 10px;
+}
+
+.remove-repo-btn {
+    background: rgba(255, 0, 0, 0.1);
+    border: 1px solid rgba(255, 0, 0, 0.3);
+    color: #ff6b6b;
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.remove-repo-btn:hover {
+    background: rgba(255, 0, 0, 0.2);
+    border-color: rgba(255, 0, 0, 0.5);
+}

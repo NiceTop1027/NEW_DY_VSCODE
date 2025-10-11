@@ -150,10 +150,15 @@
                         <button id="github-login-btn" class="btn-primary">GitHub 로그인</button>
                     </div>
                     <div id="github-repos-section" style="display: none;">
-                        <h3>내 레포지토리</h3>
-                        <div id="github-repos-list"></div>
-                        <div class="github-actions">
+                        <div class="github-section">
+                            <h3>📥 내 레포지토리 (클론하기)</h3>
+                            <div id="github-repos-list"></div>
                             <button id="github-clone-btn" class="btn-primary">선택한 레포 클론</button>
+                        </div>
+                        
+                        <div class="github-section" style="margin-top: 20px;">
+                            <h3>📤 클론한 레포지토리 (푸시하기)</h3>
+                            <div id="cloned-repos-list"></div>
                             <button id="github-push-btn" class="btn-success">변경사항 푸시</button>
                         </div>
                     </div>
