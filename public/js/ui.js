@@ -1045,6 +1045,36 @@ window.addEventListener('resize', () => {
     }, 100);
 });
 
+// 터미널 패널 크기 변경 감지 및 자동 조절
+const terminalContainer = document.getElementById('terminal-container');
+if (terminalContainer) {
+    const resizeObserver = new ResizeObserver(() => {
+        if (xterm && fitAddon) {
+            try {
+                fitAddon.fit();
+            } catch (err) {
+                // 무시
+            }
+        }
+    });
+    resizeObserver.observe(terminalContainer);
+}
+
+// 패널 크기 조절 감지
+const panelElement = document.getElementById('panel');
+if (panelElement) {
+    const panelResizeObserver = new ResizeObserver(() => {
+        if (xterm && fitAddon) {
+            try {
+                fitAddon.fit();
+            } catch (err) {
+                // 무시
+            }
+        }
+    });
+    panelResizeObserver.observe(panelElement);
+}
+
 // Suppress ResizeObserver errors
 const resizeObserverLoopErrRe = /^[^(ResizeObserver loop limit exceeded)]/;
 window.addEventListener('error', (e) => {
