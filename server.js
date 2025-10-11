@@ -337,7 +337,7 @@ async function createUserContainer(sessionId) {
 // WebSocket endpoint for terminal
 app.ws('/terminal', async (ws, req) => {
     const sessionId = req.query.sessionId || generateSessionId();
-    const useDocker = process.env.USE_DOCKER === 'true'; // 환경 변수로 Docker 사용 여부 결정
+    let useDocker = process.env.USE_DOCKER === 'true'; // 환경 변수로 Docker 사용 여부 결정
     
     // Create user-specific workspace directory
     const userWorkspace = path.join(PROJECT_ROOT, sessionId);

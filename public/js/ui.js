@@ -299,11 +299,28 @@ export function initUI() {
     
     // Set explorer as active by default
     document.querySelector('.activity-icon[data-action="explorer"]')?.classList.add('active');
+    
+    // 탭 변경 시 푸시 버튼 체크
+    document.addEventListener('click', (e) => {
+        if (e.target.closest('.tab')) {
+            const tab = e.target.closest('.tab');
+            const filePath = tab.dataset.filePath;
+            if (filePath) {
+                setTimeout(() => checkAndShowGitPushButton(filePath), 100);
+            }
+        }
+    });
 
     // Run Code Button
     const runCodeBtn = document.getElementById('run-code-btn');
     if (runCodeBtn) {
         runCodeBtn.addEventListener('click', runCode);
+    }
+    
+    // Git Push Button
+    const gitPushBtn = document.getElementById('git-push-btn');
+    if (gitPushBtn) {
+        gitPushBtn.addEventListener('click', quickGitPush);
     }
     
     // Create Sandbox Button
@@ -564,7 +581,12 @@ export function initUI() {
                     const socket = new WebSocket(`${wsProtocol}//${window.location.host}/terminal?sessionId=${sessionId}`);
                     
                     socket.onopen = () => {
-                        xterm.onData(data => socket.send(data));
+                        xterm.onData(data => {
+                            // WebSocket 상태 확인
+                            if (socket.readyState === WebSocket.OPEN) {
+                                socket.send(data);
+                            }
+                        });
                     };
                     
                     // 중복 데이터 필터링
@@ -1073,6 +1095,88 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, 3300); // 3.3 seconds (animation duration + fade out)
 });
 
+// --- Quick Git Push ---
+async function quickGitPush() {
+    const activeTab = document.querySelector('.tab.active');
+    if (!activeTab) {
+        showNotification('열린 파일이 없습니다.', 'error');
+        return;
+    }
+    
+    const filePath = activeTab.dataset.filePath;
+    
+    // 클론한 레포지토리 목록 가져오기
+    const clonedRepos = JSON.parse(localStorage.getItem('clonedRepos') || '[]');
+    
+    if (clonedRepos.length === 0) {
+        showNotification('먼저 GitHub에서 레포지토리를 클론하세요!', 'error');
+        return;
+    }
+    
+    // 현재 파일이 어느 레포에 속하는지 확인
+    let matchedRepo = null;
+    for (const repo of clonedRepos) {
+        if (filePath.startsWith(repo.path + '/') || filePath === repo.path) {
+            matchedRepo = repo;
+            break;
+        }
+    }
+    
+    if (!matchedRepo) {
+        showNotification('이 파일은 GitHub 레포지토리에 속하지 않습니다.', 'error');
+        return;
+    }
+    
+    // 커밋 메시지 입력
+    const message = prompt('커밋 메시지를 입력하세요:', 'Update from web IDE');
+    if (!message) return;
+    
+    try {
+        const gitPushBtn = document.getElementById('git-push-btn');
+        if (gitPushBtn) {
+            gitPushBtn.style.opacity = '0.5';
+            gitPushBtn.style.pointerEvents = 'none';
+        }
+        
+        showNotification('푸시 중...', 'info');
+        
+        const githubToken = localStorage.getItem('githubToken');
+        if (!githubToken) {
+            showNotification('GitHub 로그인이 필요합니다.', 'error');
+            return;
+        }
+        
+        const { githubPush } = await import('./api.js');
+        const result = await githubPush(matchedRepo.path, message, githubToken);
+        
+        showNotification(`✅ ${matchedRepo.fullName}에 푸시 완료!`, 'success');
+    } catch (error) {
+        console.error('Push error:', error);
+        showNotification(`❌ 푸시 실패: ${error.message}`, 'error');
+    } finally {
+        const gitPushBtn = document.getElementById('git-push-btn');
+        if (gitPushBtn) {
+            gitPushBtn.style.opacity = '1';
+            gitPushBtn.style.pointerEvents = 'auto';
+        }
+    }
+}
+
+// 파일이 GitHub 레포에 속하는지 확인하고 푸시 버튼 표시
+export function checkAndShowGitPushButton(filePath) {
+    const gitPushBtn = document.getElementById('git-push-btn');
+    if (!gitPushBtn) return;
+    
+    const clonedRepos = JSON.parse(localStorage.getItem('clonedRepos') || '[]');
+    
+    // 현재 파일이 클론한 레포에 속하는지 확인
+    const isInRepo = clonedRepos.some(repo => 
+        filePath.startsWith(repo.path + '/') || filePath === repo.path
+    );
+    
+    gitPushBtn.style.display = isInRepo ? 'flex' : 'none';
+}
+
 // --- Sandbox Environment ---
 async function createSandboxEnvironment() {
     const btn = document.getElementById('create-sandbox-btn');
@@ -1108,13 +1212,22 @@ async function createSandboxEnvironment() {
                 
                 showNotification('✅ Docker 가상환경이 생성되었습니다!', 'success');
                 
-                if (xterm) {
-                    xterm.write('\r\n\x1b[1;32m✅ Docker 가상환경이 생성되었습니다!\x1b[0m\r\n');
-                    xterm.write('\x1b[1;36m완전히 격리된 우분투 컨테이너에서 작업합니다.\x1b[0m\r\n');
-                    xterm.write('- Python3, Node.js, npm 사용 가능\r\n');
-                    xterm.write('- apt, pip, npm으로 패키지 설치 가능\r\n');
-                    xterm.write('- 다른 사용자와 완전히 격리됨\r\n\r\n');
+                // 터미널 탭으로 전환
+                const terminalTab = document.querySelector('.panel-tab[data-panel-id="terminal"]');
+                if (terminalTab) {
+                    terminalTab.click();
                 }
+                
+                // 터미널이 초기화될 때까지 대기
+                setTimeout(() => {
+                    if (xterm) {
+                        xterm.write('\r\n\x1b[1;32m✅ Docker 가상환경이 생성되었습니다!\x1b[0m\r\n');
+                        xterm.write('\x1b[1;36m완전히 격리된 우분투 컨테이너에서 작업합니다.\x1b[0m\r\n');
+                        xterm.write('- Python3, Node.js, npm 사용 가능\r\n');
+                        xterm.write('- apt, pip, npm으로 패키지 설치 가능\r\n');
+                        xterm.write('- 다른 사용자와 완전히 격리됨\r\n\r\n');
+                    }
+                }, 500);
             } else {
                 // 격리 모드 (Docker 없음)
                 statusText.textContent = '🔒 격리된 작업공간';
@@ -1124,13 +1237,22 @@ async function createSandboxEnvironment() {
                 
                 showNotification('✅ 격리된 작업공간이 생성되었습니다!', 'success');
                 
-                if (xterm) {
-                    xterm.write('\r\n\x1b[1;32m✅ 격리된 작업공간이 생성되었습니다!\x1b[0m\r\n');
-                    xterm.write('\x1b[1;33m독립된 디렉토리에서 작업합니다.\x1b[0m\r\n');
-                    xterm.write('- 다른 사용자와 파일 격리\r\n');
-                    xterm.write('- 세션별 독립된 작업 공간\r\n');
-                    xterm.write('- 보안 명령어 필터링 적용\r\n\r\n');
+                // 터미널 탭으로 전환
+                const terminalTab = document.querySelector('.panel-tab[data-panel-id="terminal"]');
+                if (terminalTab) {
+                    terminalTab.click();
                 }
+                
+                // 터미널이 초기화될 때까지 대기
+                setTimeout(() => {
+                    if (xterm) {
+                        xterm.write('\r\n\x1b[1;32m✅ 격리된 작업공간이 생성되었습니다!\x1b[0m\r\n');
+                        xterm.write('\x1b[1;33m독립된 디렉토리에서 작업합니다.\x1b[0m\r\n');
+                        xterm.write('- 다른 사용자와 파일 격리\r\n');
+                        xterm.write('- 세션별 독립된 작업 공간\r\n');
+                        xterm.write('- 보안 명령어 필터링 적용\r\n\r\n');
+                    }
+                }, 500);
             }
         } else {
             throw new Error(result.error || '가상환경 생성 실패');
