@@ -36,10 +36,19 @@ app.use((req, res, next) => {
 expressWs(app); // app에 WebSocket 기능 추가
 
 // Define the project root directory (for security, restrict to a specific folder)
-const PROJECT_ROOT = path.resolve(__dirname, './'); // 현재 프로젝트 루트를 기준으로 설정
+// Use /tmp for Railway (writable directory)
+const PROJECT_ROOT = process.env.NODE_ENV === 'production' 
+    ? '/tmp/workspace' 
+    : path.resolve(__dirname, './');
+
+// Ensure workspace directory exists
+const fsSync = require('fs');
+if (process.env.NODE_ENV === 'production' && !fsSync.existsSync(PROJECT_ROOT)) {
+    fsSync.mkdirSync(PROJECT_ROOT, { recursive: true });
+}
 
 // Multer setup for file uploads
-const upload = multer({ dest: path.join(PROJECT_ROOT, 'uploads/') }); // 임시 업로드 디렉토리
+const upload = multer({ dest: path.join(PROJECT_ROOT, 'uploads/') });
 
 // Serve static files from the 'public' directory
 app.use(express.static('public'));
