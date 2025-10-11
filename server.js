@@ -35,15 +35,16 @@ app.use((req, res, next) => {
 expressWs(app); // app에 WebSocket 기능 추가
 
 // Define the project root directory (for security, restrict to a specific folder)
-// Use /tmp for Railway (writable directory)
-const PROJECT_ROOT = process.env.NODE_ENV === 'production' 
-    ? '/tmp/workspace' 
-    : path.resolve(__dirname, './');
+// Use Railway Volume if available, otherwise /tmp
+const PROJECT_ROOT = process.env.RAILWAY_VOLUME_MOUNT_PATH 
+    ? path.join(process.env.RAILWAY_VOLUME_MOUNT_PATH, 'workspace')
+    : (process.env.NODE_ENV === 'production' ? '/tmp/workspace' : path.resolve(__dirname, './'));
 
 // Ensure workspace directory exists
 const fsSync = require('fs');
-if (process.env.NODE_ENV === 'production' && !fsSync.existsSync(PROJECT_ROOT)) {
+if (!fsSync.existsSync(PROJECT_ROOT)) {
     fsSync.mkdirSync(PROJECT_ROOT, { recursive: true });
+    console.log(`✅ Workspace directory created: ${PROJECT_ROOT}`);
 }
 
 // Multer setup for file uploads
@@ -298,34 +299,66 @@ app.post('/api/upload-file', upload.single('file'), async (req, res) => {
     }
 });
 
+// Session-based terminal management
+const terminalSessions = new Map();
+
+// Generate unique session ID
+function generateSessionId() {
+    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+}
+
 // WebSocket endpoint for terminal
 app.ws('/terminal', (ws, req) => {
+    const sessionId = req.query.sessionId || generateSessionId();
     const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
+    
+    // Create user-specific workspace directory
+    const userWorkspace = path.join(PROJECT_ROOT, sessionId);
+    const fsSync = require('fs');
+    if (!fsSync.existsSync(userWorkspace)) {
+        fsSync.mkdirSync(userWorkspace, { recursive: true });
+    }
+    
     const ptyProcess = pty.spawn(shell, [], {
         name: 'xterm-color',
         cols: 80,
         rows: 30,
-        cwd: PROJECT_ROOT, // 터미널 시작 디렉토리
+        cwd: userWorkspace, // 세션별 작업 디렉토리
         env: process.env
     });
 
-    console.log('Terminal WebSocket connected.');
+    terminalSessions.set(sessionId, ptyProcess);
+    console.log(`Terminal WebSocket connected. Session: ${sessionId}`);
+    
+    // Send session ID to client
+    ws.send(JSON.stringify({ type: 'session', sessionId }));
 
     ptyProcess.onData(data => {
         ws.send(data); // Send data from pty to websocket
     });
 
     ws.onmessage = msg => {
-        ptyProcess.write(msg.data);
+        try {
+            const data = JSON.parse(msg.data);
+            if (data.type === 'resize') {
+                ptyProcess.resize(data.cols, data.rows);
+            } else {
+                ptyProcess.write(msg.data);
+            }
+        } catch (e) {
+            ptyProcess.write(msg.data);
+        }
     };
 
     ws.onclose = () => {
-        ptyProcess.kill(); // Kill pty process on websocket close
-        console.log('Terminal WebSocket disconnected.');
+        ptyProcess.kill();
+        terminalSessions.delete(sessionId);
+        console.log(`Terminal WebSocket disconnected. Session: ${sessionId}`);
     };
 
     ptyProcess.onExit(({ exitCode, signal }) => {
-        console.log(`Terminal process exited with code ${exitCode}, signal ${signal}`);
+        console.log(`Terminal process exited with code ${exitCode}, signal ${signal}. Session: ${sessionId}`);
+        terminalSessions.delete(sessionId);
         ws.close();
     });
 });
@@ -757,5 +790,24 @@ app.ws('/debug', (ws, req) => {
 });
 
 app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
+    console.log(`
+╔════════════════════════════════════════════════════════════╗
+║  🚀 덕영고등학교 VS Code 서버 시작됨                        ║
+╠════════════════════════════════════════════════════════════╣
+║  포트: ${port}                                              ║
+║  작업 디렉토리: ${PROJECT_ROOT}                            ║
+║  저장소 타입: ${process.env.RAILWAY_VOLUME_MOUNT_PATH ? '영구 (Volume)' : '임시 (메모리)'}  ║
+╚════════════════════════════════════════════════════════════╝
+    `);
+    
+    if (!process.env.RAILWAY_VOLUME_MOUNT_PATH && process.env.NODE_ENV === 'production') {
+        console.warn(`
+⚠️  경고: Railway Volume이 설정되지 않았습니다!
+   - 현재 /tmp 디렉토리 사용 중 (서버 재시작 시 모든 파일 삭제됨)
+   - 영구 저장을 위해 Railway Volume을 추가하세요:
+     1. Railway 대시보드 → Settings → Volumes
+     2. Mount Path: /data
+     3. Size: 1GB 이상
+        `);
+    }
 });

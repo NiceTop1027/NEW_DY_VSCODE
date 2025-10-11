@@ -523,7 +523,13 @@ export function initUI() {
                     xterm.open(terminalEl);
 
                     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-                    const socket = new WebSocket(`${wsProtocol}//${window.location.host}/terminal`);
+                    // Get or create session ID
+                    let sessionId = localStorage.getItem('terminalSessionId');
+                    if (!sessionId) {
+                        sessionId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                        localStorage.setItem('terminalSessionId', sessionId);
+                    }
+                    const socket = new WebSocket(`${wsProtocol}//${window.location.host}/terminal?sessionId=${sessionId}`);
                     socket.onopen = () => xterm.onData(data => socket.send(data));
                     socket.onmessage = event => xterm.write(event.data);
                 }
