@@ -2054,29 +2054,33 @@ async function loadGitHubRepositories() {
 
     githubView.innerHTML = `
         <div class="github-header">
-            <h3>GitHub 레포지토리</h3>
+            <h3>GitHub</h3>
             <div class="github-user">
                 <img src="${githubUser?.avatar_url || ''}" alt="avatar" class="github-avatar">
-                <span>${githubUser?.login || 'User'}</span>
+                <span>${githubUser?.login || ''}</span>
                 <button class="github-logout-btn" id="github-logout-btn" title="로그아웃">
                     <i class="codicon codicon-sign-out"></i>
                 </button>
             </div>
         </div>
         <div class="github-actions">
-            <button class="github-action-btn" id="create-repo-btn">
-                <i class="codicon codicon-add"></i> 새 레포지토리
+            <button class="github-action-btn" id="push-all-btn" title="현재 파일 전체 푸시">
+                <i class="codicon codicon-cloud-upload"></i> 푸시
             </button>
-            <button class="github-action-btn" id="refresh-repos-btn">
-                <i class="codicon codicon-refresh"></i> 새로고침
+            <button class="github-action-btn" id="create-repo-btn" title="새 레포지토리 생성">
+                <i class="codicon codicon-add"></i> 새 레포
+            </button>
+            <button class="github-action-btn" id="refresh-repos-btn" title="새로고침">
+                <i class="codicon codicon-refresh"></i>
             </button>
         </div>
         <div class="github-repos-list" id="github-repos-list">
-            <div class="loading">레포지토리 로딩 중...</div>
+            <div class="loading">로딩 중...</div>
         </div>
     `;
 
     document.getElementById('github-logout-btn')?.addEventListener('click', logoutFromGitHub);
+    document.getElementById('push-all-btn')?.addEventListener('click', pushAllFiles);
     document.getElementById('create-repo-btn')?.addEventListener('click', showCreateRepoDialog);
     document.getElementById('refresh-repos-btn')?.addEventListener('click', loadGitHubRepositories);
 
@@ -2115,14 +2119,14 @@ function renderRepositories(repos) {
                 <i class="codicon codicon-repo"></i>
                 <div class="repo-details">
                     <div class="repo-name">${repo.name}</div>
-                    <div class="repo-description">${repo.description || '설명 없음'}</div>
+                    ${repo.description ? `<div class="repo-description">${repo.description}</div>` : ''}
                 </div>
             </div>
             <div class="repo-actions">
                 <button class="repo-action-btn" title="열기" data-action="open" data-repo="${repo.full_name}">
                     <i class="codicon codicon-folder-opened"></i>
                 </button>
-                <button class="repo-action-btn" title="커밋 보기" data-action="commits" data-repo="${repo.full_name}">
+                <button class="repo-action-btn" title="커밋" data-action="commits" data-repo="${repo.full_name}">
                     <i class="codicon codicon-git-commit"></i>
                 </button>
                 <button class="repo-action-btn" title="삭제" data-action="delete" data-repo="${repo.full_name}">
@@ -2304,6 +2308,76 @@ function logoutFromGitHub() {
     localStorage.removeItem('github_user');
     showNotification('로그아웃되었습니다', 'info');
     renderGitHubView();
+}
+
+// 전체 파일 푸시
+async function pushAllFiles() {
+    // 레포지토리 선택 다이얼로그 표시
+    const repoName = prompt('푸시할 레포지토리 이름을 입력하세요:');
+    if (!repoName) return;
+    
+    const commitMessage = prompt('커밋 메시지를 입력하세요:', 'Update files');
+    if (!commitMessage) return;
+    
+    showNotification('파일 푸시 중...', 'info');
+    
+    try {
+        // clientFS에서 모든 파일 가져오기
+        const files = [];
+        clientFS.files.forEach((file, path) => {
+            if (file.type === 'file' && file.content) {
+                files.push({
+                    path: path,
+                    content: file.content
+                });
+            }
+        });
+        
+        if (files.length === 0) {
+            showNotification('푸시할 파일이 없습니다', 'error');
+            return;
+        }
+        
+        // 각 파일을 GitHub에 푸시
+        let successCount = 0;
+        let errorCount = 0;
+        
+        for (const file of files) {
+            try {
+                const response = await fetch(`/api/github/repos/${githubUser.login}/${repoName}/contents/${file.path}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${githubToken}`
+                    },
+                    body: JSON.stringify({
+                        message: commitMessage,
+                        content: btoa(unescape(encodeURIComponent(file.content))), // Base64 encode
+                        branch: 'main'
+                    })
+                });
+                
+                if (response.ok) {
+                    successCount++;
+                } else {
+                    errorCount++;
+                    console.error(`Failed to push ${file.path}`);
+                }
+            } catch (err) {
+                errorCount++;
+                console.error(`Error pushing ${file.path}:`, err);
+            }
+        }
+        
+        if (errorCount === 0) {
+            showNotification(`✅ ${successCount}개 파일 푸시 완료!`, 'success');
+        } else {
+            showNotification(`${successCount}개 성공, ${errorCount}개 실패`, 'warning');
+        }
+    } catch (error) {
+        console.error('Push error:', error);
+        showNotification('푸시 실패: ' + error.message, 'error');
+    }
 }
 
 // Load user info on startup if token exists
