@@ -126,6 +126,30 @@
             </div>
         </div>
         <div id="notification-area"></div>
+        
+        <!-- GitHub Modal -->
+        <div id="github-modal" class="modal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>🐙 GitHub 연동</h2>
+                    <button class="modal-close" onclick="document.getElementById('github-modal').style.display='none'">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="github-auth-section">
+                        <p>GitHub 계정으로 로그인하세요</p>
+                        <button id="github-login-btn" class="btn-primary">GitHub 로그인</button>
+                    </div>
+                    <div id="github-repos-section" style="display: none;">
+                        <h3>내 레포지토리</h3>
+                        <div id="github-repos-list"></div>
+                        <div class="github-actions">
+                            <button id="github-clone-btn" class="btn-primary">선택한 레포 클론</button>
+                            <button id="github-push-btn" class="btn-success">변경사항 푸시</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <script src="dist/bundle.js"></script>
 </body>

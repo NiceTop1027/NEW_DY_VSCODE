@@ -27,9 +27,48 @@ export async function uploadFile(file) {
     const formData = new FormData();
     formData.append('file', file);
 
-    const res = await fetch(`${API_BASE_URL}/api/upload-file`, {
+    const res = await fetch(`${API_BASE}/api/upload-file`, {
         method: 'POST',
         body: formData,
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+// GitHub API functions
+export async function githubCloneRepo(owner, repo, token) {
+    const sessionId = localStorage.getItem('terminalSessionId');
+    
+    const res = await fetch(`${API_BASE}/api/github/clone`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ owner, repo, sessionId })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export async function githubPush(repoPath, message, token) {
+    const sessionId = localStorage.getItem('terminalSessionId');
+    
+    const res = await fetch(`${API_BASE}/api/github/push`, {
+        method: 'POST',
+        headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ repoPath, message, sessionId })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    return res.json();
+}
+
+export async function githubGetRepos(token) {
+    const res = await fetch(`${API_BASE}/api/github/repos`, {
+        headers: { 'Authorization': `Bearer ${token}` }
     });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     return res.json();

@@ -1046,8 +1046,16 @@ console.error = (...args) => {
 };
 
 // Initialize UI when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     initUI();
+    
+    // Initialize GitHub
+    try {
+        const { initGitHub } = await import('./github.js');
+        initGitHub();
+    } catch (err) {
+        console.warn('GitHub 초기화 실패:', err);
+    }
     
     // Hide splash screen after animation
     setTimeout(() => {
@@ -1077,12 +1085,15 @@ async function runCode() {
     }
 
     try {
+        // 세션 ID 가져오기
+        const sessionId = localStorage.getItem('terminalSessionId');
+        
         const response = await fetch('/api/run', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ filePath }),
+            body: JSON.stringify({ filePath, sessionId }),
         });
 
         const result = await response.json();

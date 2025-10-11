@@ -301,16 +301,43 @@ app.post('/api/upload-file', upload.single('file'), async (req, res) => {
 
 // Session-based terminal management
 const terminalSessions = new Map();
+const dockerContainers = new Map(); // 세션별 Docker 컨테이너 관리
 
 // Generate unique session ID
 function generateSessionId() {
     return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
+// Docker 컨테이너 생성 함수
+async function createUserContainer(sessionId) {
+    return new Promise((resolve, reject) => {
+        const containerName = `vscode-${sessionId}`;
+        
+        // Docker 컨테이너 생성 및 시작
+        exec(`docker run -d --name ${containerName} --rm -w /workspace -v ${PROJECT_ROOT}/${sessionId}:/workspace ubuntu:22.04 tail -f /dev/null`, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Docker 컨테이너 생성 실패: ${error}`);
+                reject(error);
+                return;
+            }
+            
+            const containerId = stdout.trim();
+            console.log(`✅ Docker 컨테이너 생성됨: ${containerName} (${containerId})`);
+            
+            // 기본 패키지 설치
+            exec(`docker exec ${containerName} apt-get update && docker exec ${containerName} apt-get install -y python3 nodejs npm`, (err) => {
+                if (err) console.warn('패키지 설치 경고:', err);
+            });
+            
+            resolve({ containerName, containerId });
+        });
+    });
+}
+
 // WebSocket endpoint for terminal
-app.ws('/terminal', (ws, req) => {
+app.ws('/terminal', async (ws, req) => {
     const sessionId = req.query.sessionId || generateSessionId();
-    const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
+    const useDocker = process.env.USE_DOCKER === 'true'; // 환경 변수로 Docker 사용 여부 결정
     
     // Create user-specific workspace directory
     const userWorkspace = path.join(PROJECT_ROOT, sessionId);
@@ -319,23 +346,55 @@ app.ws('/terminal', (ws, req) => {
         fsSync.mkdirSync(userWorkspace, { recursive: true });
     }
     
-    // 보안: 제한된 환경 변수 설정
-    const restrictedEnv = {
-        ...process.env,
-        HOME: userWorkspace,
-        PWD: userWorkspace,
-        OLDPWD: userWorkspace,
-        // 경고 메시지 표시
-        PS1: `\\[\\033[1;33m\\][ISOLATED]\\[\\033[0m\\] \\w $ `
-    };
+    let ptyProcess;
+    let containerName;
     
-    const ptyProcess = pty.spawn(shell, [], {
-        name: 'xterm-color',
-        cols: 80,
-        rows: 30,
-        cwd: userWorkspace, // 세션별 작업 디렉토리
-        env: restrictedEnv
-    });
+    if (useDocker) {
+        // 🐳 Docker 모드: 컨테이너 내부에서 터미널 실행
+        try {
+            const container = await createUserContainer(sessionId);
+            containerName = container.containerName;
+            dockerContainers.set(sessionId, container);
+            
+            // Docker 컨테이너 내부에서 bash 실행
+            ptyProcess = pty.spawn('docker', ['exec', '-it', containerName, 'bash'], {
+                name: 'xterm-color',
+                cols: 80,
+                rows: 30,
+                env: process.env
+            });
+            
+            ws.send(`\r\n\x1b[1;32m🐳 Docker 컨테이너 환경\x1b[0m\r\n`);
+            ws.send(`컨테이너: ${containerName}\r\n`);
+            ws.send(`완전히 격리된 우분투 환경입니다.\r\n\r\n`);
+            
+        } catch (error) {
+            ws.send(`\r\n\x1b[1;31m❌ Docker 컨테이너 생성 실패\x1b[0m\r\n`);
+            ws.send(`일반 모드로 전환합니다...\r\n\r\n`);
+            useDocker = false;
+        }
+    }
+    
+    if (!useDocker) {
+        // 일반 모드: 호스트에서 직접 실행
+        const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
+        
+        const restrictedEnv = {
+            ...process.env,
+            HOME: userWorkspace,
+            PWD: userWorkspace,
+            OLDPWD: userWorkspace,
+            PS1: `\\[\\033[1;33m\\][ISOLATED]\\[\\033[0m\\] \\w $ `
+        };
+        
+        ptyProcess = pty.spawn(shell, [], {
+            name: 'xterm-color',
+            cols: 80,
+            rows: 30,
+            cwd: userWorkspace,
+            env: restrictedEnv
+        });
+    }
 
     // 세션 타임아웃 설정 (30분)
     const sessionTimeout = setTimeout(() => {
@@ -439,6 +498,20 @@ app.ws('/terminal', (ws, req) => {
             session.ptyProcess.kill();
             terminalSessions.delete(sessionId);
         }
+        
+        // Docker 컨테이너 정리
+        const container = dockerContainers.get(sessionId);
+        if (container) {
+            exec(`docker stop ${container.containerName}`, (error) => {
+                if (error) {
+                    console.error(`Docker 컨테이너 정리 실패: ${error}`);
+                } else {
+                    console.log(`✅ Docker 컨테이너 정리됨: ${container.containerName}`);
+                }
+            });
+            dockerContainers.delete(sessionId);
+        }
+        
         console.log(`Terminal WebSocket disconnected. Session: ${sessionId}`);
     };
 
@@ -716,7 +789,7 @@ app.get('/api/github/repos/:owner/:repo/commits', async (req, res) => {
     const { owner, repo } = req.params;
     
     if (!token) {
-        return res.status(401).json({ error: 'No token provided' });
+        return res.status(401).json({ error: 'Unauthorized' });
     }
     
     try {
@@ -735,13 +808,134 @@ app.get('/api/github/repos/:owner/:repo/commits', async (req, res) => {
     }
 });
 
+// Clone repository to workspace
+app.post('/api/github/clone', async (req, res) => {
+    const { owner, repo, sessionId } = req.body;
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    
+    if (!token) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    if (!owner || !repo) {
+        return res.status(400).json({ error: 'Owner and repo are required' });
+    }
+    
+    // 세션 작업 디렉토리
+    let workingDir = PROJECT_ROOT;
+    if (sessionId) {
+        workingDir = path.join(PROJECT_ROOT, sessionId);
+    }
+    
+    const repoPath = path.join(workingDir, repo);
+    const cloneUrl = `https://${token}@github.com/${owner}/${repo}.git`;
+    
+    try {
+        // 이미 존재하면 삭제
+        if (fs.existsSync(repoPath)) {
+            fs.rmSync(repoPath, { recursive: true, force: true });
+        }
+        
+        // Git clone 실행
+        exec(`git clone ${cloneUrl} ${repoPath}`, { cwd: workingDir }, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`Clone error: ${error}`);
+                return res.status(500).json({ 
+                    error: 'Failed to clone repository',
+                    details: stderr || error.message 
+                });
+            }
+            
+            console.log(`✅ Repository cloned: ${owner}/${repo} -> ${repoPath}`);
+            res.json({ 
+                success: true, 
+                path: repo,
+                message: `Successfully cloned ${owner}/${repo}`
+            });
+        });
+    } catch (error) {
+        console.error('Clone error:', error);
+        res.status(500).json({ error: 'Failed to clone repository' });
+    }
+});
+
+// Git commit and push
+app.post('/api/github/push', async (req, res) => {
+    const { repoPath, message, sessionId } = req.body;
+    const token = req.headers.authorization?.replace('Bearer ', '');
+    
+    if (!token) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+    
+    if (!repoPath || !message) {
+        return res.status(400).json({ error: 'Repository path and commit message are required' });
+    }
+    
+    // 세션 작업 디렉토리
+    let workingDir = PROJECT_ROOT;
+    if (sessionId) {
+        workingDir = path.join(PROJECT_ROOT, sessionId);
+    }
+    
+    const absoluteRepoPath = path.join(workingDir, repoPath);
+    
+    if (!fs.existsSync(absoluteRepoPath)) {
+        return res.status(404).json({ error: 'Repository not found' });
+    }
+    
+    try {
+        // Git add, commit, push
+        const commands = [
+            'git add .',
+            `git commit -m "${message}"`,
+            'git push'
+        ];
+        
+        const executeCommands = (index) => {
+            if (index >= commands.length) {
+                return res.json({ 
+                    success: true, 
+                    message: 'Successfully pushed to GitHub' 
+                });
+            }
+            
+            exec(commands[index], { cwd: absoluteRepoPath }, (error, stdout, stderr) => {
+                if (error) {
+                    // commit 시 변경사항 없으면 에러지만 계속 진행
+                    if (error.message.includes('nothing to commit')) {
+                        return res.json({ 
+                            success: true, 
+                            message: 'No changes to commit' 
+                        });
+                    }
+                    
+                    console.error(`Git error: ${error}`);
+                    return res.status(500).json({ 
+                        error: 'Git command failed',
+                        details: stderr || error.message 
+                    });
+                }
+                
+                console.log(`✅ Git command executed: ${commands[index]}`);
+                executeCommands(index + 1);
+            });
+        };
+        
+        executeCommands(0);
+    } catch (error) {
+        console.error('Push error:', error);
+        res.status(500).json({ error: 'Failed to push to GitHub' });
+    }
+});
+
 // API endpoint to run a code file
 app.get('/api/run', (req, res) => {
     res.status(405).json({ error: 'Method Not Allowed. Use POST to run code.' });
 });
 
 app.post('/api/run', (req, res) => {
-    const { filePath } = req.body;
+    const { filePath, sessionId } = req.body;
 
     if (!filePath) {
         return res.status(400).json({ error: 'File path is required' });
@@ -751,25 +945,63 @@ app.post('/api/run', (req, res) => {
         return res.status(403).json({ error: 'Access denied: Invalid file path' });
     }
 
-    const absoluteFilePath = path.join(PROJECT_ROOT, filePath);
-    const fileExtension = path.extname(absoluteFilePath);
-
-    let command;
-    switch (fileExtension) {
-        case '.js':
-            command = `node "${absoluteFilePath}"`;
-            break;
-        case '.py':
-            command = `python3 "${absoluteFilePath}"`; // Use python3
-            break;
-        case '.sh':
-            command = `bash "${absoluteFilePath}"`;
-            break;
-        default:
-            return res.status(400).json({ error: `Unsupported file type: ${fileExtension}` });
+    // 세션 ID가 있으면 해당 세션의 작업 디렉토리 사용
+    let workingDir = PROJECT_ROOT;
+    if (sessionId) {
+        workingDir = path.join(PROJECT_ROOT, sessionId);
     }
 
-    exec(command, (error, stdout, stderr) => {
+    const absoluteFilePath = path.join(workingDir, filePath);
+    const fileExtension = path.extname(absoluteFilePath);
+
+    // 파일 존재 확인
+    if (!fs.existsSync(absoluteFilePath)) {
+        return res.status(404).json({ 
+            error: `File not found: ${filePath}`,
+            execError: `파일을 찾을 수 없습니다: ${filePath}\n작업 디렉토리: ${workingDir}`
+        });
+    }
+
+    const useDocker = process.env.USE_DOCKER === 'true';
+    const container = dockerContainers.get(sessionId);
+    
+    let command;
+    
+    if (useDocker && container) {
+        // 🐳 Docker 컨테이너 내부에서 실행
+        const containerFilePath = `/workspace/${filePath}`;
+        
+        switch (fileExtension) {
+            case '.js':
+                command = `docker exec ${container.containerName} node ${containerFilePath}`;
+                break;
+            case '.py':
+                command = `docker exec ${container.containerName} python3 ${containerFilePath}`;
+                break;
+            case '.sh':
+                command = `docker exec ${container.containerName} bash ${containerFilePath}`;
+                break;
+            default:
+                return res.status(400).json({ error: `Unsupported file type: ${fileExtension}` });
+        }
+    } else {
+        // 일반 모드: 호스트에서 직접 실행
+        switch (fileExtension) {
+            case '.js':
+                command = `node "${absoluteFilePath}"`;
+                break;
+            case '.py':
+                command = `python3 "${absoluteFilePath}"`;
+                break;
+            case '.sh':
+                command = `bash "${absoluteFilePath}"`;
+                break;
+            default:
+                return res.status(400).json({ error: `Unsupported file type: ${fileExtension}` });
+        }
+    }
+
+    exec(command, { cwd: workingDir }, (error, stdout, stderr) => {
         if (error) {
             console.error(`Execution error: ${error}`);
             return res.status(500).json({ output: stdout, error: stderr, execError: error.message });
