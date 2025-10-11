@@ -343,6 +343,17 @@ export function initUI() {
         previewRefresh.addEventListener('click', refreshPreview);
     }
     
+    // File Upload Button (for single/multiple files)
+    const uploadFileBtn = document.getElementById('upload-file-btn');
+    const singleFileUploadInput = document.getElementById('single-file-upload-input');
+    if (uploadFileBtn && singleFileUploadInput) {
+        uploadFileBtn.addEventListener('click', () => {
+            singleFileUploadInput.click();
+        });
+        
+        singleFileUploadInput.addEventListener('change', handleSingleFileUpload);
+    }
+    
     // Create Sandbox Button
     const createSandboxBtn = document.getElementById('create-sandbox-btn');
     if (createSandboxBtn) {
@@ -2358,5 +2369,39 @@ function togglePanel() {
             }
         }, 160); // Wait for animation to complete (150ms + 10ms buffer)
     }
+}
+
+// 단일/다중 파일 업로드 핸들러
+async function handleSingleFileUpload(event) {
+    const files = event.target.files;
+    if (!files || files.length === 0) return;
+    
+    showNotification(`${files.length}개 파일을 클라이언트 파일 시스템에 추가 중...`, 'info');
+    
+    let successCount = 0;
+    let errorCount = 0;
+    
+    for (const file of files) {
+        try {
+            const content = await readFileAsText(file);
+            clientFS.addFile(file.name, content);
+            successCount++;
+        } catch (err) {
+            console.error(`Error reading file ${file.name}:`, err);
+            errorCount++;
+        }
+    }
+    
+    clientFS.sortChildren(clientFS.root);
+    renderClientFileTree();
+    
+    if (errorCount === 0) {
+        showNotification(`✅ ${successCount}개 파일 추가 완료`, 'success');
+    } else {
+        showNotification(`${successCount}개 성공, ${errorCount}개 실패`, 'error');
+    }
+    
+    // input 초기화
+    event.target.value = '';
 }
 
