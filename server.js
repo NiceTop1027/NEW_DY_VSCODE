@@ -859,6 +859,35 @@ app.post('/api/github/clone', async (req, res) => {
     }
 });
 
+// Create sandbox environment
+app.post('/api/sandbox/create', async (req, res) => {
+    const { sessionId } = req.body;
+    
+    if (!sessionId) {
+        return res.status(400).json({ error: 'Session ID is required' });
+    }
+    
+    try {
+        // Docker 컨테이너 생성
+        const container = await createUserContainer(sessionId);
+        dockerContainers.set(sessionId, container);
+        
+        console.log(`✅ Sandbox created for session: ${sessionId}`);
+        
+        res.json({ 
+            success: true, 
+            containerName: container.containerName,
+            message: 'Sandbox environment created successfully'
+        });
+    } catch (error) {
+        console.error('Sandbox creation error:', error);
+        res.status(500).json({ 
+            error: 'Failed to create sandbox environment',
+            details: error.message 
+        });
+    }
+});
+
 // Git commit and push
 app.post('/api/github/push', async (req, res) => {
     const { repoPath, message, sessionId } = req.body;

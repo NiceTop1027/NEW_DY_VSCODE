@@ -305,6 +305,12 @@ export function initUI() {
     if (runCodeBtn) {
         runCodeBtn.addEventListener('click', runCode);
     }
+    
+    // Create Sandbox Button
+    const createSandboxBtn = document.getElementById('create-sandbox-btn');
+    if (createSandboxBtn) {
+        createSandboxBtn.addEventListener('click', createSandboxEnvironment);
+    }
 
     // Panel toggle buttons
     const togglePanelBtn = document.getElementById('toggle-panel-btn');
@@ -534,6 +540,7 @@ export function initUI() {
             if (panelId === 'terminal') {
                 if (!xterm) {
                     // Initialize terminal only once
+                    const terminalContainer = document.getElementById('terminal-container');
                     xterm = new Terminal({
                         convertEol: false, // 개행 문자 자동 변환 비활성화
                         fontFamily: 'Consolas, "Courier New", monospace',
@@ -545,7 +552,7 @@ export function initUI() {
                     });
                     fitAddon = new FitAddon();
                     xterm.loadAddon(fitAddon);
-                    xterm.open(terminalEl);
+                    xterm.open(terminalContainer || terminalEl);
 
                     const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
                     // Get or create session ID
@@ -1065,6 +1072,61 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }, 3300); // 3.3 seconds (animation duration + fade out)
 });
+
+// --- Sandbox Environment ---
+async function createSandboxEnvironment() {
+    const btn = document.getElementById('create-sandbox-btn');
+    const statusText = document.getElementById('terminal-status-text');
+    
+    if (!btn || !statusText) return;
+    
+    // 이미 생성 중이면 무시
+    if (btn.disabled) return;
+    
+    try {
+        btn.disabled = true;
+        btn.textContent = '🔄 생성 중...';
+        statusText.textContent = '가상환경 생성 중...';
+        
+        const sessionId = localStorage.getItem('terminalSessionId');
+        
+        const response = await fetch('/api/sandbox/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            statusText.textContent = '🐳 Docker 가상환경';
+            statusText.style.color = '#4ec9b0';
+            btn.textContent = '✅ 가상환경 활성화됨';
+            btn.style.background = 'linear-gradient(135deg, #16c79a 0%, #19456b 100%)';
+            
+            showNotification('✅ 격리된 가상환경이 생성되었습니다!', 'success');
+            
+            // 터미널에 메시지 출력
+            if (xterm) {
+                xterm.write('\r\n\x1b[1;32m✅ Docker 가상환경이 생성되었습니다!\x1b[0m\r\n');
+                xterm.write('\x1b[1;36m이제 완전히 격리된 우분투 환경에서 작업할 수 있습니다.\x1b[0m\r\n');
+                xterm.write('- Python3, Node.js, npm 사용 가능\r\n');
+                xterm.write('- apt, pip, npm으로 패키지 설치 가능\r\n');
+                xterm.write('- 다른 사용자와 완전히 격리됨\r\n\r\n');
+            }
+        } else {
+            throw new Error(result.error || '가상환경 생성 실패');
+        }
+    } catch (error) {
+        console.error('Sandbox creation error:', error);
+        statusText.textContent = '일반 모드';
+        statusText.style.color = '';
+        btn.textContent = '🐳 가상환경 만들기';
+        btn.disabled = false;
+        
+        showNotification(`❌ 가상환경 생성 실패: ${error.message}`, 'error');
+    }
+}
 
 // --- Code Execution ---
 async function runCode() {
