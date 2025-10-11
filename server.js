@@ -364,8 +364,19 @@ app.ws('/terminal', (ws, req) => {
                           `상위 디렉토리 접근이 제한됩니다.\r\n\r\n`;
     ws.send(warningMessage);
 
+    // 데이터 버퍼링 및 중복 제거
+    let lastData = '';
+    let dataBuffer = '';
+    let bufferTimeout = null;
+    
     ptyProcess.onData(data => {
-        ws.send(data); // Send data from pty to websocket
+        // 중복된 개행 문자 제거
+        if (data === '\r\n' && lastData === '\r\n') {
+            return; // 연속된 개행 무시
+        }
+        
+        lastData = data;
+        ws.send(data);
     });
 
     ws.onmessage = msg => {

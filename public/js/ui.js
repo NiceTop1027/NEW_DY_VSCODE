@@ -535,12 +535,13 @@ export function initUI() {
                 if (!xterm) {
                     // Initialize terminal only once
                     xterm = new Terminal({
-                        convertEol: true,
+                        convertEol: false, // 개행 문자 자동 변환 비활성화
                         fontFamily: 'Consolas, "Courier New", monospace',
                         fontSize: 14,
                         cursorBlink: true,
                         rendererType: 'canvas',
-                        theme: { background: '#1e1e1e', foreground: '#cccccc' }
+                        theme: { background: '#1e1e1e', foreground: '#cccccc' },
+                        scrollback: 1000
                     });
                     fitAddon = new FitAddon();
                     xterm.loadAddon(fitAddon);
@@ -554,8 +555,46 @@ export function initUI() {
                         localStorage.setItem('terminalSessionId', sessionId);
                     }
                     const socket = new WebSocket(`${wsProtocol}//${window.location.host}/terminal?sessionId=${sessionId}`);
-                    socket.onopen = () => xterm.onData(data => socket.send(data));
-                    socket.onmessage = event => xterm.write(event.data);
+                    
+                    socket.onopen = () => {
+                        xterm.onData(data => socket.send(data));
+                    };
+                    
+                    // 중복 데이터 필터링
+                    let lastMessage = '';
+                    let lastMessageTime = 0;
+                    
+                    socket.onmessage = event => {
+                        const now = Date.now();
+                        
+                        // JSON 메시지 처리 (세션 정보 등)
+                        try {
+                            const json = JSON.parse(event.data);
+                            if (json.type === 'session') {
+                                return; // 세션 메시지는 표시 안 함
+                            }
+                        } catch (e) {
+                            // JSON이 아니면 일반 터미널 데이터
+                        }
+                        
+                        // 짧은 시간 내 같은 메시지 중복 방지
+                        if (event.data === lastMessage && now - lastMessageTime < 50) {
+                            return;
+                        }
+                        
+                        lastMessage = event.data;
+                        lastMessageTime = now;
+                        xterm.write(event.data);
+                    };
+                    
+                    socket.onerror = (error) => {
+                        console.error('Terminal WebSocket error:', error);
+                        xterm.write('\r\n\x1b[1;31m터미널 연결 오류\x1b[0m\r\n');
+                    };
+                    
+                    socket.onclose = () => {
+                        xterm.write('\r\n\x1b[1;33m터미널 연결이 종료되었습니다.\x1b[0m\r\n');
+                    };
                 }
                 // Always try to fit the terminal when its tab is shown
                 setTimeout(() => {
