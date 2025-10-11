@@ -527,12 +527,27 @@ export function initUI() {
 
         let successCount = 0;
         let errorCount = 0;
+        
+        const sessionId = localStorage.getItem('terminalSessionId');
 
         for (const file of files) {
             try {
                 const content = await readFileAsText(file);
                 const path = file.webkitRelativePath || file.name;
+                
+                // 클라이언트 파일 시스템에 추가
                 clientFS.addFile(path, content);
+                
+                // 서버에도 저장 (실행 가능하도록)
+                if (sessionId) {
+                    try {
+                        const { saveFile } = await import('./api.js');
+                        await saveFile(path, content);
+                    } catch (err) {
+                        console.warn(`Server save failed for ${path}:`, err);
+                    }
+                }
+                
                 successCount++;
             } catch (err) {
                 console.error(`Error reading file ${file.name}:`, err);
@@ -544,7 +559,7 @@ export function initUI() {
         renderClientFileTree();
 
         if (errorCount === 0) {
-            showNotification(`✓ ${successCount}개 파일 업로드 완료 (메모리만)`, 'success');
+            showNotification(`✓ ${successCount}개 파일 업로드 완료`, 'success');
         } else {
             showNotification(`${successCount}개 성공, ${errorCount}개 실패`, 'error');
         }
