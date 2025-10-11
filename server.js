@@ -375,24 +375,20 @@ app.ws('/terminal', async (ws, req) => {
     }
     
     if (!useDocker) {
-        // 일반 모드: 호스트에서 직접 실행
-        const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
+        // 격리 모드: 제한된 가상 터미널 (실제 셸 접근 차단)
+        ws.send('\r\n\x1b[1;33m⚠️  격리 모드\x1b[0m\r\n');
+        ws.send('Docker가 없어 실제 터미널을 사용할 수 없습니다.\r\n');
+        ws.send('코드 실행은 "실행" 버튼을 사용하세요.\r\n\r\n');
+        ws.send('\x1b[1;31m터미널 접근이 차단되었습니다.\x1b[0m\r\n');
+        ws.send('보안상의 이유로 서버 터미널에 직접 접근할 수 없습니다.\r\n\r\n');
         
-        const restrictedEnv = {
-            ...process.env,
-            HOME: userWorkspace,
-            PWD: userWorkspace,
-            OLDPWD: userWorkspace,
-            PS1: `\\[\\033[1;33m\\][ISOLATED]\\[\\033[0m\\] \\w $ `
+        // 터미널 대신 메시지만 표시
+        ws.onmessage = () => {
+            ws.send('\r\n\x1b[1;31m❌ 터미널 사용 불가\x1b[0m\r\n');
+            ws.send('Docker 환경이 필요합니다.\r\n');
         };
         
-        ptyProcess = pty.spawn(shell, [], {
-            name: 'xterm-color',
-            cols: 80,
-            rows: 30,
-            cwd: userWorkspace,
-            env: restrictedEnv
-        });
+        return; // 실제 pty 생성하지 않음
     }
 
     // 세션 타임아웃 설정 (30분)
