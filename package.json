@@ -2,42 +2,11 @@
   "name": "dy_vscode",
   "version": "1.0.0",
   "description": "덕영고등학교 VS Code - 웹 기반 코드 에디터",
-  "main": "electron-main.js",
+  "main": "server.js",
   "scripts": {
     "test": "jest",
     "start": "node server.js",
-    "build": "webpack --config webpack.config.js",
-    "electron": "electron .",
-    "electron-dev": "npm run build && electron .",
-    "pack": "electron-builder --dir",
-    "dist": "npm run build && electron-builder"
-  },
-  "build": {
-    "appId": "kr.dyhs.vscode",
-    "productName": "덕영고등학교 VS Code",
-    "directories": {
-      "output": "dist"
-    },
-    "files": [
-      "electron-main.js",
-      "electron-preload.js",
-      "server.js",
-      "public/**/*",
-      "node_modules/**/*",
-      "package.json"
-    ],
-    "mac": {
-      "category": "public.app-category.developer-tools",
-      "icon": "public/favicon.png"
-    },
-    "win": {
-      "target": "nsis",
-      "icon": "public/favicon.png"
-    },
-    "linux": {
-      "target": "AppImage",
-      "category": "Development"
-    }
+    "build": "webpack --config webpack.config.js"
   },
   "jest": {
     "testEnvironment": "jsdom",
@@ -78,8 +47,6 @@
     "babel-jest": "^30.2.0",
     "babel-loader": "^10.0.0",
     "css-loader": "^7.1.2",
-    "electron": "^38.2.2",
-    "electron-builder": "^26.0.12",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
     "jsdom": "^27.0.0",

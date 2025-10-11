@@ -5,3 +5,12 @@ node_modules
 *.log
 uploads/
 .DS_Store
+
+# Electron build files
+dist/
+*.dmg
+*.zip
+*.exe
+*.AppImage
+*.deb
+*.rpm
