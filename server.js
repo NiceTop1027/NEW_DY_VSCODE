@@ -323,8 +323,12 @@ app.ws('/terminal', (ws, req) => {
 });
 
 // ===== GitHub OAuth & API =====
-const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID || 'Ov23li22YDn5ymGp9viB';
-const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET || '15bdfaf3122ea963c11660dd6555f7ca2161d79e';
+const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
+const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
+
+if (!GITHUB_CLIENT_ID || !GITHUB_CLIENT_SECRET) {
+    console.warn('⚠️  GitHub OAuth credentials not configured. Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET environment variables.');
+}
 
 // GitHub OAuth callback - serve HTML page
 app.get('/api/github/callback', async (req, res) => {
