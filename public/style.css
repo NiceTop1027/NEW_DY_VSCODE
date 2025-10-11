@@ -2007,6 +2007,63 @@ body {
     height: calc(100% - 40px);
 }
 
+/* Live Preview Modal */
+.preview-modal {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100%;
+    background: var(--bg-color);
+    border-left: 1px solid var(--border-color);
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+}
+
+.preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: var(--sidebar-bg);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.preview-title {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--text-color);
+}
+
+.preview-actions {
+    display: flex;
+    gap: 5px;
+}
+
+.preview-action-btn {
+    background: none;
+    border: none;
+    color: var(--text-color-light);
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.preview-action-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-color);
+}
+
+#preview-frame {
+    flex: 1;
+    border: none;
+    background: white;
+}
+
 /* GitHub Sections */
 .github-section {
     border: 1px solid var(--border-color);

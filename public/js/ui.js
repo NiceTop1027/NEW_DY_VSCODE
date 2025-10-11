@@ -323,6 +323,26 @@ export function initUI() {
         gitPushBtn.addEventListener('click', quickGitPush);
     }
     
+    // Preview Button
+    const previewBtn = document.getElementById('preview-btn');
+    if (previewBtn) {
+        previewBtn.addEventListener('click', togglePreview);
+    }
+    
+    // Preview Close Button
+    const previewClose = document.getElementById('preview-close');
+    if (previewClose) {
+        previewClose.addEventListener('click', () => {
+            document.getElementById('preview-modal').style.display = 'none';
+        });
+    }
+    
+    // Preview Refresh Button
+    const previewRefresh = document.getElementById('preview-refresh');
+    if (previewRefresh) {
+        previewRefresh.addEventListener('click', refreshPreview);
+    }
+    
     // Create Sandbox Button
     const createSandboxBtn = document.getElementById('create-sandbox-btn');
     if (createSandboxBtn) {
@@ -1205,6 +1225,56 @@ export function checkAndShowGitPushButton(filePath) {
     );
     
     gitPushBtn.style.display = isInRepo ? 'flex' : 'none';
+    
+    // HTML 파일이면 프리뷰 버튼 표시
+    checkAndShowPreviewButton(filePath);
+}
+
+// HTML 파일이면 프리뷰 버튼 표시
+function checkAndShowPreviewButton(filePath) {
+    const previewBtn = document.getElementById('preview-btn');
+    if (!previewBtn) return;
+    
+    const isHtml = filePath.endsWith('.html') || filePath.endsWith('.htm');
+    previewBtn.style.display = isHtml ? 'flex' : 'none';
+}
+
+// 프리뷰 토글
+function togglePreview() {
+    const previewModal = document.getElementById('preview-modal');
+    const isVisible = previewModal.style.display === 'flex';
+    
+    if (isVisible) {
+        previewModal.style.display = 'none';
+    } else {
+        previewModal.style.display = 'flex';
+        refreshPreview();
+    }
+}
+
+// 프리뷰 새로고침
+function refreshPreview() {
+    const activeTab = document.querySelector('.tab.active');
+    if (!activeTab) return;
+    
+    const filePath = activeTab.dataset.filePath;
+    const editor = window.monaco?.editor?.getModels()[0];
+    
+    if (!editor) return;
+    
+    const content = editor.getValue();
+    const previewFrame = document.getElementById('preview-frame');
+    
+    // iframe에 HTML 내용 로드
+    const blob = new Blob([content], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    
+    previewFrame.src = url;
+    
+    // 이전 URL 정리
+    previewFrame.onload = () => {
+        URL.revokeObjectURL(url);
+    };
 }
 
 // --- Sandbox Environment ---

@@ -35,4 +35,12 @@ RUN npm prune --production
 EXPOSE 3000
 
 # Docker 데몬 시작 및 애플리케이션 실행
-CMD dockerd & sleep 5 && USE_DOCKER=true node server.js
+CMD dockerd > /var/log/dockerd.log 2>&1 & \
+    echo "Waiting for Docker daemon to start..." && \
+    for i in {1..30}; do \
+        docker info > /dev/null 2>&1 && break || sleep 1; \
+    done && \
+    echo "Docker daemon started!" && \
+    docker pull ubuntu:22.04 && \
+    echo "Ubuntu image pulled!" && \
+    USE_DOCKER=true node server.js

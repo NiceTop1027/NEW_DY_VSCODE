@@ -70,6 +70,9 @@
                                 <div class="action-item" id="git-push-btn" title="Push to GitHub" style="display: none;">
                                     <i class="codicon codicon-cloud-upload"></i>
                                 </div>
+                                <div class="action-item" id="preview-btn" title="Live Preview" style="display: none;">
+                                    <i class="codicon codicon-open-preview"></i>
+                                </div>
                             </div>
                         </div>
                         <div class="breadcrumb" id="breadcrumb">
@@ -128,10 +131,7 @@
                             <div id="debug-console" class="panel-view">
                                 <div class="panel-empty-state">
                                     <i class="codicon codicon-debug-console"></i>
-                                    <p>디버그 콘솔이 준비되었습니다</p>
-                                    <p style="font-size: 12px; margin-top: 10px; color: var(--text-color-light);">
-                                        디버깅을 시작하면 여기에 출력이 표시됩니다
-                                    </p>
+                                    <p>디버깅을 시작하면 여기에 출력이 표시됩니다</p>
                                 </div>
                             </div>
                         </div>
@@ -141,6 +141,21 @@
         </div>
         <div id="notification-area"></div>
         
+        <!-- Live Preview Modal -->
+        <div id="preview-modal" class="preview-modal" style="display: none;">
+            <div class="preview-header">
+                <span class="preview-title">🌐 Live Preview</span>
+                <div class="preview-actions">
+                    <button id="preview-refresh" class="preview-action-btn" title="새로고침">
+                        <i class="codicon codicon-refresh"></i>
+                    </button>
+                    <button id="preview-close" class="preview-action-btn" title="닫기">
+                        <i class="codicon codicon-close"></i>
+                    </button>
+                </div>
+            </div>
+            <iframe id="preview-frame" sandbox="allow-scripts allow-same-origin"></iframe>
+        </div>
         <!-- GitHub Modal -->
         <div id="github-modal" class="modal" style="display: none;">
             <div class="modal-content">
