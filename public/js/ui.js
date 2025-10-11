@@ -1393,23 +1393,22 @@ async function runCode() {
 
     const filePath = activeTab.dataset.filePath;
     const fileName = filePath.split('/').pop();
+    const fileExtension = fileName.split('.').pop();
     
-    // 실행 전에 자동 저장
+    // 에디터에서 코드 가져오기
     const editor = window.monaco?.editor?.getModels()[0];
-    if (editor && openFiles.has(filePath)) {
-        const content = editor.getValue();
-        try {
-            const { saveFile } = await import('./api.js');
-            await saveFile(filePath, content);
-            activeTab.classList.remove('dirty');
-            showNotification(`${fileName} 저장 후 실행 중...`, 'info');
-        } catch (err) {
-            console.error('Auto-save failed:', err);
-            showNotification(`${fileName} 실행 중...`, 'info');
-        }
-    } else {
-        showNotification(`${fileName} 실행 중...`, 'info');
+    if (!editor) {
+        showNotification('에디터를 찾을 수 없습니다.', 'error');
+        return;
     }
+    
+    const code = editor.getValue();
+    if (!code.trim()) {
+        showNotification('실행할 코드가 없습니다.', 'error');
+        return;
+    }
+    
+    showNotification(`${fileName} 실행 중...`, 'info');
 
     // Switch to OUTPUT tab
     const outputTab = document.querySelector('.panel-tab[data-panel-id="output"]');
@@ -1418,18 +1417,9 @@ async function runCode() {
     }
 
     try {
-        // 세션 ID 가져오기
-        const sessionId = localStorage.getItem('terminalSessionId');
-        
-        const response = await fetch('/api/run', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ filePath, sessionId }),
-        });
-
-        const result = await response.json();
+        // Judge0 API를 사용한 브라우저 내 실행
+        const { runCode: executeCode } = await import('./codeRunner.js');
+        const result = await executeCode(code, fileExtension);
         displayOutput(result, fileName);
 
     } catch (error) {
