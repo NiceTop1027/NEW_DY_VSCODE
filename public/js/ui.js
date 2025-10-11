@@ -343,6 +343,36 @@ export function initUI() {
         previewRefresh.addEventListener('click', refreshPreview);
     }
     
+    // Theme Toggle Button
+    const themeToggleBtn = document.getElementById('theme-toggle-btn');
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', () => {
+            import('./editor.js').then(({ toggleTheme }) => {
+                const newTheme = toggleTheme();
+                showNotification(`테마 변경: ${newTheme === 'vs-dark' ? '다크' : '라이트'}`, 'info');
+            });
+        });
+    }
+    
+    // Minimap Toggle Button
+    const minimapToggleBtn = document.getElementById('minimap-toggle-btn');
+    if (minimapToggleBtn) {
+        minimapToggleBtn.addEventListener('click', () => {
+            import('./editor.js').then(({ toggleMinimap }) => {
+                const enabled = toggleMinimap();
+                showNotification(`미니맵: ${enabled ? 'ON' : 'OFF'}`, 'info');
+            });
+        });
+    }
+    
+    // Split Editor Button
+    const splitEditorBtn = document.getElementById('split-editor-btn');
+    if (splitEditorBtn) {
+        splitEditorBtn.addEventListener('click', () => {
+            showNotification('에디터 분할 기능은 곧 추가됩니다', 'info');
+        });
+    }
+    
     // Create Sandbox Button
     const createSandboxBtn = document.getElementById('create-sandbox-btn');
     if (createSandboxBtn) {

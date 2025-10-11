@@ -12,6 +12,25 @@ const breakpoints = new Map(); // filePath -> Set of line numbers
 let currentEditorMode = 'normal'; // 'normal' or 'diff'
 let breakpointDecorations = []; // Store decoration IDs to update them
 
+// 에디터 설정 복원 (초기화 전에 정의)
+function restoreEditorSettingsInternal() {
+    if (!editor) return;
+    
+    const savedTheme = localStorage.getItem('editor-theme');
+    if (savedTheme) {
+        monaco.editor.setTheme(savedTheme);
+    }
+    
+    const minimapEnabled = localStorage.getItem('minimap-enabled');
+    if (minimapEnabled !== null) {
+        editor.updateOptions({
+            minimap: {
+                enabled: minimapEnabled === 'true'
+            }
+        });
+    }
+}
+
 export function initEditor(editorEl, tabsEl, openFilesMap) {
     tabsContainer = tabsEl;
 
@@ -23,11 +42,30 @@ export function initEditor(editorEl, tabsEl, openFilesMap) {
         language: 'javascript',
         theme: 'vs-dark',
         automaticLayout: true,
-        glyphMargin: true // Enable glyph margin for breakpoints
+        glyphMargin: true, // Enable glyph margin for breakpoints
+        minimap: {
+            enabled: true,
+            side: 'right',
+            showSlider: 'mouseover',
+            renderCharacters: true,
+            maxColumn: 120
+        },
+        scrollbar: {
+            verticalScrollbarSize: 10,
+            horizontalScrollbarSize: 10
+        },
+        fontSize: 14,
+        lineNumbers: 'on',
+        renderWhitespace: 'selection',
+        cursorBlinking: 'smooth',
+        smoothScrolling: true
     });
 
     // Hide editor initially
     editorEl.querySelector('.monaco-editor')?.style.setProperty('display', 'none');
+
+    // Restore saved settings
+    restoreEditorSettingsInternal();
 
     // Add breakpoint support
     editor.onMouseDown((e) => {
@@ -344,4 +382,53 @@ export function hideDiffEditor() {
 
 export function getCurrentEditorMode() {
     return currentEditorMode;
+}
+
+// 테마 토글
+export function toggleTheme() {
+    if (!editor) return;
+    
+    const currentTheme = editor.getModel()?._languageId || 'vs-dark';
+    const newTheme = currentTheme === 'vs-dark' ? 'vs-light' : 'vs-dark';
+    
+    monaco.editor.setTheme(newTheme);
+    localStorage.setItem('editor-theme', newTheme);
+    
+    return newTheme;
+}
+
+// 미니맵 토글
+export function toggleMinimap() {
+    if (!editor) return;
+    
+    const currentOptions = editor.getOptions();
+    const minimapEnabled = currentOptions.get(monaco.editor.EditorOption.minimap).enabled;
+    
+    editor.updateOptions({
+        minimap: {
+            enabled: !minimapEnabled
+        }
+    });
+    
+    localStorage.setItem('minimap-enabled', !minimapEnabled);
+    return !minimapEnabled;
+}
+
+// 에디터 설정 복원
+export function restoreEditorSettings() {
+    if (!editor) return;
+    
+    const savedTheme = localStorage.getItem('editor-theme');
+    if (savedTheme) {
+        monaco.editor.setTheme(savedTheme);
+    }
+    
+    const minimapEnabled = localStorage.getItem('minimap-enabled');
+    if (minimapEnabled !== null) {
+        editor.updateOptions({
+            minimap: {
+                enabled: minimapEnabled === 'true'
+            }
+        });
+    }
 }

@@ -259,55 +259,61 @@ class ClientFileSystem {
 
     // Create new file using File System Access API
     async createNewFile(parentPath, fileName) {
-        if (!this.directoryHandle) {
-            return { success: false, error: 'No directory handle available' };
-        }
+        // 메모리에 파일 추가 (directoryHandle 없어도 작동)
+        const filePath = parentPath ? `${parentPath}/${fileName}` : fileName;
+        this.addFile(filePath, '');
+        await this.saveToIndexedDB();
+        
+        // File System Access API가 있으면 실제 파일도 생성
+        if (this.directoryHandle) {
+            try {
+                const pathParts = parentPath ? parentPath.split('/').filter(p => p) : [];
+                let currentDir = this.directoryHandle;
 
-        try {
-            const pathParts = parentPath ? parentPath.split('/').filter(p => p) : [];
-            let currentDir = this.directoryHandle;
+                // Navigate to parent directory
+                for (const part of pathParts) {
+                    currentDir = await currentDir.getDirectoryHandle(part);
+                }
 
-            // Navigate to parent directory
-            for (const part of pathParts) {
-                currentDir = await currentDir.getDirectoryHandle(part);
+                // Create new file
+                const fileHandle = await currentDir.getFileHandle(fileName, { create: true });
+                const writable = await fileHandle.createWritable();
+                await writable.write(''); // Create empty file
+                await writable.close();
+            } catch (err) {
+                console.warn('Failed to create real file (memory only):', err);
             }
-
-            // Create new file
-            const fileHandle = await currentDir.getFileHandle(fileName, { create: true });
-            const writable = await fileHandle.createWritable();
-            await writable.write(''); // Create empty file
-            await writable.close();
-
-            return { success: true, createdFile: true };
-        } catch (err) {
-            console.error('Failed to create file:', err);
-            return { success: false, error: err.message };
         }
+
+        return { success: true, createdFile: true };
     }
 
     // Create new directory using File System Access API
     async createNewDirectory(parentPath, dirName) {
-        if (!this.directoryHandle) {
-            return { success: false, error: 'No directory handle available' };
-        }
+        // 메모리에 디렉토리 추가 (directoryHandle 없어도 작동)
+        const dirPath = parentPath ? `${parentPath}/${dirName}` : dirName;
+        this.createDirectory(dirPath);
+        await this.saveToIndexedDB();
+        
+        // File System Access API가 있으면 실제 디렉토리도 생성
+        if (this.directoryHandle) {
+            try {
+                const pathParts = parentPath ? parentPath.split('/').filter(p => p) : [];
+                let currentDir = this.directoryHandle;
 
-        try {
-            const pathParts = parentPath ? parentPath.split('/').filter(p => p) : [];
-            let currentDir = this.directoryHandle;
+                // Navigate to parent directory
+                for (const part of pathParts) {
+                    currentDir = await currentDir.getDirectoryHandle(part);
+                }
 
-            // Navigate to parent directory
-            for (const part of pathParts) {
-                currentDir = await currentDir.getDirectoryHandle(part);
+                // Create new directory
+                await currentDir.getDirectoryHandle(dirName, { create: true });
+            } catch (err) {
+                console.warn('Failed to create real directory (memory only):', err);
             }
-
-            // Create new directory
-            await currentDir.getDirectoryHandle(dirName, { create: true });
-
-            return { success: true, createdDirectory: true };
-        } catch (err) {
-            console.error('Failed to create directory:', err);
-            return { success: false, error: err.message };
         }
+
+        return { success: true, createdDirectory: true };
     }
 
     // Rename file or directory using File System Access API
