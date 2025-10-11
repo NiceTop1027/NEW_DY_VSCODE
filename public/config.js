@@ -1,7 +1,6 @@
 // API Configuration
-const API_BASE_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:3000'
-    : 'https://web-production-87bbd.up.railway.app';
+// Railway serves both frontend and backend from the same domain
+const API_BASE_URL = window.location.origin;
 
 window.API_CONFIG = {
     BASE_URL: API_BASE_URL,

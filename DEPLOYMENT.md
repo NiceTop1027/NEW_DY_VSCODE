@@ -4,10 +4,12 @@
 - **이름:** dy-vscode
 - **GitHub:** https://github.com/NiceTop1027/DY_VScode.git
 - **로고:** 덕영고등학교 공식 로고
+- **도메인:** https://vscode.dyhs.kr
 
 ## 아키텍처
-- **프론트엔드:** Vercel (정적 파일)
-- **백엔드:** Railway (Node.js 서버)
+- **호스팅:** Railway (프론트엔드 + 백엔드 통합)
+- **프론트엔드:** 정적 파일 (`/public`)
+- **백엔드:** Node.js + Express + WebSocket
 
 ---
 
@@ -40,75 +42,39 @@ NODE_ENV=production
 
 ---
 
-## 🌐 2단계: Vercel 배포 (프론트엔드)
+## 🔧 2단계: 도메인 연결
 
-### 1. Vercel 가입
-1. https://vercel.com 접속
-2. GitHub 계정으로 로그인
-
-### 2. 프로젝트 배포
-1. **"Add New Project"** 클릭
-2. **DY_VScode** 레포지토리 선택
-3. 설정:
-   - **Framework Preset:** Other
-   - **Root Directory:** `./`
-   - **Build Command:** `npm run build`
-   - **Output Directory:** `public`
-
-### 3. 환경 변수 설정
-Vercel 대시보드 → Settings → Environment Variables:
-```
-NEXT_PUBLIC_API_URL=https://web-production-87bbd.up.railway.app
-```
-
-### 4. 배포 완료
-- Vercel이 자동으로 도메인 생성
-- 예: `https://dy-vscode.vercel.app`
+### Railway 커스텀 도메인 설정
+1. Railway 대시보드 → 프로젝트 선택
+2. **Settings** → **Domains**
+3. **Custom Domain** 추가: `vscode.dyhs.kr`
+4. DNS 설정 (도메인 제공업체):
+   ```
+   Type: CNAME
+   Name: vscode
+   Value: web-production-87bbd.up.railway.app
+   ```
 
 ---
 
-## 🔧 3단계: 설정 업데이트
+## 🔐 3단계: GitHub OAuth 설정
 
-### 1. config.js 업데이트
-`public/config.js` 파일에서:
-```javascript
-const API_BASE_URL = window.location.hostname === 'localhost' 
-    ? 'http://localhost:3000'
-    : 'https://web-production-87bbd.up.railway.app'; // ✅ 완료
-```
-
-### 2. server.js CORS 업데이트
-`server.js` 파일에서:
-```javascript
-const allowedOrigins = [
-    'http://localhost:3000',
-    'https://dy-vscode.vercel.app', // ← Vercel URL로 변경
-    'https://*.vercel.app'
-];
-```
-
-### 3. GitHub OAuth 콜백 URL 업데이트
+### GitHub OAuth 콜백 URL 업데이트
 GitHub OAuth 앱 설정 (https://github.com/settings/developers):
 ```
-Homepage URL: https://dy-vscode.vercel.app
-Authorization callback URL: https://web-production-87bbd.up.railway.app/api/github/callback
-```
-
-### 4. 변경사항 커밋 & 푸시
-```bash
-git add .
-git commit -m "Update deployment URLs"
-git push origin main
+Homepage URL: https://vscode.dyhs.kr
+Authorization callback URL: https://vscode.dyhs.kr/api/github/callback
 ```
 
 ---
 
 ## ✅ 배포 확인
 
-1. **Vercel URL 접속:** https://dy-vscode.vercel.app
-2. **GitHub 로그인 테스트**
-3. **레포지토리 조회 테스트**
-4. **파일 편집 테스트**
+1. **URL 접속:** https://vscode.dyhs.kr
+2. **파일 탐색기:** 파일 트리 표시 확인
+3. **터미널:** WebSocket 연결 확인
+4. **GitHub 로그인:** OAuth 인증 테스트
+5. **레포지토리 관리:** 생성/삭제/열기 테스트
 
 ---
 

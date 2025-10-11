@@ -11,16 +11,15 @@ const inspector = require('inspector');
 const app = express();
 const port = process.env.PORT || 3000;
 
-// CORS 설정
+// CORS 설정 (Railway serves both frontend and backend)
 app.use((req, res, next) => {
     const allowedOrigins = [
         'http://localhost:3000',
-        'https://dy-vscode.vercel.app',
-        'https://dy-vscode-git-main-nicetop1027.vercel.app',
-        'https://*.vercel.app'
+        'https://vscode.dyhs.kr',
+        'https://web-production-87bbd.up.railway.app'
     ];
     const origin = req.headers.origin;
-    if (allowedOrigins.some(allowed => origin?.includes(allowed.replace('*', '')))) {
+    if (allowedOrigins.includes(origin)) {
         res.header('Access-Control-Allow-Origin', origin);
     }
     res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
