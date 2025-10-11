@@ -27,13 +27,11 @@
 ### 3. 환경 변수 설정
 Railway 대시보드 → Variables 탭:
 ```
-GITHUB_CLIENT_ID=your_github_client_id
-GITHUB_CLIENT_SECRET=your_github_client_secret
+GITHUB_CLIENT_ID=Ov23li22YDn5ymGp9viB
+GITHUB_CLIENT_SECRET=15bdfaf3122ea963c11660dd6555f7ca2161d79e
 PORT=3000
 NODE_ENV=production
 ```
-
-**⚠️ 중요:** GitHub OAuth 앱 설정에서 실제 Client ID와 Secret을 가져와서 입력하세요.
 
 ### 4. 도메인 확인
 - Railway가 자동으로 도메인 생성
