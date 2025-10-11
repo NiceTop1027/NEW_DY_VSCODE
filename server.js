@@ -1115,6 +1115,8 @@ app.listen(port, () => {
 ║  포트: ${port}                                              ║
 ║  작업 디렉토리: ${PROJECT_ROOT}                            ║
 ║  저장소 타입: ${process.env.RAILWAY_VOLUME_MOUNT_PATH ? '영구 (Volume)' : '임시 (메모리)'}  ║
+║  Docker 모드: ${process.env.USE_DOCKER === 'true' ? '활성화 🐳' : '비활성화'}  ║
+║  GitHub 연동: 활성화 🐙                                     ║
 ╚════════════════════════════════════════════════════════════╝
     `);
     
