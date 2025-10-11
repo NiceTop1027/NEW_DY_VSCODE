@@ -58,7 +58,30 @@ export function initEditor(editorEl, tabsEl, openFilesMap) {
         lineNumbers: 'on',
         renderWhitespace: 'selection',
         cursorBlinking: 'smooth',
-        smoothScrolling: true
+        smoothScrolling: true,
+        // 고급 기능 활성화
+        quickSuggestions: true,
+        suggestOnTriggerCharacters: true,
+        acceptSuggestionOnEnter: 'on',
+        tabCompletion: 'on',
+        wordBasedSuggestions: true,
+        parameterHints: { enabled: true },
+        autoClosingBrackets: 'always',
+        autoClosingQuotes: 'always',
+        autoIndent: 'full',
+        formatOnPaste: true,
+        formatOnType: true,
+        // 리팩토링 지원
+        renameOnType: false,
+        // 코드 렌즈
+        codeLens: true,
+        // 폴딩
+        folding: true,
+        foldingStrategy: 'indentation',
+        // 링크 감지
+        links: true,
+        // 색상 데코레이터
+        colorDecorators: true
     });
 
     // Hide editor initially
@@ -80,6 +103,8 @@ export function initEditor(editorEl, tabsEl, openFilesMap) {
         if (editor) editor.layout();
     });
 
+    // Keyboard shortcuts
+    // Save: Ctrl+S
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
         const activeTab = tabsContainer.querySelector('.tab.active');
         const activeFilePath = activeTab?.dataset.filePath;
@@ -124,6 +149,31 @@ export function initEditor(editorEl, tabsEl, openFilesMap) {
                     .catch(err => console.error('Error saving file:', err));
             }
         }
+    });
+    
+    // Format Document: Shift+Alt+F
+    editor.addCommand(monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.KeyF, () => {
+        formatDocument();
+    });
+    
+    // Rename Symbol: F2
+    editor.addCommand(monaco.KeyCode.F2, () => {
+        renameSymbol();
+    });
+    
+    // Go to Definition: F12
+    editor.addCommand(monaco.KeyCode.F12, () => {
+        goToDefinition();
+    });
+    
+    // Command Palette: Ctrl+Shift+P
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyP, () => {
+        showCommandPalette();
+    });
+    
+    // Quick Fix: Ctrl+.
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Period, () => {
+        showQuickFix();
     });
 
     editor.onDidChangeModelContent(() => {
@@ -412,6 +462,83 @@ export function toggleMinimap() {
     
     localStorage.setItem('minimap-enabled', !minimapEnabled);
     return !minimapEnabled;
+}
+
+// 코드 포맷팅
+export function formatDocument() {
+    if (!editor) return;
+    editor.getAction('editor.action.formatDocument')?.run();
+}
+
+// Rename Symbol
+export function renameSymbol() {
+    if (!editor) return;
+    editor.getAction('editor.action.rename')?.run();
+}
+
+// Go to Definition
+export function goToDefinition() {
+    if (!editor) return;
+    editor.getAction('editor.action.revealDefinition')?.run();
+}
+
+// Symbol Search (Command Palette)
+export function showCommandPalette() {
+    if (!editor) return;
+    editor.getAction('editor.action.quickCommand')?.run();
+}
+
+// Quick Fix
+export function showQuickFix() {
+    if (!editor) return;
+    editor.getAction('editor.action.quickFix')?.run();
+}
+
+// Organize Imports
+export function organizeImports() {
+    if (!editor) return;
+    editor.getAction('editor.action.organizeImports')?.run();
+}
+
+// Extract Method (Refactor)
+export function extractMethod() {
+    if (!editor) return;
+    editor.getAction('editor.action.refactor')?.run();
+}
+
+// Zen Mode
+let isZenMode = false;
+export function toggleZenMode() {
+    isZenMode = !isZenMode;
+    
+    const sidebar = document.getElementById('sidebar');
+    const panel = document.getElementById('panel');
+    const activityBar = document.getElementById('activity-bar');
+    const editorActions = document.getElementById('editor-actions');
+    const breadcrumb = document.getElementById('breadcrumb');
+    
+    if (isZenMode) {
+        // Hide all UI elements
+        if (sidebar) sidebar.style.display = 'none';
+        if (panel) panel.style.display = 'none';
+        if (activityBar) activityBar.style.display = 'none';
+        if (editorActions) editorActions.style.display = 'none';
+        if (breadcrumb) breadcrumb.style.display = 'none';
+    } else {
+        // Show all UI elements
+        if (sidebar) sidebar.style.display = '';
+        if (panel) panel.style.display = '';
+        if (activityBar) activityBar.style.display = '';
+        if (editorActions) editorActions.style.display = '';
+        if (breadcrumb) breadcrumb.style.display = '';
+    }
+    
+    // Relayout editor
+    if (editor) {
+        setTimeout(() => editor.layout(), 100);
+    }
+    
+    return isZenMode;
 }
 
 // 에디터 설정 복원

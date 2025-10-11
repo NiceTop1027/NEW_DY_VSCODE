@@ -373,6 +373,28 @@ export function initUI() {
         });
     }
     
+    // Format Button
+    const formatBtn = document.getElementById('format-btn');
+    if (formatBtn) {
+        formatBtn.addEventListener('click', () => {
+            import('./editor.js').then(({ formatDocument }) => {
+                formatDocument();
+                showNotification('코드 포맷팅 완료', 'success');
+            });
+        });
+    }
+    
+    // Zen Mode Button
+    const zenModeBtn = document.getElementById('zen-mode-btn');
+    if (zenModeBtn) {
+        zenModeBtn.addEventListener('click', () => {
+            import('./editor.js').then(({ toggleZenMode }) => {
+                const isZen = toggleZenMode();
+                showNotification(`Zen 모드: ${isZen ? 'ON' : 'OFF'}`, 'info');
+            });
+        });
+    }
+    
     // Create Sandbox Button
     const createSandboxBtn = document.getElementById('create-sandbox-btn');
     if (createSandboxBtn) {
