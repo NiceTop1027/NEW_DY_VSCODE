@@ -522,7 +522,8 @@ export function initUI() {
                     xterm.loadAddon(fitAddon);
                     xterm.open(terminalEl);
 
-                    const socket = new WebSocket(`ws://${window.location.host}/terminal`);
+                    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+                    const socket = new WebSocket(`${wsProtocol}//${window.location.host}/terminal`);
                     socket.onopen = () => xterm.onData(data => socket.send(data));
                     socket.onmessage = event => xterm.write(event.data);
                 }
@@ -1147,7 +1148,8 @@ function updateDebugControls(isDebugging) {
 let debugWebSocket = null;
 
 function connectDebugWebSocket() {
-    debugWebSocket = new WebSocket(`ws://${window.location.host}/debug`);
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    debugWebSocket = new WebSocket(`${wsProtocol}//${window.location.host}/debug`);
     
     debugWebSocket.onopen = () => {
         // Debug WebSocket connected
