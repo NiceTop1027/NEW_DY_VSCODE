@@ -1396,14 +1396,14 @@ async function runCode() {
     const fileExtension = fileName.split('.').pop();
     
     // 에디터에서 코드 가져오기
-    const editor = window.monaco?.editor?.getModels()[0];
+    const editor = getEditor();
     if (!editor) {
         showNotification('에디터를 찾을 수 없습니다.', 'error');
         return;
     }
     
     const code = editor.getValue();
-    if (!code.trim()) {
+    if (!code || !code.trim()) {
         showNotification('실행할 코드가 없습니다.', 'error');
         return;
     }
