@@ -163,39 +163,57 @@ let selectedFiles = new Set();
 
 export function openPushModal() {
     const clonedRepos = JSON.parse(localStorage.getItem('clonedRepos') || '[]');
-    
-    if (clonedRepos.length === 0) {
-        alert('먼저 레포지토리를 클론하세요!');
-        return;
-    }
-    
     const pushModal = document.getElementById('github-push-modal');
     const repoSelect = document.getElementById('push-repo-select');
     
     // Render repository selection
     repoSelect.innerHTML = '';
-    clonedRepos.forEach((repo, index) => {
-        const repoOption = document.createElement('label');
-        repoOption.className = 'push-repo-option';
-        repoOption.innerHTML = `
-            <input type="radio" name="push-repo" value="${index}">
-            <div class="repo-option-content">
-                <strong>${repo.fullName}</strong>
-                <span>📁 ${repo.path}</span>
+    
+    if (clonedRepos.length === 0) {
+        // No cloned repos - show manual input option
+        repoSelect.innerHTML = `
+            <div style="padding: 15px; background: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; border-radius: 4px;">
+                <p style="margin: 0 0 10px 0; font-weight: bold;">⚠️ 클론된 레포지토리가 없습니다</p>
+                <p style="margin: 0 0 10px 0; font-size: 13px;">레포지토리 정보를 직접 입력하세요:</p>
+                <input type="text" id="manual-repo-owner" placeholder="GitHub 사용자명 (예: NiceTop1027)" 
+                    style="width: 100%; padding: 8px; margin-bottom: 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--editor-background); color: var(--text-color);">
+                <input type="text" id="manual-repo-name" placeholder="레포지토리 이름 (예: DY_VScode)" 
+                    style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--editor-background); color: var(--text-color);">
             </div>
         `;
         
-        const radio = repoOption.querySelector('input');
-        radio.addEventListener('change', () => {
-            selectedPushRepo = repo;
-            loadChangedFiles(repo);
+        // Set manual repo info
+        selectedPushRepo = {
+            fullName: 'manual',
+            path: '/workspace',
+            isManual: true
+        };
+        
+        // Load current files
+        loadChangedFiles(selectedPushRepo);
+    } else {
+        // Show cloned repos
+        clonedRepos.forEach((repo, index) => {
+            const repoOption = document.createElement('label');
+            repoOption.className = 'push-repo-option';
+            repoOption.innerHTML = `
+                <input type="radio" name="push-repo" value="${index}">
+                <div class="repo-option-content">
+                    <strong>${repo.fullName}</strong>
+                    <span>📁 ${repo.path}</span>
+                </div>
+            `;
+            
+            const radio = repoOption.querySelector('input');
+            radio.addEventListener('change', () => {
+                selectedPushRepo = repo;
+                loadChangedFiles(repo);
+            });
+            
+            repoSelect.appendChild(repoOption);
         });
         
-        repoSelect.appendChild(repoOption);
-    });
-    
-    // Select first repo by default
-    if (clonedRepos.length > 0) {
+        // Select first repo by default
         const firstRadio = repoSelect.querySelector('input[type="radio"]');
         firstRadio.checked = true;
         selectedPushRepo = clonedRepos[0];
