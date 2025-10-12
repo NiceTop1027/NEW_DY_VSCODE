@@ -3,7 +3,7 @@ const UIManager = require('../../src/ui/uiManager.js');
 const File = require('../../src/models/file.js');
 const Project = require('../../src/models/project.js');
 
-import { openFile } from '../../public/js/ui.js'; // 새 ui 모듈에서 openFile 가져오기
+import { openFile } from '../../public/ui.js'; // 새 ui 모듈에서 openFile 가져오기
 
 // Jest 환경에서 DOM 사용을 위해 jsdom이 필요
 import { JSDOM } from 'jsdom';

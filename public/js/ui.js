@@ -1019,14 +1019,22 @@ function renderClientFileTree() {
     
     tree.children.forEach(child => renderClientFileNode(child, fileExplorerEl, 0));
     
-    // Add context menu to file explorer background
-    fileExplorerEl.addEventListener('contextmenu', (e) => {
+    // Add context menu to file explorer background (remove old listener first)
+    const oldListener = fileExplorerEl._contextMenuListener;
+    if (oldListener) {
+        fileExplorerEl.removeEventListener('contextmenu', oldListener);
+    }
+    
+    const contextMenuListener = (e) => {
         // Only show if clicking on the file explorer itself, not on a file/folder
-        if (e.target === fileExplorerEl || e.target.tagName === 'H3') {
+        if (e.target === fileExplorerEl || e.target.tagName === 'H3' || e.target.tagName === 'P') {
             e.preventDefault();
             showFileExplorerContextMenu(e);
         }
-    });
+    };
+    
+    fileExplorerEl._contextMenuListener = contextMenuListener;
+    fileExplorerEl.addEventListener('contextmenu', contextMenuListener);
     
     // Close context menu when clicking elsewhere
     document.addEventListener('click', closeContextMenu);
@@ -1805,13 +1813,20 @@ async function createNewFile(parentPath, isDirectory) {
     const result = await clientFS.createNewFile(basePath, fileName);
     
     if (result.success && result.createdFile) {
-        showNotification(`파일 생성됨: ${fileName}`, 'success');
+        showNotification(`✅ 파일 생성됨: ${fileName}`, 'success');
         
         // Reload file tree
         const dirHandle = clientFS.getDirectoryHandle();
         if (dirHandle) {
             await loadDirectoryWithHandles(dirHandle);
+        } else {
+            // No directory handle, just refresh client tree
+            renderClientFileTree();
         }
+        
+        // Auto-open the new file
+        const newFilePath = basePath ? `${basePath}/${fileName}` : fileName;
+        setTimeout(() => openClientFile(newFilePath, fileName), 100);
     } else {
         showNotification(`파일 생성 실패: ${result.error || '알 수 없는 오류'}`, 'error');
     }
@@ -1826,12 +1841,15 @@ async function createNewFolder(parentPath, isDirectory) {
     const result = await clientFS.createNewDirectory(basePath, folderName);
     
     if (result.success && result.createdDirectory) {
-        showNotification(`폴더 생성됨: ${folderName}`, 'success');
+        showNotification(`✅ 폴더 생성됨: ${folderName}`, 'success');
         
         // Reload file tree
         const dirHandle = clientFS.getDirectoryHandle();
         if (dirHandle) {
             await loadDirectoryWithHandles(dirHandle);
+        } else {
+            // No directory handle, just refresh client tree
+            renderClientFileTree();
         }
     } else {
         showNotification(`폴더 생성 실패: ${result.error || '알 수 없는 오류'}`, 'error');
