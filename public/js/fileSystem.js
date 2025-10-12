@@ -1,5 +1,7 @@
 // public/js/fileSystem.js
-// Client-side file system management
+// Client-side file system management with persistent storage
+
+import { persistentStorage } from './persistentStorage.js';
 
 class ClientFileSystem {
     constructor() {
@@ -12,10 +14,55 @@ class ClientFileSystem {
         };
         this.directoryHandle = null; // Root directory handle for File System Access API
         this.fileHandles = new Map(); // path -> FileSystemFileHandle
+        this.initialized = false;
+    }
+
+    // Initialize and load from persistent storage
+    async init() {
+        if (this.initialized) return;
+        
+        try {
+            await persistentStorage.init();
+            await this.loadFromStorage();
+            this.initialized = true;
+            console.log('✅ File system initialized with persistent storage');
+        } catch (error) {
+            console.error('File system init error:', error);
+        }
+    }
+
+    // Load files from persistent storage
+    async loadFromStorage() {
+        try {
+            const savedFiles = await persistentStorage.loadAllFiles();
+            
+            if (savedFiles.size > 0) {
+                savedFiles.forEach((fileData, path) => {
+                    this.addFile(path, fileData.content, false); // false = don't save back
+                });
+                console.log(`📂 Restored ${savedFiles.size} files from storage`);
+            }
+        } catch (error) {
+            console.error('Load from storage error:', error);
+        }
+    }
+
+    // Save to persistent storage
+    async saveToStorage() {
+        try {
+            const filesToSave = {};
+            this.files.forEach((file, path) => {
+                filesToSave[path] = file.content;
+            });
+            
+            await persistentStorage.saveFiles(filesToSave);
+        } catch (error) {
+            console.error('Save to storage error:', error);
+        }
     }
 
     // Add a file to the file system
-    addFile(path, content) {
+    addFile(path, content, saveToStorage = true) {
         const parts = path.split('/').filter(p => p);
         const fileName = parts[parts.length - 1];
         const dirPath = parts.slice(0, -1);
@@ -49,8 +96,12 @@ class ClientFileSystem {
             content: content
         };
         
-        // IndexedDB에 저장
-        this.saveToIndexedDB();
+        // Save to persistent storage
+        if (saveToStorage && this.initialized) {
+            persistentStorage.saveFile(filePath, content).catch(err => {
+                console.error('Failed to save to storage:', err);
+            });
+        }
 
         // Remove existing file if any
         const existingIndex = current.children.findIndex(c => c.name === fileName && c.type === 'file');
