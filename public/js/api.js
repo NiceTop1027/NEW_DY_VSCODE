@@ -51,7 +51,7 @@ export async function githubCloneRepo(owner, repo, token) {
     return res.json();
 }
 
-export async function githubPush(repoPath, message, token) {
+export async function githubPush(repoPath, message, token, files = null) {
     const sessionId = localStorage.getItem('terminalSessionId');
     
     const res = await fetch(`${API_BASE}/api/github/push`, {
@@ -60,9 +60,17 @@ export async function githubPush(repoPath, message, token) {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ repoPath, message, sessionId })
+        body: JSON.stringify({ 
+            repoPath, 
+            message, 
+            sessionId,
+            files // null = all files, array = specific files
+        })
     });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    if (!res.ok) {
+        const error = await res.json().catch(() => ({ message: `HTTP ${res.status}` }));
+        throw new Error(error.message || `HTTP ${res.status}`);
+    }
     return res.json();
 }
 

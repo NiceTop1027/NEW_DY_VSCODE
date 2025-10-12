@@ -246,7 +246,12 @@ async function executePush() {
         return;
     }
     
-    const pushMode = document.querySelector('input[name="push-mode"]:checked').value;
+    const pushMode = document.querySelector('input[name="push-mode"]:checked');
+    if (!pushMode) {
+        alert('푸시 방식을 선택하세요!');
+        return;
+    }
+    
     const commitMessage = document.getElementById('push-commit-message').value.trim();
     
     if (!commitMessage) {
@@ -261,28 +266,42 @@ async function executePush() {
         confirmBtn.disabled = true;
         confirmBtn.textContent = '푸시 중...';
         
-        let filesToPush = [];
+        let filesToPush = null;
         
-        if (pushMode === 'all') {
+        if (pushMode.value === 'all') {
             // Push all files
             filesToPush = null; // null means all files
-        } else if (pushMode === 'select') {
+            console.log('푸시 모드: 전체 파일');
+        } else if (pushMode.value === 'select') {
             // Push selected files
             if (selectedFiles.size === 0) {
                 alert('푸시할 파일을 선택하세요!');
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = originalText;
                 return;
             }
             filesToPush = Array.from(selectedFiles);
-        } else if (pushMode === 'current') {
+            console.log('푸시 모드: 선택된 파일', filesToPush);
+        } else if (pushMode.value === 'current') {
             // Push current file only
             const activeTab = document.querySelector('.tab.active');
             if (!activeTab) {
                 alert('열린 파일이 없습니다!');
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = originalText;
                 return;
             }
             const currentFile = activeTab.dataset.filePath;
             filesToPush = [currentFile];
+            console.log('푸시 모드: 현재 파일', currentFile);
         }
+        
+        console.log('푸시 시작:', {
+            repo: selectedPushRepo.fullName,
+            path: selectedPushRepo.path,
+            message: commitMessage,
+            files: filesToPush
+        });
         
         const result = await githubPush(
             selectedPushRepo.path,
@@ -291,15 +310,20 @@ async function executePush() {
             filesToPush
         );
         
-        alert(`✅ 푸시 성공!\n\n레포지토리: ${selectedPushRepo.fullName}\n${result.message}`);
+        console.log('푸시 성공:', result);
+        
+        alert(`✅ 푸시 성공!\n\n레포지토리: ${selectedPushRepo.fullName}\n메시지: ${commitMessage}\n${result.message || ''}`);
         
         // Close modal
         document.getElementById('github-push-modal').style.display = 'none';
         selectedFiles.clear();
         
+        // Clear commit message
+        document.getElementById('push-commit-message').value = '';
+        
     } catch (error) {
         console.error('Push error:', error);
-        alert(`❌ 푸시 실패: ${error.message}`);
+        alert(`❌ 푸시 실패\n\n에러: ${error.message}\n\n레포지토리: ${selectedPushRepo.fullName}\n경로: ${selectedPushRepo.path}`);
     } finally {
         confirmBtn.disabled = false;
         confirmBtn.textContent = originalText;

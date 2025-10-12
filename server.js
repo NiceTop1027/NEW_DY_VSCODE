@@ -918,7 +918,7 @@ app.post('/api/sandbox/create', async (req, res) => {
 
 // Git commit and push
 app.post('/api/github/push', async (req, res) => {
-    const { repoPath, message, sessionId } = req.body;
+    const { repoPath, message, sessionId, files } = req.body;
     const token = req.headers.authorization?.replace('Bearer ', '');
     
     if (!token) {
@@ -942,10 +942,23 @@ app.post('/api/github/push', async (req, res) => {
     }
     
     try {
-        // Git add, commit, push
+        // Git add command - either all files or specific files
+        let gitAddCmd = 'git add .';
+        if (files && Array.isArray(files) && files.length > 0) {
+            // Add specific files
+            const fileList = files.map(f => `"${f}"`).join(' ');
+            gitAddCmd = `git add ${fileList}`;
+            console.log(`📝 Adding specific files: ${fileList}`);
+        } else {
+            console.log('📝 Adding all files');
+        }
+        
+        // Escape commit message to prevent command injection
+        const escapedMessage = message.replace(/"/g, '\\"');
+        
         const commands = [
-            'git add .',
-            `git commit -m "${message}"`,
+            gitAddCmd,
+            `git commit -m "${escapedMessage}"`,
             'git push'
         ];
         
@@ -953,28 +966,33 @@ app.post('/api/github/push', async (req, res) => {
             if (index >= commands.length) {
                 return res.json({ 
                     success: true, 
-                    message: 'Successfully pushed to GitHub' 
+                    message: 'Successfully pushed to GitHub',
+                    filesCount: files ? files.length : 'all'
                 });
             }
             
             exec(commands[index], { cwd: absoluteRepoPath }, (error, stdout, stderr) => {
                 if (error) {
                     // commit 시 변경사항 없으면 에러지만 계속 진행
-                    if (error.message.includes('nothing to commit')) {
+                    if (error.message.includes('nothing to commit') || 
+                        stderr.includes('nothing to commit')) {
                         return res.json({ 
                             success: true, 
                             message: 'No changes to commit' 
                         });
                     }
                     
-                    console.error(`Git error: ${error}`);
+                    console.error(`❌ Git error: ${error.message}`);
+                    console.error(`stderr: ${stderr}`);
                     return res.status(500).json({ 
                         error: 'Git command failed',
-                        details: stderr || error.message 
+                        message: stderr || error.message,
+                        command: commands[index]
                     });
                 }
                 
                 console.log(`✅ Git command executed: ${commands[index]}`);
+                if (stdout) console.log(`Output: ${stdout}`);
                 executeCommands(index + 1);
             });
         };
@@ -982,7 +1000,10 @@ app.post('/api/github/push', async (req, res) => {
         executeCommands(0);
     } catch (error) {
         console.error('Push error:', error);
-        res.status(500).json({ error: 'Failed to push to GitHub' });
+        res.status(500).json({ 
+            error: 'Failed to push to GitHub',
+            message: error.message 
+        });
     }
 });
 
