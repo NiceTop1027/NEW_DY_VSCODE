@@ -216,6 +216,7 @@ export function initUI() {
         { name: 'GitHub', icon: 'github', action: 'github' },
         { name: 'Search', icon: 'search', action: 'search' },
         { name: 'Run and Debug', icon: 'debug-alt', action: 'debug' },
+        { name: 'Extensions', icon: 'extensions', action: 'extensions' },
         { name: 'Upload Folder', icon: 'folder-opened', action: 'upload' }
     ];
 
@@ -278,6 +279,15 @@ export function initUI() {
                     debugView.style.display = 'block';
                     currentView = 'debug';
                     renderDebugView(); // Render the debug UI
+                    break;
+                case 'extensions':
+                    // Open extensions marketplace
+                    import('./extensionSystem.js').then(({ extensionSystem }) => {
+                        extensionSystem.showMarketplace();
+                    }).catch(err => {
+                        console.error('Failed to load extension system:', err);
+                        showNotification('확장 프로그램 로드 실패', 'error');
+                    });
                     break;
                 case 'upload':
                     if ('showDirectoryPicker' in window) {
