@@ -225,6 +225,11 @@ export function initUI() {
         iconEl.title = name;
         iconEl.dataset.action = action;
         
+        // Highlight GitHub button
+        if (action === 'github') {
+            iconEl.classList.add('github-highlight');
+        }
+        
         let badgeHtml = '';
         if (action === 'source-control') {
             badgeHtml = '<span class="activity-badge" style="display: none;"></span>';
