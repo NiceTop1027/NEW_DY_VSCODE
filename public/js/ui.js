@@ -1146,22 +1146,6 @@ function renderClientFileTree() {
                     <i class="codicon codicon-folder"></i>
                     새 폴더
                 </button>
-                <button id="empty-upload-btn" style="
-                    padding: 8px 12px;
-                    background: var(--button-bg);
-                    color: var(--text-color);
-                    border: 1px solid var(--border-color);
-                    border-radius: 4px;
-                    cursor: pointer;
-                    display: flex;
-                    align-items: center;
-                    justify-content: center;
-                    gap: 5px;
-                    font-size: 13px;
-                ">
-                    <i class="codicon codicon-file-add"></i>
-                    파일 업로드
-                </button>
             </div>
         `;
         fileExplorerEl.appendChild(emptyMsg);
@@ -1170,9 +1154,6 @@ function renderClientFileTree() {
         setTimeout(() => {
             document.getElementById('empty-new-file-btn')?.addEventListener('click', () => createNewFile('', true));
             document.getElementById('empty-new-folder-btn')?.addEventListener('click', () => createNewFolder('', true));
-            document.getElementById('empty-upload-btn')?.addEventListener('click', () => {
-                document.getElementById('file-upload-input')?.click();
-            });
         }, 0);
         
         // Don't return - continue to add context menu listener
@@ -1183,6 +1164,10 @@ function renderClientFileTree() {
 
 // Render a single file/directory node
 function renderClientFileNode(node, parentEl, depth = 0) {
+    const itemWrapper = document.createElement('div');
+    itemWrapper.style.display = 'flex';
+    itemWrapper.style.flexDirection = 'column';
+    
     const item = document.createElement('div');
     item.className = `tree-item ${node.type}`;
     item.style.paddingLeft = `${depth * 15}px`;
@@ -1253,6 +1238,8 @@ function renderClientFileNode(node, parentEl, depth = 0) {
             deleteFile(node.path, node.name, node.type === 'directory');
         }
     });
+    
+    itemWrapper.appendChild(item);
 
     if (node.type === 'directory') {
         item.classList.add('closed');
@@ -1280,14 +1267,14 @@ function renderClientFileNode(node, parentEl, depth = 0) {
             childrenContainer.appendChild(emptyMsg);
         }
 
-        item.appendChild(childrenContainer);
+        itemWrapper.appendChild(childrenContainer);
     } else {
         // File - click to open
         const openFile = () => openClientFile(node.path, node.name);
         labelContainer.addEventListener('click', openFile);
     }
 
-    parentEl.appendChild(item);
+    parentEl.appendChild(itemWrapper);
 }
 
 
