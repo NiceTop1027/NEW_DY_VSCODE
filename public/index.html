@@ -191,6 +191,64 @@
                 </div>
             </div>
         </div>
+        
+        <!-- GitHub Push Modal -->
+        <div id="github-push-modal" class="modal" style="display: none;">
+            <div class="modal-content" style="max-width: 700px;">
+                <div class="modal-header">
+                    <h2>📤 GitHub 푸시</h2>
+                    <button class="modal-close" onclick="document.getElementById('github-push-modal').style.display='none'">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="push-section">
+                        <h3>1️⃣ 레포지토리 선택</h3>
+                        <div id="push-repo-select"></div>
+                    </div>
+                    
+                    <div class="push-section" style="margin-top: 20px;">
+                        <h3>2️⃣ 푸시 방식 선택</h3>
+                        <div class="push-mode-options">
+                            <label class="push-mode-option">
+                                <input type="radio" name="push-mode" value="all" checked>
+                                <div class="option-content">
+                                    <strong>🌐 전체 푸시</strong>
+                                    <span>모든 변경사항을 푸시합니다</span>
+                                </div>
+                            </label>
+                            <label class="push-mode-option">
+                                <input type="radio" name="push-mode" value="select">
+                                <div class="option-content">
+                                    <strong>📋 선택 푸시</strong>
+                                    <span>원하는 파일만 선택해서 푸시합니다</span>
+                                </div>
+                            </label>
+                            <label class="push-mode-option">
+                                <input type="radio" name="push-mode" value="current">
+                                <div class="option-content">
+                                    <strong>📄 현재 파일만</strong>
+                                    <span>현재 열린 파일만 푸시합니다</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="file-selection-section" class="push-section" style="margin-top: 20px; display: none;">
+                        <h3>3️⃣ 파일 선택</h3>
+                        <div id="push-file-list"></div>
+                    </div>
+                    
+                    <div class="push-section" style="margin-top: 20px;">
+                        <h3>4️⃣ 커밋 메시지</h3>
+                        <textarea id="push-commit-message" placeholder="커밋 메시지를 입력하세요..." rows="3" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--editor-background); color: var(--text-color); font-family: inherit;"></textarea>
+                    </div>
+                    
+                    <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+                        <button id="push-cancel-btn" class="btn-secondary">취소</button>
+                        <button id="push-confirm-btn" class="btn-success">푸시 실행</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     <script src="dist/bundle.js"></script>
 </body>

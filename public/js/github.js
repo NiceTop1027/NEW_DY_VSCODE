@@ -104,54 +104,205 @@ export function initGitHub() {
         });
     }
     
-    // Push changes
+    // Push changes - Open new modal
     if (githubPushBtn) {
-        githubPushBtn.addEventListener('click', async () => {
-            // 클론한 레포지토리 목록 가져오기
-            const clonedRepos = JSON.parse(localStorage.getItem('clonedRepos') || '[]');
-            
-            if (clonedRepos.length === 0) {
-                alert('먼저 레포지토리를 클론하세요!');
-                return;
-            }
-            
-            // 레포지토리 선택 다이얼로그
-            let repoOptions = '클론한 레포지토리:\n\n';
-            clonedRepos.forEach((repo, index) => {
-                repoOptions += `${index + 1}. ${repo.fullName} (${repo.path})\n`;
-            });
-            repoOptions += '\n푸시할 레포지토리 번호를 입력하세요:';
-            
-            const repoIndex = prompt(repoOptions);
-            if (!repoIndex) return;
-            
-            const selectedRepoIndex = parseInt(repoIndex) - 1;
-            if (selectedRepoIndex < 0 || selectedRepoIndex >= clonedRepos.length) {
-                alert('잘못된 번호입니다.');
-                return;
-            }
-            
-            const selectedRepoInfo = clonedRepos[selectedRepoIndex];
-            const repoPath = selectedRepoInfo.path;
-            
-            const message = prompt('커밋 메시지를 입력하세요:', 'Update from web IDE');
-            if (!message) return;
-            
-            try {
-                githubPushBtn.disabled = true;
-                githubPushBtn.textContent = '푸시 중...';
-                
-                const result = await githubPush(repoPath, message, githubToken);
-                
-                alert(`✅ ${selectedRepoInfo.fullName}\n${result.message}`);
-            } catch (error) {
-                console.error('Push error:', error);
-                alert(`❌ 푸시 실패: ${error.message}`);
-            } finally {
-                githubPushBtn.disabled = false;
-                githubPushBtn.textContent = '변경사항 푸시';
+        githubPushBtn.addEventListener('click', () => {
+            openPushModal();
+        });
+    }
+    
+    // Initialize push modal
+    initPushModal();
+}
+
+let selectedPushRepo = null;
+let selectedFiles = new Set();
+
+function openPushModal() {
+    const clonedRepos = JSON.parse(localStorage.getItem('clonedRepos') || '[]');
+    
+    if (clonedRepos.length === 0) {
+        alert('먼저 레포지토리를 클론하세요!');
+        return;
+    }
+    
+    const pushModal = document.getElementById('github-push-modal');
+    const repoSelect = document.getElementById('push-repo-select');
+    
+    // Render repository selection
+    repoSelect.innerHTML = '';
+    clonedRepos.forEach((repo, index) => {
+        const repoOption = document.createElement('label');
+        repoOption.className = 'push-repo-option';
+        repoOption.innerHTML = `
+            <input type="radio" name="push-repo" value="${index}">
+            <div class="repo-option-content">
+                <strong>${repo.fullName}</strong>
+                <span>📁 ${repo.path}</span>
+            </div>
+        `;
+        
+        const radio = repoOption.querySelector('input');
+        radio.addEventListener('change', () => {
+            selectedPushRepo = repo;
+            loadChangedFiles(repo);
+        });
+        
+        repoSelect.appendChild(repoOption);
+    });
+    
+    // Select first repo by default
+    if (clonedRepos.length > 0) {
+        const firstRadio = repoSelect.querySelector('input[type="radio"]');
+        firstRadio.checked = true;
+        selectedPushRepo = clonedRepos[0];
+        loadChangedFiles(clonedRepos[0]);
+    }
+    
+    // Show modal
+    document.getElementById('github-modal').style.display = 'none';
+    pushModal.style.display = 'flex';
+}
+
+function initPushModal() {
+    const pushModeRadios = document.querySelectorAll('input[name="push-mode"]');
+    const fileSelectionSection = document.getElementById('file-selection-section');
+    
+    pushModeRadios.forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            if (e.target.value === 'select') {
+                fileSelectionSection.style.display = 'block';
+            } else {
+                fileSelectionSection.style.display = 'none';
             }
         });
+    });
+    
+    // Cancel button
+    document.getElementById('push-cancel-btn').addEventListener('click', () => {
+        document.getElementById('github-push-modal').style.display = 'none';
+        selectedFiles.clear();
+    });
+    
+    // Confirm button
+    document.getElementById('push-confirm-btn').addEventListener('click', async () => {
+        await executePush();
+    });
+}
+
+async function loadChangedFiles(repo) {
+    const fileList = document.getElementById('push-file-list');
+    fileList.innerHTML = '<p style="color: #888;">변경된 파일을 불러오는 중...</p>';
+    
+    try {
+        // Get changed files from clientFS
+        const { clientFS } = await import('./fileSystem.js');
+        const tree = clientFS.getTree();
+        
+        fileList.innerHTML = '';
+        selectedFiles.clear();
+        
+        function renderFileTree(node, parentEl, path = '') {
+            if (node.type === 'file') {
+                const filePath = path ? `${path}/${node.name}` : node.name;
+                const fileItem = document.createElement('label');
+                fileItem.className = 'push-file-item';
+                fileItem.innerHTML = `
+                    <input type="checkbox" value="${filePath}" checked>
+                    <span>📄 ${filePath}</span>
+                `;
+                
+                const checkbox = fileItem.querySelector('input');
+                checkbox.addEventListener('change', (e) => {
+                    if (e.target.checked) {
+                        selectedFiles.add(filePath);
+                    } else {
+                        selectedFiles.delete(filePath);
+                    }
+                });
+                
+                selectedFiles.add(filePath);
+                parentEl.appendChild(fileItem);
+            } else if (node.type === 'directory' && node.children) {
+                const newPath = path ? `${path}/${node.name}` : node.name;
+                node.children.forEach(child => renderFileTree(child, parentEl, newPath));
+            }
+        }
+        
+        if (tree.children && tree.children.length > 0) {
+            tree.children.forEach(child => renderFileTree(child, fileList));
+        } else {
+            fileList.innerHTML = '<p style="color: #888;">변경된 파일이 없습니다.</p>';
+        }
+    } catch (error) {
+        console.error('Failed to load files:', error);
+        fileList.innerHTML = '<p style="color: red;">파일 로드 실패</p>';
+    }
+}
+
+async function executePush() {
+    if (!selectedPushRepo) {
+        alert('레포지토리를 선택하세요!');
+        return;
+    }
+    
+    const pushMode = document.querySelector('input[name="push-mode"]:checked').value;
+    const commitMessage = document.getElementById('push-commit-message').value.trim();
+    
+    if (!commitMessage) {
+        alert('커밋 메시지를 입력하세요!');
+        return;
+    }
+    
+    const confirmBtn = document.getElementById('push-confirm-btn');
+    const originalText = confirmBtn.textContent;
+    
+    try {
+        confirmBtn.disabled = true;
+        confirmBtn.textContent = '푸시 중...';
+        
+        let filesToPush = [];
+        
+        if (pushMode === 'all') {
+            // Push all files
+            filesToPush = null; // null means all files
+        } else if (pushMode === 'select') {
+            // Push selected files
+            if (selectedFiles.size === 0) {
+                alert('푸시할 파일을 선택하세요!');
+                return;
+            }
+            filesToPush = Array.from(selectedFiles);
+        } else if (pushMode === 'current') {
+            // Push current file only
+            const activeTab = document.querySelector('.tab.active');
+            if (!activeTab) {
+                alert('열린 파일이 없습니다!');
+                return;
+            }
+            const currentFile = activeTab.dataset.filePath;
+            filesToPush = [currentFile];
+        }
+        
+        const result = await githubPush(
+            selectedPushRepo.path,
+            commitMessage,
+            githubToken,
+            filesToPush
+        );
+        
+        alert(`✅ 푸시 성공!\n\n레포지토리: ${selectedPushRepo.fullName}\n${result.message}`);
+        
+        // Close modal
+        document.getElementById('github-push-modal').style.display = 'none';
+        selectedFiles.clear();
+        
+    } catch (error) {
+        console.error('Push error:', error);
+        alert(`❌ 푸시 실패: ${error.message}`);
+    } finally {
+        confirmBtn.disabled = false;
+        confirmBtn.textContent = originalText;
     }
 }
 
