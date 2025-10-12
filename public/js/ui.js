@@ -148,6 +148,9 @@ export function setActiveTab(filePath) {
             
             // Update breadcrumb
             updateBreadcrumb(filePath);
+            
+            // Check if HTML file and show preview button
+            checkAndShowPreviewButton(filePath);
         } else {
             file.tabEl.classList.remove('active');
         }
@@ -1004,7 +1007,12 @@ function showWelcomeMessage() {
 function renderClientFileTree() {
     if (!fileExplorerEl) return;
     
-    fileExplorerEl.innerHTML = '<h3>Uploaded Files</h3>';
+    const dirHandle = clientFS.getDirectoryHandle();
+    const headerHtml = dirHandle 
+        ? `<h3>📁 로컬 폴더</h3><div style="padding: 5px 10px; font-size: 11px; color: var(--text-color-light);">실제 파일 시스템 연결됨</div>`
+        : `<h3>📂 업로드된 파일</h3><div style="padding: 5px 10px; font-size: 11px; color: var(--text-color-light);">메모리 전용 모드</div>`;
+    
+    fileExplorerEl.innerHTML = headerHtml;
     const tree = clientFS.getTree();
 
     if (tree.children.length === 0) {
@@ -1073,7 +1081,23 @@ function renderClientFileNode(node, parentEl, depth = 0) {
 
         if (node.children && node.children.length > 0) {
             node.children.forEach(child => renderClientFileNode(child, childrenContainer, depth + 1));
+        } else {
+            // Empty folder - add placeholder and context menu
+            const emptyMsg = document.createElement('div');
+            emptyMsg.className = 'empty-folder-msg';
+            emptyMsg.style.padding = '5px 10px';
+            emptyMsg.style.color = 'var(--text-color-light)';
+            emptyMsg.style.fontSize = '11px';
+            emptyMsg.textContent = '빈 폴더 (우클릭하여 파일 추가)';
+            childrenContainer.appendChild(emptyMsg);
         }
+        
+        // Add context menu to children container for empty folders
+        childrenContainer.addEventListener('contextmenu', (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            showFileContextMenu(e, node.path, node.name, true);
+        });
 
         item.appendChild(childrenContainer);
     } else {
@@ -1134,6 +1158,9 @@ function openClientFile(filePath, fileName) {
     openFiles.set(filePath, { tabEl: newTab, content: file.content, isClientFile: true });
 
     setActiveTab(filePath);
+    
+    // Check if HTML file and show preview button
+    checkAndShowPreviewButton(filePath);
 }
 
 // Window resize handler - 터미널 크기 자동 조정
