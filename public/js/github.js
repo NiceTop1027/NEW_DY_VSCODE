@@ -61,7 +61,7 @@ export function initGitHub() {
         });
     }
     
-    // Clone repository
+    // Clone repository with isomorphic-git
     if (githubCloneBtn) {
         githubCloneBtn.addEventListener('click', async () => {
             if (!selectedRepo) {
@@ -74,34 +74,77 @@ export function initGitHub() {
                 githubCloneBtn.textContent = '클론 중...';
                 
                 const [owner, repo] = selectedRepo.split('/');
-                const result = await githubCloneRepo(owner, repo, githubToken);
+                const repoUrl = `https://github.com/${owner}/${repo}`;
                 
-                // 클론한 레포지토리 정보 저장
+                console.log('🚀 isomorphic-git 클론 시작:', repoUrl);
+                
+                // Import gitClient
+                const { default: gitClient } = await import('./gitClient.js');
+                const { clientFS } = await import('./fileSystem.js');
+                
+                // Clone using isomorphic-git
+                await gitClient.clone(repoUrl, githubToken);
+                console.log('✓ Repository cloned');
+                
+                // Load files into clientFS
+                githubCloneBtn.textContent = '파일 로드 중...';
+                const files = await loadFilesFromGit(gitClient, clientFS);
+                console.log(`✓ Loaded ${files.length} files`);
+                
+                // Save cloned repo info
                 const clonedRepos = JSON.parse(localStorage.getItem('clonedRepos') || '[]');
                 if (!clonedRepos.find(r => r.fullName === selectedRepo)) {
                     clonedRepos.push({
                         fullName: selectedRepo,
                         owner,
                         repo,
-                        path: result.path,
+                        path: '/workspace',
                         clonedAt: new Date().toISOString()
                     });
                     localStorage.setItem('clonedRepos', JSON.stringify(clonedRepos));
                 }
                 
-                alert(`✅ ${selectedRepo} 클론 완료!\n경로: ${result.path}`);
+                alert(`✅ ${selectedRepo} 클론 완료!\n\n파일 수: ${files.length}개\n브라우저에서 직접 Git 작업이 가능합니다!`);
                 githubModal.style.display = 'none';
                 
-                // Refresh file tree
+                // Refresh UI
                 window.location.reload();
             } catch (error) {
-                console.error('Clone error:', error);
-                alert(`❌ 클론 실패: ${error.message}`);
+                console.error('❌ Clone error:', error);
+                alert(`❌ 클론 실패\n\n에러: ${error.message}\n\n💡 팁: 토큰 권한을 확인하세요.`);
             } finally {
                 githubCloneBtn.disabled = false;
                 githubCloneBtn.textContent = '선택한 레포 클론';
             }
         });
+    }
+    
+    // Helper: Load files from git to clientFS
+    async function loadFilesFromGit(gitClient, clientFS) {
+        const files = [];
+        
+        async function walkDir(dirPath = '') {
+            const items = await gitClient.listFiles(dirPath);
+            
+            for (const item of items) {
+                if (item === '.git') continue;
+                
+                const fullPath = dirPath ? `${dirPath}/${item}` : item;
+                
+                try {
+                    // Try to read as file
+                    const content = await gitClient.readFile(fullPath);
+                    clientFS.addFile(fullPath, content);
+                    files.push(fullPath);
+                } catch (err) {
+                    // It's a directory, recurse
+                    await walkDir(fullPath);
+                }
+            }
+        }
+        
+        await walkDir();
+        return files;
     }
     
     // Push changes - Open new modal
@@ -266,14 +309,16 @@ async function executePush() {
         confirmBtn.disabled = true;
         confirmBtn.textContent = '푸시 중...';
         
+        // Import gitClient
+        const { default: gitClient } = await import('./gitClient.js');
+        const { clientFS } = await import('./fileSystem.js');
+        
         let filesToPush = null;
         
         if (pushMode.value === 'all') {
-            // Push all files
             filesToPush = null; // null means all files
             console.log('푸시 모드: 전체 파일');
         } else if (pushMode.value === 'select') {
-            // Push selected files
             if (selectedFiles.size === 0) {
                 alert('푸시할 파일을 선택하세요!');
                 confirmBtn.disabled = false;
@@ -283,7 +328,6 @@ async function executePush() {
             filesToPush = Array.from(selectedFiles);
             console.log('푸시 모드: 선택된 파일', filesToPush);
         } else if (pushMode.value === 'current') {
-            // Push current file only
             const activeTab = document.querySelector('.tab.active');
             if (!activeTab) {
                 alert('열린 파일이 없습니다!');
@@ -296,38 +340,75 @@ async function executePush() {
             console.log('푸시 모드: 현재 파일', currentFile);
         }
         
-        console.log('푸시 시작:', {
+        console.log('🚀 isomorphic-git 푸시 시작:', {
             repo: selectedPushRepo.fullName,
-            path: selectedPushRepo.path,
             message: commitMessage,
             files: filesToPush
         });
         
-        const result = await githubPush(
-            selectedPushRepo.path,
-            commitMessage,
-            githubToken,
-            filesToPush
-        );
+        // Step 1: Write files to git file system
+        confirmBtn.textContent = '파일 준비 중...';
+        const filesToWrite = filesToPush || getAllFiles(clientFS);
         
-        console.log('푸시 성공:', result);
+        for (const filePath of filesToWrite) {
+            const file = clientFS.getFile(filePath);
+            if (file && file.content) {
+                await gitClient.writeFile(filePath, file.content);
+                console.log(`✓ Written: ${filePath}`);
+            }
+        }
         
-        alert(`✅ 푸시 성공!\n\n레포지토리: ${selectedPushRepo.fullName}\n메시지: ${commitMessage}\n${result.message || ''}`);
+        // Step 2: Add files to staging
+        confirmBtn.textContent = '스테이징 중...';
+        if (filesToPush) {
+            for (const file of filesToPush) {
+                await gitClient.add(file);
+            }
+        } else {
+            await gitClient.add('.');
+        }
+        console.log('✓ Files staged');
+        
+        // Step 3: Commit
+        confirmBtn.textContent = '커밋 중...';
+        const author = {
+            name: githubUser?.login || 'User',
+            email: githubUser?.email || 'user@example.com'
+        };
+        const commitResult = await gitClient.commit(commitMessage, author);
+        console.log('✓ Committed:', commitResult.sha);
+        
+        // Step 4: Push
+        confirmBtn.textContent = '푸시 중...';
+        const branch = await gitClient.currentBranch();
+        await gitClient.push(githubToken, 'origin', branch);
+        console.log('✓ Pushed to remote');
+        
+        alert(`✅ 푸시 성공!\n\n레포지토리: ${selectedPushRepo.fullName}\n메시지: ${commitMessage}\n커밋: ${commitResult.sha.substring(0, 7)}\n브랜치: ${branch}`);
         
         // Close modal
         document.getElementById('github-push-modal').style.display = 'none';
         selectedFiles.clear();
-        
-        // Clear commit message
         document.getElementById('push-commit-message').value = '';
         
     } catch (error) {
-        console.error('Push error:', error);
-        alert(`❌ 푸시 실패\n\n에러: ${error.message}\n\n레포지토리: ${selectedPushRepo.fullName}\n경로: ${selectedPushRepo.path}`);
+        console.error('❌ Push error:', error);
+        alert(`❌ 푸시 실패\n\n에러: ${error.message}\n\n레포지토리: ${selectedPushRepo.fullName}\n\n💡 팁: 레포지토리를 먼저 클론했는지 확인하세요.`);
     } finally {
         confirmBtn.disabled = false;
         confirmBtn.textContent = originalText;
     }
+}
+
+// Helper function to get all files from clientFS
+function getAllFiles(fs) {
+    const files = [];
+    fs.files.forEach((file, path) => {
+        if (file.type === 'file') {
+            files.push(path);
+        }
+    });
+    return files;
 }
 
 function updateGitHubUI() {
