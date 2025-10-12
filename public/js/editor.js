@@ -61,16 +61,16 @@ export function initEditor(editorEl, tabsEl, openFilesMap) {
         smoothScrolling: true,
         // 고급 기능 활성화
         quickSuggestions: {
-            other: true,
-            comments: true,
-            strings: true
+            other: 'on',
+            comments: 'off',
+            strings: 'on'
         },
         suggestOnTriggerCharacters: true,
         acceptSuggestionOnEnter: 'on',
         acceptSuggestionOnCommitCharacter: true,
         tabCompletion: 'on',
-        wordBasedSuggestions: true,
-        snippetSuggestions: 'top', // Show snippets at top
+        wordBasedSuggestions: 'matchingDocuments',
+        snippetSuggestions: 'top',
         suggest: {
             showWords: true,
             showSnippets: true,
@@ -81,9 +81,30 @@ export function initEditor(editorEl, tabsEl, openFilesMap) {
             showModules: true,
             showProperties: true,
             showMethods: true,
+            showConstructors: true,
+            showFields: true,
+            showInterfaces: true,
+            showStructs: true,
+            showEvents: true,
+            showOperators: true,
+            showUnits: true,
+            showValues: true,
+            showConstants: true,
+            showEnums: true,
+            showEnumMembers: true,
+            showColors: true,
+            showFiles: true,
+            showReferences: true,
+            showFolders: true,
+            showTypeParameters: true,
+            showIssues: true,
+            showUsers: true,
             insertMode: 'insert',
             filterGraceful: true,
-            localityBonus: true
+            localityBonus: true,
+            shareSuggestSelections: true,
+            showInlineDetails: true,
+            snippetsPreventQuickSuggestions: false
         },
         parameterHints: { 
             enabled: true,
@@ -587,6 +608,8 @@ export function restoreEditorSettings() {
 }
 
 // Register custom snippets for all languages
+// Monaco Editor already has built-in snippets and IntelliSense
+// We only add commonly used shortcuts here
 function registerCustomSnippets() {
     // JavaScript/TypeScript snippets
     monaco.languages.registerCompletionItemProvider('javascript', {
@@ -728,6 +751,307 @@ function registerCustomSnippets() {
                     insertText: '<!DOCTYPE html>\n<html lang="ko">\n<head>\n\t<meta charset="UTF-8">\n\t<title>${1:Document}</title>\n</head>\n<body>\n\t${2}\n</body>\n</html>',
                     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
                     documentation: 'HTML5 template'
+                },
+                {
+                    label: 'img',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '<img src="${1:image.jpg}" alt="${2:description}">',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Image tag'
+                },
+                {
+                    label: 'a',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '<a href="${1:url}">${2:text}</a>',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Anchor tag'
+                },
+                {
+                    label: 'div',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '<div class="${1}">\n\t${2}\n</div>',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Div element'
+                },
+                {
+                    label: 'button',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '<button type="${1:button}">${2:Click me}</button>',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Button element'
+                },
+                {
+                    label: 'input',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '<input type="${1:text}" name="${2:name}" placeholder="${3}">',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Input element'
+                },
+                {
+                    label: 'form',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '<form action="${1}" method="${2:post}">\n\t${3}\n</form>',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Form element'
+                },
+                {
+                    label: 'ul',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '<ul>\n\t<li>${1}</li>\n</ul>',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Unordered list'
+                },
+                {
+                    label: 'table',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '<table>\n\t<tr>\n\t\t<th>${1:Header}</th>\n\t</tr>\n\t<tr>\n\t\t<td>${2:Data}</td>\n\t</tr>\n</table>',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Table element'
+                }
+            ]
+        })
+    });
+    
+    // CSS snippets
+    monaco.languages.registerCompletionItemProvider('css', {
+        provideCompletionItems: () => ({
+            suggestions: [
+                {
+                    label: 'flex',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'display: flex;\njustify-content: ${1:center};\nalign-items: ${2:center};',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Flexbox layout'
+                },
+                {
+                    label: 'grid',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'display: grid;\ngrid-template-columns: ${1:repeat(3, 1fr)};\ngap: ${2:10px};',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Grid layout'
+                },
+                {
+                    label: 'transition',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'transition: ${1:all} ${2:0.3s} ${3:ease};',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Transition'
+                },
+                {
+                    label: 'animation',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'animation: ${1:name} ${2:1s} ${3:ease} ${4:infinite};',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Animation'
+                }
+            ]
+        })
+    });
+    
+    // Go snippets
+    monaco.languages.registerCompletionItemProvider('go', {
+        provideCompletionItems: () => ({
+            suggestions: [
+                {
+                    label: 'package',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'package ${1:main}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Package declaration'
+                },
+                {
+                    label: 'func',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'func ${1:name}(${2:params}) ${3:returnType} {\n\t${4}\n}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Function'
+                },
+                {
+                    label: 'main',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'func main() {\n\t${1}\n}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Main function'
+                },
+                {
+                    label: 'for',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'for ${1:i} := 0; ${1:i} < ${2:n}; ${1:i}++ {\n\t${3}\n}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'For loop'
+                }
+            ]
+        })
+    });
+    
+    // Rust snippets
+    monaco.languages.registerCompletionItemProvider('rust', {
+        provideCompletionItems: () => ({
+            suggestions: [
+                {
+                    label: 'fn',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'fn ${1:name}(${2:params}) ${3:-> ReturnType} {\n\t${4}\n}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Function'
+                },
+                {
+                    label: 'main',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'fn main() {\n\t${1}\n}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Main function'
+                },
+                {
+                    label: 'struct',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'struct ${1:Name} {\n\t${2}\n}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Struct'
+                },
+                {
+                    label: 'impl',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'impl ${1:Name} {\n\t${2}\n}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Implementation'
+                }
+            ]
+        })
+    });
+    
+    // PHP snippets
+    monaco.languages.registerCompletionItemProvider('php', {
+        provideCompletionItems: () => ({
+            suggestions: [
+                {
+                    label: 'php',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '<?php\n\n${1}\n\n?>',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'PHP tags'
+                },
+                {
+                    label: 'function',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'function ${1:name}(${2:params}) {\n\t${3}\n}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Function'
+                },
+                {
+                    label: 'class',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'class ${1:ClassName} {\n\tpublic function __construct(${2:params}) {\n\t\t${3}\n\t}\n}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Class'
+                },
+                {
+                    label: 'echo',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'echo ${1};',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Echo statement'
+                }
+            ]
+        })
+    });
+    
+    // Ruby snippets
+    monaco.languages.registerCompletionItemProvider('ruby', {
+        provideCompletionItems: () => ({
+            suggestions: [
+                {
+                    label: 'def',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'def ${1:method_name}(${2:params})\n\t${3}\nend',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Method definition'
+                },
+                {
+                    label: 'class',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'class ${1:ClassName}\n\tdef initialize(${2:params})\n\t\t${3}\n\tend\nend',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Class definition'
+                },
+                {
+                    label: 'each',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '${1:array}.each do |${2:item}|\n\t${3}\nend',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Each loop'
+                }
+            ]
+        })
+    });
+    
+    // SQL snippets
+    monaco.languages.registerCompletionItemProvider('sql', {
+        provideCompletionItems: () => ({
+            suggestions: [
+                {
+                    label: 'select',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'SELECT ${1:*} FROM ${2:table} WHERE ${3:condition};',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'SELECT statement'
+                },
+                {
+                    label: 'insert',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'INSERT INTO ${1:table} (${2:columns}) VALUES (${3:values});',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'INSERT statement'
+                },
+                {
+                    label: 'update',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'UPDATE ${1:table} SET ${2:column} = ${3:value} WHERE ${4:condition};',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'UPDATE statement'
+                },
+                {
+                    label: 'create',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'CREATE TABLE ${1:table_name} (\n\t${2:id} INT PRIMARY KEY,\n\t${3:column} VARCHAR(255)\n);',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'CREATE TABLE statement'
+                }
+            ]
+        })
+    });
+    
+    // Shell/Bash snippets
+    monaco.languages.registerCompletionItemProvider('shell', {
+        provideCompletionItems: () => ({
+            suggestions: [
+                {
+                    label: 'bash',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '#!/bin/bash\n\n${1}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Bash shebang'
+                },
+                {
+                    label: 'for',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'for ${1:i} in ${2:list}; do\n\t${3}\ndone',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'For loop'
+                },
+                {
+                    label: 'if',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'if [ ${1:condition} ]; then\n\t${2}\nfi',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'If statement'
+                },
+                {
+                    label: 'function',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '${1:function_name}() {\n\t${2}\n}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Function'
                 }
             ]
         })
