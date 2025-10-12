@@ -1035,9 +1035,12 @@ function renderClientFileTree() {
     
     const contextMenuListener = (e) => {
         // Only show if clicking on the file explorer itself, not on a file/folder
-        if (e.target === fileExplorerEl || e.target.tagName === 'H3' || e.target.tagName === 'P') {
-            e.preventDefault();
-            showFileExplorerContextMenu(e);
+        if (e.target === fileExplorerEl || e.target.tagName === 'H3' || e.target.tagName === 'P' || e.target.tagName === 'DIV') {
+            // Check if it's not a tree-item
+            if (!e.target.classList.contains('tree-item') && !e.target.closest('.tree-item')) {
+                e.preventDefault();
+                showFileExplorerContextMenu(e);
+            }
         }
     };
     
@@ -1373,15 +1376,26 @@ function togglePreview() {
 // 프리뷰 새로고침
 function refreshPreview() {
     const activeTab = document.querySelector('.tab.active');
-    if (!activeTab) return;
+    if (!activeTab) {
+        showNotification('열린 파일이 없습니다', 'error');
+        return;
+    }
     
     const filePath = activeTab.dataset.filePath;
-    const editor = window.monaco?.editor?.getModels()[0];
+    const editor = getEditor();
     
-    if (!editor) return;
+    if (!editor) {
+        showNotification('에디터를 찾을 수 없습니다', 'error');
+        return;
+    }
     
     const content = editor.getValue();
     const previewFrame = document.getElementById('preview-frame');
+    
+    if (!previewFrame) {
+        showNotification('프리뷰 프레임을 찾을 수 없습니다', 'error');
+        return;
+    }
     
     // iframe에 HTML 내용 로드
     const blob = new Blob([content], { type: 'text/html' });
@@ -1393,6 +1407,8 @@ function refreshPreview() {
     previewFrame.onload = () => {
         URL.revokeObjectURL(url);
     };
+    
+    showNotification('✅ 프리뷰 새로고침 완료', 'success');
 }
 
 // --- Sandbox Environment ---
@@ -1750,22 +1766,41 @@ function showFileExplorerContextMenu(event) {
 
     const menuItems = [
         { icon: 'file', label: '새 파일', action: () => createNewFile('', true) },
-        { icon: 'folder', label: '새 폴더', action: () => createNewFolder('', true) }
+        { icon: 'folder', label: '새 폴더', action: () => createNewFolder('', true) },
+        { separator: true },
+        { icon: 'folder-opened', label: '폴더 열기', action: () => document.getElementById('open-folder-btn')?.click() },
+        { icon: 'file-add', label: '파일 업로드', action: () => document.getElementById('file-upload-input')?.click() },
+        { separator: true },
+        { icon: 'refresh', label: '새로고침', action: () => renderClientFileTree() },
+        { icon: 'clear-all', label: '모두 닫기', action: () => closeAllFiles() }
     ];
 
     menuItems.forEach(item => {
-        const menuItem = document.createElement('div');
-        menuItem.className = 'context-menu-item';
-        menuItem.innerHTML = `<i class="codicon codicon-${item.icon}"></i> ${item.label}`;
-        menuItem.addEventListener('click', (e) => {
-            e.stopPropagation();
-            item.action();
-            closeContextMenu();
-        });
-        menu.appendChild(menuItem);
+        if (item.separator) {
+            const separator = document.createElement('div');
+            separator.className = 'context-menu-separator';
+            menu.appendChild(separator);
+        } else {
+            const menuItem = document.createElement('div');
+            menuItem.className = 'context-menu-item';
+            menuItem.innerHTML = `<i class="codicon codicon-${item.icon}"></i> ${item.label}`;
+            menuItem.addEventListener('click', (e) => {
+                e.stopPropagation();
+                item.action();
+                closeContextMenu();
+            });
+            menu.appendChild(menuItem);
+        }
     });
 
     document.body.appendChild(menu);
+}
+
+// Close all files
+function closeAllFiles() {
+    const filePaths = Array.from(openFiles.keys());
+    filePaths.forEach(path => closeFile(path));
+    showNotification('✅ 모든 파일 닫기 완료', 'success');
 }
 
 function closeContextMenu() {
