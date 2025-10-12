@@ -2788,87 +2788,8 @@ function logoutFromGitHub() {
     renderGitHubView();
 }
 
-// 전체 파일 푸시
-async function pushAllFiles() {
-    // 레포지토리 선택 다이얼로그 표시
-    const repoName = prompt('푸시할 레포지토리 이름을 입력하세요:');
-    if (!repoName) return;
-    
-    const commitMessage = prompt('커밋 메시지를 입력하세요:', 'Update files');
-    if (!commitMessage) return;
-    
-    showNotification('파일 푸시 중...', 'info');
-    
-    try {
-        // clientFS에서 모든 파일 가져오기
-        const files = [];
-        clientFS.files.forEach((file, path) => {
-            if (file.type === 'file' && file.content) {
-                files.push({
-                    path: path,
-                    content: file.content
-                });
-            }
-        });
-        
-        if (files.length === 0) {
-            showNotification('푸시할 파일이 없습니다', 'error');
-            return;
-        }
-        
-        // 각 파일을 GitHub에 푸시
-        let successCount = 0;
-        let errorCount = 0;
-        
-        for (const file of files) {
-            try {
-                const response = await fetch(`/api/github/repos/${githubUser.login}/${repoName}/contents/${file.path}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${githubToken}`
-                    },
-                    body: JSON.stringify({
-                        message: commitMessage,
-                        content: btoa(unescape(encodeURIComponent(file.content))), // Base64 encode
-                        branch: 'main'
-                    })
-                });
-                
-                if (response.ok) {
-                    successCount++;
-                } else {
-                    errorCount++;
-                    console.error(`Failed to push ${file.path}`);
-                }
-            } catch (err) {
-                errorCount++;
-                console.error(`Error pushing ${file.path}:`, err);
-            }
-        }
-        
-        if (errorCount === 0) {
-            showNotification(`✅ ${successCount}개 파일 푸시 완료!`, 'success');
-        } else {
-            showNotification(`${successCount}개 성공, ${errorCount}개 실패`, 'warning');
-        }
-    } catch (error) {
-        console.error('Push error:', error);
-        showNotification('푸시 실패: ' + error.message, 'error');
-    }
-}
-
-// Load user info on startup if token exists
-if (githubToken) {
-    const storedUser = localStorage.getItem('github_user');
-    if (storedUser) {
-        try {
-            githubUser = JSON.parse(storedUser);
-        } catch (e) {
-            console.error('Failed to parse stored user:', e);
-        }
-    }
-}
+// Note: GitHub push functionality is now handled by github.js
+// Use the GitHub button in the activity bar to access push features
 
 // Toggle panel visibility
 function togglePanel() {
