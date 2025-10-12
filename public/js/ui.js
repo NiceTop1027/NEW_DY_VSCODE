@@ -1750,29 +1750,52 @@ function closeContextMenu() {
 
 async function deleteFile(filePath, fileName, isDirectory) {
     const type = isDirectory ? '폴더' : '파일';
-    if (!confirm(`정말로 "${fileName}" ${type}를 삭제하시겠습니까?\n\n⚠️ 이 작업은 실제 로컬 파일을 삭제합니다!`)) {
-        return;
-    }
-
-    // Use File System Access API to delete from disk
-    const result = await clientFS.deleteFileFromDisk(filePath);
+    const dirHandle = clientFS.getDirectoryHandle();
     
-    if (result.success && result.deletedFromDisk) {
-        showNotification(`${type} 삭제됨: ${fileName}`, 'success');
-        
-        // Close tab if file is open
-        if (openFiles.has(filePath)) {
-            closeFile(filePath);
-        }
-        
-        // Reload file tree
-        const dirHandle = clientFS.getDirectoryHandle();
-        if (dirHandle) {
-            await loadDirectoryWithHandles(dirHandle);
+    if (dirHandle) {
+        if (!confirm(`정말로 "${fileName}" ${type}를 삭제하시겠습니까?\n\n⚠️ 이 작업은 실제 로컬 파일을 삭제합니다!`)) {
+            return;
         }
     } else {
-        showNotification(`삭제 실패: ${result.error || '알 수 없는 오류'}`, 'error');
+        if (!confirm(`정말로 "${fileName}" ${type}를 삭제하시겠습니까?`)) {
+            return;
+        }
     }
+
+    // Try to delete from disk if directory handle exists
+    if (dirHandle) {
+        const result = await clientFS.deleteFileFromDisk(filePath);
+        
+        if (result.success && result.deletedFromDisk) {
+            showNotification(`✅ ${type} 삭제됨: ${fileName}`, 'success');
+            
+            // Close tab if file is open
+            if (openFiles.has(filePath)) {
+                closeFile(filePath);
+            }
+            
+            // Reload file tree
+            await loadDirectoryWithHandles(dirHandle);
+            return;
+        } else {
+            showNotification(`삭제 실패: ${result.error || '알 수 없는 오류'}`, 'error');
+            return;
+        }
+    }
+    
+    // No directory handle - delete from memory only
+    clientFS.deleteFile(filePath);
+    await clientFS.saveToIndexedDB();
+    
+    showNotification(`✅ ${type} 삭제됨: ${fileName}`, 'success');
+    
+    // Close tab if file is open
+    if (openFiles.has(filePath)) {
+        closeFile(filePath);
+    }
+    
+    // Refresh file tree
+    renderClientFileTree();
 }
 
 async function renameFile(filePath, fileName, isDirectory) {
@@ -1784,23 +1807,28 @@ async function renameFile(filePath, fileName, isDirectory) {
 
     showNotification(`${type} 이름 변경 중...`, 'info');
     
-    const result = await clientFS.renameEntry(filePath, newName);
+    const dirHandle = clientFS.getDirectoryHandle();
     
-    if (result.success && result.renamed) {
-        showNotification(`이름 변경됨: ${fileName} → ${newName}`, 'success');
+    // Try to rename on disk if directory handle exists
+    if (dirHandle) {
+        const result = await clientFS.renameEntry(filePath, newName);
         
-        // Close tab if file is open
-        if (openFiles.has(filePath)) {
-            closeFile(filePath);
-        }
-        
-        // Reload file tree
-        const dirHandle = clientFS.getDirectoryHandle();
-        if (dirHandle) {
+        if (result.success && result.renamed) {
+            showNotification(`✅ 이름 변경됨: ${fileName} → ${newName}`, 'success');
+            
+            // Close tab if file is open
+            if (openFiles.has(filePath)) {
+                closeFile(filePath);
+            }
+            
+            // Reload file tree
             await loadDirectoryWithHandles(dirHandle);
+        } else {
+            showNotification(`이름 변경 실패: ${result.error || '알 수 없는 오류'}`, 'error');
         }
     } else {
-        showNotification(`이름 변경 실패: ${result.error || '알 수 없는 오류'}`, 'error');
+        // No directory handle - rename in memory only
+        showNotification('메모리 전용 모드에서는 이름 변경이 지원되지 않습니다', 'error');
     }
 }
 
