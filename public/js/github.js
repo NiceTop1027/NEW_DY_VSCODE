@@ -307,6 +307,13 @@ async function executePush() {
         return;
     }
     
+    // Check GitHub token
+    const githubToken = localStorage.getItem('github_token');
+    if (!githubToken) {
+        alert('❌ GitHub 토큰이 없습니다!\n\n먼저 GitHub에 로그인하세요.');
+        return;
+    }
+    
     const pushMode = document.querySelector('input[name="push-mode"]:checked');
     if (!pushMode) {
         alert('푸시 방식을 선택하세요!');
@@ -411,7 +418,17 @@ async function executePush() {
                         console.log(`✓ Pushed: ${filePath}`);
                     } else {
                         errorCount++;
-                        console.error(`✗ Failed: ${filePath}`, await response.text());
+                        const errorData = await response.json().catch(() => ({}));
+                        console.error(`✗ Failed: ${filePath}`, errorData);
+                        
+                        // Handle specific errors
+                        if (response.status === 401) {
+                            throw new Error('GitHub 토큰이 유효하지 않습니다. 다시 로그인하세요.');
+                        } else if (response.status === 404) {
+                            throw new Error(`레포지토리 "${repoOwner}/${repoName}"를 찾을 수 없습니다.`);
+                        } else if (response.status === 403) {
+                            throw new Error('레포지토리에 쓰기 권한이 없습니다.');
+                        }
                     }
                 } catch (err) {
                     errorCount++;
@@ -433,7 +450,20 @@ async function executePush() {
         
     } catch (error) {
         console.error('❌ Push error:', error);
-        alert(`❌ 푸시 실패\n\n에러: ${error.message}\n\n레포지토리: ${selectedPushRepo.fullName}\n\n💡 팁: 레포지토리를 먼저 클론했는지 확인하세요.`);
+        
+        let errorMessage = `❌ 푸시 실패\n\n에러: ${error.message}\n\n`;
+        
+        if (error.message.includes('토큰')) {
+            errorMessage += `💡 해결 방법:\n1. GitHub 버튼 클릭\n2. "로그아웃" 후 다시 로그인\n3. 새 토큰으로 다시 시도`;
+        } else if (error.message.includes('찾을 수 없습니다')) {
+            errorMessage += `💡 해결 방법:\n1. 레포지토리 이름 확인\n2. 사용자명 확인\n3. 레포지토리가 존재하는지 확인`;
+        } else if (error.message.includes('권한')) {
+            errorMessage += `💡 해결 방법:\n1. 레포지토리 소유자인지 확인\n2. 협업자로 추가되었는지 확인\n3. 토큰 권한 확인 (repo 스코프 필요)`;
+        } else {
+            errorMessage += `💡 팁: GitHub 토큰과 레포지토리 정보를 확인하세요.`;
+        }
+        
+        alert(errorMessage);
     } finally {
         confirmBtn.disabled = false;
         confirmBtn.textContent = originalText;
