@@ -1,7 +1,12 @@
 // public/js/codeRunner.js
-// Piston API를 사용한 다중 언어 코드 실행 (완전 무료, API 키 불필요)
+// Multi-language code execution with browser-first approach
+
+import browserRunner from './browserRunner.js';
 
 const PISTON_API = 'https://emkc.org/api/v2/piston';
+
+// Languages that can run in browser
+const BROWSER_LANGUAGES = ['python', 'py', 'javascript', 'js'];
 
 // 언어 이름 매핑 (Piston Language Names)
 const LANGUAGE_NAMES = {
@@ -155,9 +160,10 @@ function getLanguageName(fileExtension) {
     return LANGUAGE_NAMES[ext] || null;
 }
 
-// 코드 실행
-export async function runCode(code, fileExtension) {
+// 코드 실행 (Browser-first approach)
+export async function runCode(code, fileExtension, onOutput) {
     const language = getLanguageName(fileExtension);
+    const ext = fileExtension.toLowerCase().replace('.', '');
     
     if (!language) {
         const supportedLanguages = Object.keys(LANGUAGE_NAMES).sort().join(', ');
@@ -168,8 +174,39 @@ export async function runCode(code, fileExtension) {
         };
     }
     
+    // Try browser execution first for supported languages
+    if (BROWSER_LANGUAGES.includes(ext)) {
+        try {
+            console.log(`🌐 Running ${language} in browser...`);
+            if (onOutput) onOutput(`🌐 Running ${language} in browser...\n`);
+            
+            const result = await browserRunner.runCode(code, language, onOutput);
+            
+            if (result.success) {
+                return {
+                    output: result.output,
+                    error: '',
+                    execError: '',
+                    language: language,
+                    version: 'browser',
+                    executionMode: 'browser'
+                };
+            } else {
+                // Browser execution failed, fallback to Piston
+                console.log('Browser execution failed, falling back to Piston...');
+                if (onOutput) onOutput('\n⚠️ Browser execution failed, using online compiler...\n\n');
+            }
+        } catch (err) {
+            console.error('Browser execution error:', err);
+            if (onOutput) onOutput(`\n⚠️ Browser error: ${err.message}\nFalling back to online compiler...\n\n`);
+        }
+    }
+    
+    // Fallback to Piston API for other languages or if browser failed
     try {
-        // Piston API 호출
+        console.log(`☁️ Running ${language} on Piston API...`);
+        if (onOutput) onOutput(`☁️ Running ${language} on online compiler...\n`);
+        
         const response = await fetch(`${PISTON_API}/execute`, {
             method: 'POST',
             headers: {
@@ -177,7 +214,7 @@ export async function runCode(code, fileExtension) {
             },
             body: JSON.stringify({
                 language: language,
-                version: '*', // 최신 버전 사용
+                version: '*',
                 files: [{
                     content: code
                 }],
@@ -196,34 +233,37 @@ export async function runCode(code, fileExtension) {
         
         const result = await response.json();
         
-        // 결과 처리
         let output = result.run?.output || '';
         let error = result.run?.stderr || '';
         let execError = '';
         
-        // 컴파일 에러
         if (result.compile && result.compile.output) {
             error += '\n=== Compile Output ===\n' + result.compile.output;
         }
         
-        // 실행 에러
         if (result.run && result.run.code !== 0) {
             execError = `Exit code: ${result.run.code}`;
         }
+        
+        if (onOutput && output) onOutput(output);
+        if (onOutput && error) onOutput(error);
         
         return {
             output: output.trim(),
             error: error.trim(),
             execError: execError,
             language: language,
-            version: result.language || 'unknown'
+            version: result.language || 'unknown',
+            executionMode: 'piston'
         };
         
     } catch (err) {
         console.error('Piston API Error:', err);
+        const errorMsg = `실행 실패: ${err.message}\n\n온라인 컴파일러 서비스에 연결할 수 없습니다.`;
+        if (onOutput) onOutput(errorMsg);
         return {
             output: '',
-            error: `실행 실패: ${err.message}\n\n온라인 컴파일러 서비스에 연결할 수 없습니다.`,
+            error: errorMsg,
             execError: err.toString()
         };
     }
