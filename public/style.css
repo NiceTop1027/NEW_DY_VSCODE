@@ -1038,17 +1038,20 @@ body {
 .tree-item {
     padding: 3px 8px 3px 4px;
     cursor: pointer;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
     color: var(--text-color-light);
     transition: all 0.15s ease-out;
     user-select: none;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
     position: relative;
     border-radius: 3px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.tree-item > div:first-child {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
 }
 
 .tree-item:hover {
@@ -1091,11 +1094,6 @@ body {
 
 .tree-item.directory.closed > .tree-children {
     display: none;
-}
-
-.tree-item {
-    width: 100%;
-    box-sizing: border-box;
 }
 
 #notification-area {

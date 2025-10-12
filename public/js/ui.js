@@ -1187,9 +1187,6 @@ function renderClientFileNode(node, parentEl, depth = 0) {
     const item = document.createElement('div');
     item.className = `tree-item ${node.type}`;
     item.style.paddingLeft = `${depth * 15}px`;
-    item.style.display = 'flex';
-    item.style.alignItems = 'center';
-    item.style.justifyContent = 'space-between';
     item.dataset.path = node.path;
     item.draggable = true;
 
