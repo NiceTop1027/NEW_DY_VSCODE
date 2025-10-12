@@ -1,4 +1,7 @@
 // public/js/utils.js
+import Toastify from 'toastify-js';
+import 'toastify-js/src/toastify.css';
+
 export function getLanguageIdFromFilePath(filePath) {
     const extension = filePath.split('.').pop().toLowerCase();
     
@@ -97,14 +100,45 @@ export function getLanguageIdFromFilePath(filePath) {
 }
 
 export function showNotification(message, type = 'info') {
-    const notificationArea = document.getElementById('notification-area');
-    const notification = document.createElement('div');
-    notification.className = `notification ${type}`;
-    notification.textContent = message;
-    notificationArea.appendChild(notification);
+    // Type mapping for colors
+    const typeConfig = {
+        'success': {
+            background: 'linear-gradient(to right, #00b09b, #96c93d)',
+            icon: '✅'
+        },
+        'error': {
+            background: 'linear-gradient(to right, #ff5f6d, #ffc371)',
+            icon: '❌'
+        },
+        'warning': {
+            background: 'linear-gradient(to right, #f093fb, #f5576c)',
+            icon: '⚠️'
+        },
+        'info': {
+            background: 'linear-gradient(to right, #4facfe, #00f2fe)',
+            icon: 'ℹ️'
+        }
+    };
 
-    setTimeout(() => {
-        notification.style.opacity = '0';
-        notification.addEventListener('transitionend', () => notification.remove());
-    }, 3000);
+    const config = typeConfig[type] || typeConfig['info'];
+    
+    Toastify({
+        text: `${config.icon} ${message}`,
+        duration: 3000,
+        close: true,
+        gravity: 'top',
+        position: 'right',
+        stopOnFocus: true,
+        style: {
+            background: config.background,
+            borderRadius: '8px',
+            padding: '12px 20px',
+            fontSize: '14px',
+            fontWeight: '500',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15)'
+        },
+        onClick: function() {
+            // Close on click
+        }
+    }).showToast();
 }
