@@ -334,9 +334,47 @@ export function initUI() {
     
     // Preview Close Button
     const previewClose = document.getElementById('preview-close');
-    if (previewClose) {
-        previewClose.addEventListener('click', () => {
-            document.getElementById('preview-modal').style.display = 'none';
+    const previewModal = document.getElementById('preview-modal');
+    if (previewClose && previewModal) {
+        previewClose.addEventListener('click', (e) => {
+            e.stopPropagation();
+            previewModal.style.display = 'none';
+            showNotification('프리뷰 닫기', 'info');
+        });
+    }
+    
+    // Make preview modal draggable
+    const previewHeader = document.querySelector('.preview-header');
+    if (previewHeader && previewModal) {
+        let isDragging = false;
+        let currentX;
+        let currentY;
+        let initialX;
+        let initialY;
+        
+        previewHeader.addEventListener('mousedown', (e) => {
+            // Don't drag if clicking on buttons
+            if (e.target.closest('.preview-action-btn')) return;
+            
+            isDragging = true;
+            initialX = e.clientX - previewModal.offsetLeft;
+            initialY = e.clientY - previewModal.offsetTop;
+        });
+        
+        document.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                e.preventDefault();
+                currentX = e.clientX - initialX;
+                currentY = e.clientY - initialY;
+                
+                previewModal.style.left = currentX + 'px';
+                previewModal.style.top = currentY + 'px';
+                previewModal.style.right = 'auto';
+            }
+        });
+        
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
         });
     }
     
