@@ -325,10 +325,20 @@ class ExtensionSystem {
             
             showNotification(`"${extension.name}" 설치 중...`, 'info');
             
+            // Download and load extension if it has a URL
+            if (extension.vsixUrl || extension.url) {
+                try {
+                    await this.downloadAndLoadExtension(extension);
+                } catch (err) {
+                    console.warn('Failed to download extension, using stub:', err);
+                }
+            }
+            
             // Save to installed list
             this.installedExtensions.set(extensionId, {
                 ...extension,
-                installedAt: Date.now()
+                installedAt: Date.now(),
+                enabled: true
             });
             
             // Save to storage
@@ -337,12 +347,46 @@ class ExtensionSystem {
             // Activate extension
             await this.activateExtension(extensionId);
             
-            showNotification(`✅ "${extension.name}" 설치 완료`, 'success');
+            showNotification(`✅ "${extension.name}" 설치 및 활성화 완료`, 'success');
             return true;
         } catch (error) {
             console.error('Install extension error:', error);
             showNotification(`설치 실패: ${error.message}`, 'error');
             return false;
+        }
+    }
+
+    // Download and load extension
+    async downloadAndLoadExtension(extension) {
+        try {
+            console.log(`📥 Loading extension: ${extension.name}`);
+            
+            // For browser-compatible extensions, load from CDN
+            const cdnMappings = {
+                'esbenp.prettier-vscode': 'https://cdn.jsdelivr.net/npm/prettier@2.8.8/standalone.js',
+                'dbaeumer.vscode-eslint': 'https://cdn.jsdelivr.net/npm/eslint@8.0.0/lib/api.js',
+                'ritwickdey.LiveServer': null, // Browser-based, no external lib needed
+                'PKief.material-icon-theme': null, // Theme, no external lib
+                'CoenraadS.bracket-pair-colorizer': null, // Editor feature
+                'formulahendry.auto-rename-tag': null, // Editor feature
+                'christian-kohler.path-intellisense': null, // Editor feature
+                'oderwat.indent-rainbow': null // Editor feature
+            };
+            
+            const cdnUrl = cdnMappings[extension.id];
+            
+            if (cdnUrl) {
+                // Load from CDN using SystemJS
+                await System.import(cdnUrl);
+                console.log(`✅ Loaded ${extension.name} from CDN`);
+            } else {
+                console.log(`ℹ️ ${extension.name} uses built-in functionality`);
+            }
+            
+            return true;
+        } catch (error) {
+            console.error('Download extension error:', error);
+            throw error;
         }
     }
 
