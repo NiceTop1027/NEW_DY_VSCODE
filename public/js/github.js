@@ -118,7 +118,7 @@ export function initGitHub() {
 let selectedPushRepo = null;
 let selectedFiles = new Set();
 
-function openPushModal() {
+export function openPushModal() {
     const clonedRepos = JSON.parse(localStorage.getItem('clonedRepos') || '[]');
     
     if (clonedRepos.length === 0) {

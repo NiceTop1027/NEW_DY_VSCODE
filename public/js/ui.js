@@ -2546,6 +2546,12 @@ async function loadGitHubRepositories() {
                 </button>
             </div>
         </div>
+        <div style="padding: 15px; margin: 10px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px; box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);">
+            <button id="github-push-main-btn" style="width: 100%; padding: 15px; background: rgba(255, 255, 255, 0.95); color: #667eea; border: none; border-radius: 6px; font-size: 16px; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s;">
+                <i class="codicon codicon-cloud-upload" style="font-size: 20px;"></i>
+                <span>변경사항 푸시</span>
+            </button>
+        </div>
         <div class="github-actions">
             <button class="github-action-btn" id="create-repo-btn" title="새 레포지토리 생성">
                 <i class="codicon codicon-repo-create"></i> 생성
@@ -2554,16 +2560,39 @@ async function loadGitHubRepositories() {
                 <i class="codicon codicon-refresh"></i>
             </button>
         </div>
-        <div style="padding: 10px; background: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; margin: 10px; font-size: 12px;">
-            <strong>💡 푸시 기능:</strong> Activity Bar의 GitHub 버튼을 사용하세요
-        </div>
         <div class="github-repos-list" id="github-repos-list">
             <div class="loading">로딩 중...</div>
         </div>
     `;
 
     document.getElementById('github-logout-btn')?.addEventListener('click', logoutFromGitHub);
-    // Push functionality is now in github.js - use GitHub button in activity bar
+    
+    // Main push button - opens the push modal from github.js
+    const pushMainBtn = document.getElementById('github-push-main-btn');
+    if (pushMainBtn) {
+        pushMainBtn.addEventListener('click', async () => {
+            // Import and call openPushModal from github.js
+            try {
+                const { openPushModal } = await import('./github.js');
+                openPushModal();
+            } catch (error) {
+                console.error('Failed to open push modal:', error);
+                // Fallback: trigger the github push button
+                document.getElementById('github-push-btn')?.click();
+            }
+        });
+        
+        // Hover effect
+        pushMainBtn.addEventListener('mouseenter', (e) => {
+            e.target.style.transform = 'scale(1.05)';
+            e.target.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+        });
+        pushMainBtn.addEventListener('mouseleave', (e) => {
+            e.target.style.transform = 'scale(1)';
+            e.target.style.boxShadow = 'none';
+        });
+    }
+    
     document.getElementById('create-repo-btn')?.addEventListener('click', showCreateRepoDialog);
     document.getElementById('refresh-repos-btn')?.addEventListener('click', loadGitHubRepositories);
 
