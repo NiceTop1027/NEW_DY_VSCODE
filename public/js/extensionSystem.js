@@ -12,8 +12,14 @@ class ExtensionSystem {
         this.activeExtensions = new Set();
         this.extensionAPI = this.createExtensionAPI();
         
-        // Popular VS Code extensions that work in browser
-        this.marketplace = [
+        // VS Code Marketplace API
+        this.marketplaceAPI = 'https://marketplace.visualstudio.com/_apis/public/gallery/extensionquery';
+        this.marketplaceCache = [];
+        this.lastFetch = 0;
+        this.cacheDuration = 5 * 60 * 1000; // 5 minutes
+        
+        // Fallback popular extensions
+        this.fallbackExtensions = [
             {
                 id: 'prettier-vscode',
                 name: 'Prettier',
@@ -164,6 +170,130 @@ class ExtensionSystem {
         };
     }
 
+    // Fetch extensions from VS Code Marketplace
+    async fetchMarketplaceExtensions(pageSize = 50) {
+        try {
+            // Check cache
+            const now = Date.now();
+            if (this.marketplaceCache.length > 0 && (now - this.lastFetch) < this.cacheDuration) {
+                console.log('📦 Using cached marketplace data');
+                return this.marketplaceCache;
+            }
+            
+            console.log('🌐 Fetching from VS Code Marketplace...');
+            
+            const response = await fetch(this.marketplaceAPI, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json;api-version=3.0-preview.1'
+                },
+                body: JSON.stringify({
+                    filters: [{
+                        criteria: [
+                            { filterType: 8, value: 'Microsoft.VisualStudio.Code' },
+                            { filterType: 10, value: 'target:"Microsoft.VisualStudio.Code"' },
+                            { filterType: 12, value: '4096' } // Verified publishers
+                        ],
+                        pageNumber: 1,
+                        pageSize: pageSize,
+                        sortBy: 4, // Most downloaded
+                        sortOrder: 2
+                    }],
+                    assetTypes: [],
+                    flags: 914
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error(`Marketplace API error: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            const extensions = this.parseMarketplaceResponse(data);
+            
+            this.marketplaceCache = extensions;
+            this.lastFetch = now;
+            
+            console.log(`✅ Fetched ${extensions.length} extensions from marketplace`);
+            showNotification(`${extensions.length}개 확장 프로그램 로드됨`, 'success');
+            
+            return extensions;
+        } catch (error) {
+            console.error('Fetch marketplace error:', error);
+            showNotification('마켓플레이스 연결 실패, 기본 목록 사용', 'warning');
+            return this.fallbackExtensions;
+        }
+    }
+
+    // Parse marketplace API response
+    parseMarketplaceResponse(data) {
+        try {
+            const results = data.results[0];
+            if (!results || !results.extensions) {
+                return this.fallbackExtensions;
+            }
+            
+            return results.extensions.map(ext => {
+                const publisher = ext.publisher.publisherName;
+                const name = ext.extensionName;
+                const displayName = ext.displayName;
+                const description = ext.shortDescription || '';
+                const version = ext.versions[0]?.version || '1.0.0';
+                const installs = ext.statistics?.find(s => s.statisticName === 'install')?.value || 0;
+                const rating = ext.statistics?.find(s => s.statisticName === 'averagerating')?.value || 0;
+                const icon = ext.versions[0]?.files?.find(f => f.assetType === 'Microsoft.VisualStudio.Services.Icons.Default')?.source || '';
+                
+                // Get category
+                const categories = ext.categories || [];
+                const category = categories[0] || 'Other';
+                
+                return {
+                    id: `${publisher}.${name}`,
+                    name: displayName,
+                    description: description,
+                    version: version,
+                    author: publisher,
+                    icon: icon || this.getDefaultIcon(category),
+                    category: category,
+                    downloads: installs,
+                    rating: rating,
+                    url: `https://marketplace.visualstudio.com/items?itemName=${publisher}.${name}`,
+                    vsixUrl: ext.versions[0]?.files?.find(f => f.assetType === 'Microsoft.VisualStudio.Services.VSIXPackage')?.source,
+                    activate: async (api) => {
+                        console.log(`${displayName} activated`);
+                    }
+                };
+            });
+        } catch (error) {
+            console.error('Parse marketplace response error:', error);
+            return this.fallbackExtensions;
+        }
+    }
+
+    // Get default icon for category
+    getDefaultIcon(category) {
+        const icons = {
+            'Programming Languages': '💻',
+            'Snippets': '📝',
+            'Linters': '🔍',
+            'Themes': '🎨',
+            'Debuggers': '🐛',
+            'Formatters': '✨',
+            'Keymaps': '⌨️',
+            'SCM Providers': '🔀',
+            'Other': '🔧',
+            'Extension Packs': '📦',
+            'Language Packs': '🌍',
+            'Data Science': '📊',
+            'Machine Learning': '🤖',
+            'Notebooks': '📓',
+            'Testing': '🧪',
+            'Visualization': '📈'
+        };
+        return icons[category] || '🔧';
+    }
+
     // Initialize extension system
     async init() {
         try {
@@ -172,6 +302,9 @@ class ExtensionSystem {
             if (installed) {
                 this.installedExtensions = new Map(Object.entries(installed));
             }
+            
+            // Fetch marketplace extensions
+            await this.fetchMarketplaceExtensions();
             
             console.log('✅ Extension system initialized');
             return true;
@@ -184,7 +317,8 @@ class ExtensionSystem {
     // Install extension
     async installExtension(extensionId) {
         try {
-            const extension = this.marketplace.find(ext => ext.id === extensionId);
+            const extension = this.marketplaceCache.find(ext => ext.id === extensionId) ||
+                             this.fallbackExtensions.find(ext => ext.id === extensionId);
             if (!extension) {
                 throw new Error('Extension not found');
             }
@@ -242,7 +376,8 @@ class ExtensionSystem {
     async activateExtension(extensionId) {
         try {
             const extension = this.installedExtensions.get(extensionId) || 
-                             this.marketplace.find(ext => ext.id === extensionId);
+                             this.marketplaceCache.find(ext => ext.id === extensionId) ||
+                             this.fallbackExtensions.find(ext => ext.id === extensionId);
             
             if (!extension) {
                 throw new Error('Extension not found');
@@ -281,7 +416,7 @@ class ExtensionSystem {
 
     // Get marketplace extensions
     getMarketplaceExtensions(category = null, search = null) {
-        let extensions = [...this.marketplace];
+        let extensions = this.marketplaceCache.length > 0 ? [...this.marketplaceCache] : [...this.fallbackExtensions];
         
         if (category && category !== 'All') {
             extensions = extensions.filter(ext => ext.category === category);
@@ -291,11 +426,20 @@ class ExtensionSystem {
             const query = search.toLowerCase();
             extensions = extensions.filter(ext => 
                 ext.name.toLowerCase().includes(query) ||
-                ext.description.toLowerCase().includes(query)
+                ext.description.toLowerCase().includes(query) ||
+                ext.author.toLowerCase().includes(query)
             );
         }
         
         return extensions;
+    }
+    
+    // Refresh marketplace
+    async refreshMarketplace() {
+        this.marketplaceCache = [];
+        this.lastFetch = 0;
+        await this.fetchMarketplaceExtensions();
+        showNotification('마켓플레이스 새로고침 완료', 'success');
     }
 
     // Show marketplace modal
