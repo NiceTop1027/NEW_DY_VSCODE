@@ -1055,12 +1055,14 @@ function renderClientFileTree() {
 
     if (tree.children.length === 0) {
         const emptyMsg = document.createElement('div');
+        emptyMsg.className = 'empty-explorer-msg';
         emptyMsg.style.padding = '20px';
         emptyMsg.style.textAlign = 'center';
         emptyMsg.style.color = 'var(--text-color-light)';
-        emptyMsg.innerHTML = '<p>파일이나 폴더를 업로드하세요</p>';
+        emptyMsg.style.cursor = 'context-menu';
+        emptyMsg.innerHTML = '<p>빈 폴더입니다</p><p style="font-size: 11px; margin-top: 10px;">우클릭하여 파일/폴더 추가</p>';
         fileExplorerEl.appendChild(emptyMsg);
-        return;
+        // Don't return - continue to add context menu listener
     }
     
     tree.children.forEach(child => renderClientFileNode(child, fileExplorerEl, 0));
@@ -1072,13 +1074,20 @@ function renderClientFileTree() {
     }
     
     const contextMenuListener = (e) => {
-        // Only show if clicking on the file explorer itself, not on a file/folder
-        if (e.target === fileExplorerEl || e.target.tagName === 'H3' || e.target.tagName === 'P' || e.target.tagName === 'DIV') {
-            // Check if it's not a tree-item
-            if (!e.target.classList.contains('tree-item') && !e.target.closest('.tree-item')) {
-                e.preventDefault();
-                showFileExplorerContextMenu(e);
-            }
+        // Check if it's a tree-item first
+        if (e.target.classList.contains('tree-item') || e.target.closest('.tree-item')) {
+            return; // Let the tree-item handle its own context menu
+        }
+        
+        // Show context menu for everything else in file explorer
+        if (e.target === fileExplorerEl || 
+            e.target.classList.contains('empty-explorer-msg') ||
+            e.target.closest('.empty-explorer-msg') ||
+            e.target.tagName === 'H3' || 
+            e.target.tagName === 'P' || 
+            e.target.tagName === 'DIV') {
+            e.preventDefault();
+            showFileExplorerContextMenu(e);
         }
     };
     
