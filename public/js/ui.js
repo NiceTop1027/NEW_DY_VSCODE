@@ -1171,6 +1171,7 @@ function renderClientFileNode(node, parentEl, depth = 0) {
     item.style.alignItems = 'center';
     item.style.justifyContent = 'space-between';
     item.dataset.path = node.path;
+    item.draggable = true;
 
     const labelContainer = document.createElement('div');
     labelContainer.style.display = 'flex';
@@ -1234,6 +1235,62 @@ function renderClientFileNode(node, parentEl, depth = 0) {
             deleteFile(node.path, node.name, node.type === 'directory');
         }
     });
+    
+    // Drag and drop handlers
+    item.addEventListener('dragstart', (e) => {
+        e.stopPropagation();
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', JSON.stringify({
+            path: node.path,
+            name: node.name,
+            type: node.type
+        }));
+        item.style.opacity = '0.5';
+    });
+    
+    item.addEventListener('dragend', (e) => {
+        item.style.opacity = '1';
+    });
+    
+    // Only allow dropping on directories
+    if (node.type === 'directory') {
+        item.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            e.dataTransfer.dropEffect = 'move';
+            item.style.background = 'rgba(255, 255, 255, 0.1)';
+        });
+        
+        item.addEventListener('dragleave', (e) => {
+            item.style.background = '';
+        });
+        
+        item.addEventListener('drop', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            item.style.background = '';
+            
+            try {
+                const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+                const sourcePath = data.path;
+                const targetPath = node.path;
+                
+                // Don't move to itself
+                if (sourcePath === targetPath) return;
+                
+                // Don't move parent into child
+                if (targetPath.startsWith(sourcePath + '/')) {
+                    showNotification('상위 폴더를 하위 폴더로 이동할 수 없습니다', 'error');
+                    return;
+                }
+                
+                await moveFileOrFolder(sourcePath, targetPath, data.name);
+            } catch (err) {
+                console.error('Drop error:', err);
+                showNotification('이동 실패', 'error');
+            }
+        });
+    }
 
     if (node.type === 'directory') {
         item.classList.add('closed');
@@ -2010,6 +2067,71 @@ async function deleteFile(filePath, fileName, isDirectory) {
     
     // Refresh file tree
     renderClientFileTree();
+}
+
+// Move file or folder
+async function moveFileOrFolder(sourcePath, targetFolderPath, fileName) {
+    const dirHandle = clientFS.getDirectoryHandle();
+    
+    if (!dirHandle) {
+        showNotification('메모리 전용 모드에서는 이동이 지원되지 않습니다', 'error');
+        return;
+    }
+    
+    try {
+        // Get source and target handles
+        const sourcePathParts = sourcePath.split('/');
+        const sourceFileName = sourcePathParts.pop();
+        const sourceParentPath = sourcePathParts.join('/');
+        
+        // Navigate to source parent
+        let sourceParentHandle = dirHandle;
+        if (sourceParentPath) {
+            for (const part of sourceParentPath.split('/')) {
+                sourceParentHandle = await sourceParentHandle.getDirectoryHandle(part);
+            }
+        }
+        
+        // Navigate to target folder
+        let targetHandle = dirHandle;
+        if (targetFolderPath) {
+            for (const part of targetFolderPath.split('/')) {
+                targetHandle = await targetHandle.getDirectoryHandle(part);
+            }
+        }
+        
+        // Get source file/folder handle
+        const sourceFile = clientFS.getFile(sourcePath);
+        const isDirectory = sourceFile && sourceFile.type === 'directory';
+        
+        if (isDirectory) {
+            // For directories, we need to recreate in new location
+            showNotification('폴더 이동은 현재 지원되지 않습니다', 'error');
+            return;
+        } else {
+            // For files, read content and create in new location
+            const fileHandle = await sourceParentHandle.getFileHandle(sourceFileName);
+            const file = await fileHandle.getFile();
+            const content = await file.text();
+            
+            // Create in new location
+            const newFileHandle = await targetHandle.getFileHandle(sourceFileName, { create: true });
+            const writable = await newFileHandle.createWritable();
+            await writable.write(content);
+            await writable.close();
+            
+            // Delete from old location
+            await sourceParentHandle.removeEntry(sourceFileName);
+            
+            showNotification(`✅ ${sourceFileName} 이동 완료`, 'success');
+            
+            // Reload file tree
+            await loadDirectoryWithHandles(dirHandle);
+        }
+    } catch (err) {
+        console.error('Move error:', err);
+        showNotification(`이동 실패: ${err.message}`, 'error');
+    }
 }
 
 async function renameFile(filePath, fileName, isDirectory) {
