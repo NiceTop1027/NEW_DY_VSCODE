@@ -1456,64 +1456,7 @@ body {
     transition: transform 0.05s ease-out;
 }
 
-/* GitHub button highlight */
-.activity-icon.github-highlight {
-    position: relative;
-    animation: pulse-github 2s ease-in-out infinite;
-}
-
-.activity-icon.github-highlight::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 40px;
-    height: 40px;
-    background: rgba(33, 150, 243, 0.2);
-    border-radius: 50%;
-    animation: ripple-github 2s ease-out infinite;
-    pointer-events: none;
-}
-
-.activity-icon.github-highlight:hover::after {
-    animation: none;
-    background: rgba(33, 150, 243, 0.3);
-}
-
-.activity-icon.github-highlight .codicon {
-    color: #2196F3;
-    filter: drop-shadow(0 0 8px rgba(33, 150, 243, 0.6));
-}
-
-.activity-icon.github-highlight:hover .codicon {
-    color: #42A5F5;
-    filter: drop-shadow(0 0 12px rgba(33, 150, 243, 0.8));
-}
-
-.activity-icon.github-highlight.active {
-    border-left-color: #2196F3;
-}
-
-@keyframes pulse-github {
-    0%, 100% {
-        box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4);
-    }
-    50% {
-        box-shadow: 0 0 0 8px rgba(33, 150, 243, 0);
-    }
-}
-
-@keyframes ripple-github {
-    0% {
-        transform: translate(-50%, -50%) scale(0.8);
-        opacity: 1;
-    }
-    100% {
-        transform: translate(-50%, -50%) scale(1.5);
-        opacity: 0;
-    }
-}
+/* GitHub button - normal style (no special effects) */
 
 .activity-badge {
     position: absolute;
