@@ -1160,6 +1160,26 @@ function renderClientFileTree() {
     }
     
     tree.children.forEach(child => renderClientFileNode(child, fileExplorerEl, 0));
+    
+    // Add drop zone to file explorer root
+    fileExplorerEl.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+    });
+    
+    fileExplorerEl.addEventListener('drop', async (e) => {
+        e.preventDefault();
+        
+        // Only handle drops on the explorer background, not on items
+        if (e.target.closest('.tree-item')) return;
+        
+        try {
+            const data = JSON.parse(e.dataTransfer.getData('text/plain'));
+            await moveFileOrFolder(data.path, '', data.name); // Empty string = root
+        } catch (err) {
+            console.error('Drop to root error:', err);
+        }
+    });
 }
 
 // Render a single file/directory node

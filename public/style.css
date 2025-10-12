@@ -1084,11 +1084,18 @@ body {
 }
 
 .tree-children {
-    display: block;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 }
 
 .tree-item.directory.closed > .tree-children {
     display: none;
+}
+
+.tree-item {
+    width: 100%;
+    box-sizing: border-box;
 }
 
 #notification-area {
