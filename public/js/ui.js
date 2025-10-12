@@ -2098,16 +2098,22 @@ async function moveFileOrFolder(sourcePath, targetFolderPath, fileName) {
         return;
     }
     
+    // Check if source and target are the same
+    const sourcePathParts = sourcePath.split('/');
+    const sourceFileName = sourcePathParts.pop();
+    const sourceParentPath = sourcePathParts.join('/');
+    
+    if (sourceParentPath === targetFolderPath) {
+        showNotification('같은 폴더에는 이동할 수 없습니다', 'info');
+        return;
+    }
+    
     try {
-        // Get source and target handles
-        const sourcePathParts = sourcePath.split('/');
-        const sourceFileName = sourcePathParts.pop();
-        const sourceParentPath = sourcePathParts.join('/');
-        
         // Navigate to source parent
         let sourceParentHandle = dirHandle;
         if (sourceParentPath) {
             for (const part of sourceParentPath.split('/')) {
+                if (!part) continue;
                 sourceParentHandle = await sourceParentHandle.getDirectoryHandle(part);
             }
         }
@@ -2116,6 +2122,7 @@ async function moveFileOrFolder(sourcePath, targetFolderPath, fileName) {
         let targetHandle = dirHandle;
         if (targetFolderPath) {
             for (const part of targetFolderPath.split('/')) {
+                if (!part) continue;
                 targetHandle = await targetHandle.getDirectoryHandle(part);
             }
         }
@@ -2125,29 +2132,36 @@ async function moveFileOrFolder(sourcePath, targetFolderPath, fileName) {
         const isDirectory = sourceFile && sourceFile.type === 'directory';
         
         if (isDirectory) {
-            // For directories, we need to recreate in new location
             showNotification('폴더 이동은 현재 지원되지 않습니다', 'error');
             return;
-        } else {
-            // For files, read content and create in new location
-            const fileHandle = await sourceParentHandle.getFileHandle(sourceFileName);
-            const file = await fileHandle.getFile();
-            const content = await file.text();
-            
-            // Create in new location
-            const newFileHandle = await targetHandle.getFileHandle(sourceFileName, { create: true });
-            const writable = await newFileHandle.createWritable();
-            await writable.write(content);
-            await writable.close();
-            
-            // Delete from old location
-            await sourceParentHandle.removeEntry(sourceFileName);
-            
-            showNotification(`✅ ${sourceFileName} 이동 완료`, 'success');
-            
-            // Reload file tree
-            await loadDirectoryWithHandles(dirHandle);
         }
+        
+        // For files, read content and create in new location
+        const fileHandle = await sourceParentHandle.getFileHandle(sourceFileName);
+        const file = await fileHandle.getFile();
+        const content = await file.text();
+        
+        // Create in new location
+        const newFileHandle = await targetHandle.getFileHandle(sourceFileName, { create: true });
+        const writable = await newFileHandle.createWritable();
+        await writable.write(content);
+        await writable.close();
+        
+        // Try to delete from old location
+        try {
+            await sourceParentHandle.removeEntry(sourceFileName);
+        } catch (removeErr) {
+            // If removeEntry fails, ask user to manually delete
+            showNotification(`⚠️ ${sourceFileName} 복사 완료. 원본 파일은 수동으로 삭제해주세요.`, 'warning');
+            await loadDirectoryWithHandles(dirHandle);
+            return;
+        }
+        
+        showNotification(`✅ ${sourceFileName} 이동 완료`, 'success');
+        
+        // Reload file tree
+        await loadDirectoryWithHandles(dirHandle);
+        
     } catch (err) {
         console.error('Move error:', err);
         showNotification(`이동 실패: ${err.message}`, 'error');
