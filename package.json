@@ -57,6 +57,7 @@
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.6.2",
     "axios": "^1.12.2",
+    "browserfs": "^1.4.3",
     "buffer": "^6.0.3",
     "express": "^5.1.0",
     "express-ws": "^5.0.2",
