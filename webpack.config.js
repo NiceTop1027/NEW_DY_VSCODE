@@ -30,9 +30,13 @@ module.exports = {
   },
   resolve: {
     extensions: ['.js'],
-    // alias: { // Remove alias for 'vs' as plugin handles it
-    //   'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.33.0/min/vs'
-    // }
+    fallback: {
+      "fs": false,
+      "path": false,
+      "crypto": false,
+      "stream": false,
+      "buffer": require.resolve('buffer/')
+    }
   },
   plugins: [
     new MonacoWebpackPlugin({
