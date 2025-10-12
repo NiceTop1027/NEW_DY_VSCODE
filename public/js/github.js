@@ -358,51 +358,73 @@ async function executePush() {
             console.log('푸시 모드: 현재 파일', currentFile);
         }
         
-        console.log('🚀 isomorphic-git 푸시 시작:', {
+        console.log('🚀 GitHub API 푸시 시작:', {
             repo: selectedPushRepo.fullName,
             message: commitMessage,
             files: filesToPush
         });
         
-        // Step 1: Write files to git file system
-        confirmBtn.textContent = '파일 준비 중...';
+        // Get manual repo info if needed
+        let repoOwner, repoName;
+        
+        if (selectedPushRepo.isManual) {
+            repoOwner = document.getElementById('manual-repo-owner')?.value.trim();
+            repoName = document.getElementById('manual-repo-name')?.value.trim();
+            
+            if (!repoOwner || !repoName) {
+                alert('GitHub 사용자명과 레포지토리 이름을 입력하세요!');
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = originalText;
+                return;
+            }
+        } else {
+            [repoOwner, repoName] = selectedPushRepo.fullName.split('/');
+        }
+        
+        // Use GitHub API directly
+        confirmBtn.textContent = '파일 업로드 중...';
         const filesToWrite = filesToPush || getAllFiles(clientFS);
+        
+        let successCount = 0;
+        let errorCount = 0;
         
         for (const filePath of filesToWrite) {
             const file = clientFS.getFile(filePath);
             if (file && file.content) {
-                await gitClient.writeFile(filePath, file.content);
-                console.log(`✓ Written: ${filePath}`);
+                try {
+                    // Use GitHub Contents API
+                    const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${githubToken}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            message: commitMessage,
+                            content: btoa(unescape(encodeURIComponent(file.content))),
+                            branch: 'main'
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        successCount++;
+                        console.log(`✓ Pushed: ${filePath}`);
+                    } else {
+                        errorCount++;
+                        console.error(`✗ Failed: ${filePath}`, await response.text());
+                    }
+                } catch (err) {
+                    errorCount++;
+                    console.error(`✗ Error: ${filePath}`, err);
+                }
             }
         }
         
-        // Step 2: Add files to staging
-        confirmBtn.textContent = '스테이징 중...';
-        if (filesToPush) {
-            for (const file of filesToPush) {
-                await gitClient.add(file);
-            }
+        if (errorCount === 0) {
+            alert(`✅ 푸시 성공!\n\n레포지토리: ${repoOwner}/${repoName}\n메시지: ${commitMessage}\n파일: ${successCount}개`);
         } else {
-            await gitClient.add('.');
+            alert(`⚠️ 푸시 완료\n\n성공: ${successCount}개\n실패: ${errorCount}개\n\n레포지토리: ${repoOwner}/${repoName}`);
         }
-        console.log('✓ Files staged');
-        
-        // Step 3: Commit
-        confirmBtn.textContent = '커밋 중...';
-        const author = {
-            name: githubUser?.login || 'User',
-            email: githubUser?.email || 'user@example.com'
-        };
-        const commitResult = await gitClient.commit(commitMessage, author);
-        console.log('✓ Committed:', commitResult.sha);
-        
-        // Step 4: Push
-        confirmBtn.textContent = '푸시 중...';
-        const branch = await gitClient.currentBranch();
-        await gitClient.push(githubToken, 'origin', branch);
-        console.log('✓ Pushed to remote');
-        
-        alert(`✅ 푸시 성공!\n\n레포지토리: ${selectedPushRepo.fullName}\n메시지: ${commitMessage}\n커밋: ${commitResult.sha.substring(0, 7)}\n브랜치: ${branch}`);
         
         // Close modal
         document.getElementById('github-push-modal').style.display = 'none';
