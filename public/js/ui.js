@@ -1059,9 +1059,70 @@ function renderClientFileTree() {
         emptyMsg.style.padding = '20px';
         emptyMsg.style.textAlign = 'center';
         emptyMsg.style.color = 'var(--text-color-light)';
-        emptyMsg.style.cursor = 'context-menu';
-        emptyMsg.innerHTML = '<p>빈 폴더입니다</p><p style="font-size: 11px; margin-top: 10px;">우클릭하여 파일/폴더 추가</p>';
+        emptyMsg.innerHTML = `
+            <p style="margin-bottom: 15px;">📂 빈 폴더입니다</p>
+            <div style="display: flex; flex-direction: column; gap: 8px; max-width: 200px; margin: 0 auto;">
+                <button id="empty-new-file-btn" style="
+                    padding: 8px 12px;
+                    background: var(--button-bg);
+                    color: var(--text-color);
+                    border: 1px solid var(--border-color);
+                    border-radius: 4px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 5px;
+                    font-size: 13px;
+                ">
+                    <i class="codicon codicon-file"></i>
+                    새 파일
+                </button>
+                <button id="empty-new-folder-btn" style="
+                    padding: 8px 12px;
+                    background: var(--button-bg);
+                    color: var(--text-color);
+                    border: 1px solid var(--border-color);
+                    border-radius: 4px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 5px;
+                    font-size: 13px;
+                ">
+                    <i class="codicon codicon-folder"></i>
+                    새 폴더
+                </button>
+                <button id="empty-upload-btn" style="
+                    padding: 8px 12px;
+                    background: var(--button-bg);
+                    color: var(--text-color);
+                    border: 1px solid var(--border-color);
+                    border-radius: 4px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 5px;
+                    font-size: 13px;
+                ">
+                    <i class="codicon codicon-file-add"></i>
+                    파일 업로드
+                </button>
+            </div>
+        `;
         fileExplorerEl.appendChild(emptyMsg);
+        
+        // Add event listeners to buttons
+        setTimeout(() => {
+            document.getElementById('empty-new-file-btn')?.addEventListener('click', () => createNewFile('', true));
+            document.getElementById('empty-new-folder-btn')?.addEventListener('click', () => createNewFolder('', true));
+            document.getElementById('empty-upload-btn')?.addEventListener('click', () => {
+                document.getElementById('file-upload-input')?.click();
+            });
+        }, 0);
+        
         // Don't return - continue to add context menu listener
     }
     

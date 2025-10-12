@@ -60,12 +60,35 @@ export function initEditor(editorEl, tabsEl, openFilesMap) {
         cursorBlinking: 'smooth',
         smoothScrolling: true,
         // 고급 기능 활성화
-        quickSuggestions: true,
+        quickSuggestions: {
+            other: true,
+            comments: true,
+            strings: true
+        },
         suggestOnTriggerCharacters: true,
         acceptSuggestionOnEnter: 'on',
+        acceptSuggestionOnCommitCharacter: true,
         tabCompletion: 'on',
         wordBasedSuggestions: true,
-        parameterHints: { enabled: true },
+        snippetSuggestions: 'top', // Show snippets at top
+        suggest: {
+            showWords: true,
+            showSnippets: true,
+            showKeywords: true,
+            showFunctions: true,
+            showClasses: true,
+            showVariables: true,
+            showModules: true,
+            showProperties: true,
+            showMethods: true,
+            insertMode: 'insert',
+            filterGraceful: true,
+            localityBonus: true
+        },
+        parameterHints: { 
+            enabled: true,
+            cycle: true
+        },
         autoClosingBrackets: 'always',
         autoClosingQuotes: 'always',
         autoIndent: 'full',
@@ -175,6 +198,9 @@ export function initEditor(editorEl, tabsEl, openFilesMap) {
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Period, () => {
         editor.getAction('editor.action.quickFix')?.run();
     });
+    
+    // Register custom snippets for all languages
+    registerCustomSnippets();
 
     editor.onDidChangeModelContent(() => {
         const activeFilePath = tabsContainer.querySelector('.tab.active')?.dataset.filePath;
@@ -558,4 +584,152 @@ export function restoreEditorSettings() {
             }
         });
     }
+}
+
+// Register custom snippets for all languages
+function registerCustomSnippets() {
+    // JavaScript/TypeScript snippets
+    monaco.languages.registerCompletionItemProvider('javascript', {
+        provideCompletionItems: () => ({
+            suggestions: [
+                {
+                    label: 'import',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'import ${1:module} from \'${2:path}\';',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Import module'
+                },
+                {
+                    label: 'impo',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'import ${1:module} from \'${2:path}\';',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Import module (shorthand)'
+                },
+                {
+                    label: 'const',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'const ${1:name} = ${2:value};',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Const declaration'
+                },
+                {
+                    label: 'func',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'function ${1:name}(${2:params}) {\n\t${3}\n}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Function declaration'
+                },
+                {
+                    label: 'log',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'console.log(${1});',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Console log'
+                }
+            ]
+        })
+    });
+    
+    // Python snippets
+    monaco.languages.registerCompletionItemProvider('python', {
+        provideCompletionItems: () => ({
+            suggestions: [
+                {
+                    label: 'import',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'import ${1:module}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Import module'
+                },
+                {
+                    label: 'impo',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'import ${1:module}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Import module (shorthand)'
+                },
+                {
+                    label: 'def',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'def ${1:function_name}(${2:params}):\n\t${3:pass}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Function definition'
+                },
+                {
+                    label: 'class',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'class ${1:ClassName}:\n\tdef __init__(self${2:, params}):\n\t\t${3:pass}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Class definition'
+                }
+            ]
+        })
+    });
+    
+    // C/C++ snippets
+    monaco.languages.registerCompletionItemProvider('c', {
+        provideCompletionItems: () => ({
+            suggestions: [
+                {
+                    label: 'include',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '#include <${1:stdio.h}>',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Include header'
+                },
+                {
+                    label: 'main',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'int main() {\n\t${1}\n\treturn 0;\n}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Main function'
+                }
+            ]
+        })
+    });
+    
+    // Java snippets
+    monaco.languages.registerCompletionItemProvider('java', {
+        provideCompletionItems: () => ({
+            suggestions: [
+                {
+                    label: 'import',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'import ${1:package};',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Import package'
+                },
+                {
+                    label: 'impo',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'import ${1:package};',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Import package (shorthand)'
+                },
+                {
+                    label: 'sout',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'System.out.println(${1});',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'System.out.println'
+                }
+            ]
+        })
+    });
+    
+    // HTML snippets
+    monaco.languages.registerCompletionItemProvider('html', {
+        provideCompletionItems: () => ({
+            suggestions: [
+                {
+                    label: 'html5',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '<!DOCTYPE html>\n<html lang="ko">\n<head>\n\t<meta charset="UTF-8">\n\t<title>${1:Document}</title>\n</head>\n<body>\n\t${2}\n</body>\n</html>',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'HTML5 template'
+                }
+            ]
+        })
+    });
 }
