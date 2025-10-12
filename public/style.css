@@ -1036,7 +1036,7 @@ body {
 }
 
 .tree-item {
-    padding: 3px 8px 3px 4px;
+    padding: 6px 8px;
     cursor: pointer;
     color: var(--text-color-light);
     transition: all 0.15s ease-out;
@@ -1045,6 +1045,7 @@ body {
     border-radius: 3px;
     width: 100%;
     box-sizing: border-box;
+    min-height: 28px;
 }
 
 .tree-item > div:first-child {
@@ -1052,6 +1053,7 @@ body {
     align-items: center;
     justify-content: space-between;
     width: 100%;
+    min-height: 24px;
 }
 
 .tree-item:hover {
