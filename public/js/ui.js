@@ -2542,15 +2542,15 @@ async function loadGitHubRepositories() {
             </div>
         </div>
         <div class="github-actions">
-            <button class="github-action-btn" id="push-all-btn" title="현재 파일 전체 푸시">
-                <i class="codicon codicon-cloud-upload"></i> 푸시
-            </button>
             <button class="github-action-btn" id="create-repo-btn" title="새 레포지토리 생성">
-                <i class="codicon codicon-add"></i> 새 레포
+                <i class="codicon codicon-repo-create"></i> 생성
             </button>
             <button class="github-action-btn" id="refresh-repos-btn" title="새로고침">
                 <i class="codicon codicon-refresh"></i>
             </button>
+        </div>
+        <div style="padding: 10px; background: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107; margin: 10px; font-size: 12px;">
+            <strong>💡 푸시 기능:</strong> Activity Bar의 GitHub 버튼을 사용하세요
         </div>
         <div class="github-repos-list" id="github-repos-list">
             <div class="loading">로딩 중...</div>
@@ -2558,7 +2558,7 @@ async function loadGitHubRepositories() {
     `;
 
     document.getElementById('github-logout-btn')?.addEventListener('click', logoutFromGitHub);
-    document.getElementById('push-all-btn')?.addEventListener('click', pushAllFiles);
+    // Push functionality is now in github.js - use GitHub button in activity bar
     document.getElementById('create-repo-btn')?.addEventListener('click', showCreateRepoDialog);
     document.getElementById('refresh-repos-btn')?.addEventListener('click', loadGitHubRepositories);
 
