@@ -1046,11 +1046,63 @@ function renderClientFileTree() {
     if (!fileExplorerEl) return;
     
     const dirHandle = clientFS.getDirectoryHandle();
-    const headerHtml = dirHandle 
-        ? `<h3>📁 로컬 폴더</h3><div style="padding: 5px 10px; font-size: 11px; color: var(--text-color-light);">실제 파일 시스템 연결됨</div>`
-        : `<h3>📂 업로드된 파일</h3><div style="padding: 5px 10px; font-size: 11px; color: var(--text-color-light);">메모리 전용 모드</div>`;
+    const headerHtml = `
+        <div style="padding: 10px; border-bottom: 1px solid var(--border-color);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <h3 style="margin: 0;">${dirHandle ? '📁 로컬 폴더' : '📂 업로드된 파일'}</h3>
+                <div style="display: flex; gap: 4px;">
+                    <button id="explorer-new-file-btn" title="새 파일" style="
+                        background: none;
+                        border: none;
+                        color: var(--text-color-light);
+                        cursor: pointer;
+                        padding: 4px;
+                        border-radius: 3px;
+                        display: flex;
+                        align-items: center;
+                    ">
+                        <i class="codicon codicon-file"></i>
+                    </button>
+                    <button id="explorer-new-folder-btn" title="새 폴더" style="
+                        background: none;
+                        border: none;
+                        color: var(--text-color-light);
+                        cursor: pointer;
+                        padding: 4px;
+                        border-radius: 3px;
+                        display: flex;
+                        align-items: center;
+                    ">
+                        <i class="codicon codicon-folder"></i>
+                    </button>
+                    <button id="explorer-refresh-btn" title="새로고침" style="
+                        background: none;
+                        border: none;
+                        color: var(--text-color-light);
+                        cursor: pointer;
+                        padding: 4px;
+                        border-radius: 3px;
+                        display: flex;
+                        align-items: center;
+                    ">
+                        <i class="codicon codicon-refresh"></i>
+                    </button>
+                </div>
+            </div>
+            <div style="font-size: 11px; color: var(--text-color-light);">
+                ${dirHandle ? '실제 파일 시스템 연결됨' : '메모리 전용 모드'}
+            </div>
+        </div>
+    `;
     
     fileExplorerEl.innerHTML = headerHtml;
+    
+    // Add event listeners to header buttons
+    setTimeout(() => {
+        document.getElementById('explorer-new-file-btn')?.addEventListener('click', () => createNewFile('', true));
+        document.getElementById('explorer-new-folder-btn')?.addEventListener('click', () => createNewFolder('', true));
+        document.getElementById('explorer-refresh-btn')?.addEventListener('click', () => renderClientFileTree());
+    }, 0);
     const tree = clientFS.getTree();
 
     if (tree.children.length === 0) {
@@ -1127,36 +1179,6 @@ function renderClientFileTree() {
     }
     
     tree.children.forEach(child => renderClientFileNode(child, fileExplorerEl, 0));
-    
-    // Add context menu to file explorer background (remove old listener first)
-    const oldListener = fileExplorerEl._contextMenuListener;
-    if (oldListener) {
-        fileExplorerEl.removeEventListener('contextmenu', oldListener);
-    }
-    
-    const contextMenuListener = (e) => {
-        // Check if it's a tree-item first
-        if (e.target.classList.contains('tree-item') || e.target.closest('.tree-item')) {
-            return; // Let the tree-item handle its own context menu
-        }
-        
-        // Show context menu for everything else in file explorer
-        if (e.target === fileExplorerEl || 
-            e.target.classList.contains('empty-explorer-msg') ||
-            e.target.closest('.empty-explorer-msg') ||
-            e.target.tagName === 'H3' || 
-            e.target.tagName === 'P' || 
-            e.target.tagName === 'DIV') {
-            e.preventDefault();
-            showFileExplorerContextMenu(e);
-        }
-    };
-    
-    fileExplorerEl._contextMenuListener = contextMenuListener;
-    fileExplorerEl.addEventListener('contextmenu', contextMenuListener);
-    
-    // Close context menu when clicking elsewhere
-    document.addEventListener('click', closeContextMenu);
 }
 
 // Render a single file/directory node
@@ -1164,11 +1186,73 @@ function renderClientFileNode(node, parentEl, depth = 0) {
     const item = document.createElement('div');
     item.className = `tree-item ${node.type}`;
     item.style.paddingLeft = `${depth * 15}px`;
+    item.style.display = 'flex';
+    item.style.alignItems = 'center';
+    item.style.justifyContent = 'space-between';
     item.dataset.path = node.path;
 
+    const labelContainer = document.createElement('div');
+    labelContainer.style.display = 'flex';
+    labelContainer.style.alignItems = 'center';
+    labelContainer.style.flex = '1';
+    
     const label = document.createElement('span');
     label.textContent = node.name;
-    item.appendChild(label);
+    labelContainer.appendChild(label);
+    item.appendChild(labelContainer);
+    
+    // Action buttons (shown on hover)
+    const actionsDiv = document.createElement('div');
+    actionsDiv.className = 'tree-item-actions';
+    actionsDiv.style.display = 'none';
+    actionsDiv.style.gap = '2px';
+    actionsDiv.innerHTML = `
+        <button class="tree-action-btn" data-action="rename" title="이름 변경" style="
+            background: none;
+            border: none;
+            color: var(--text-color-light);
+            cursor: pointer;
+            padding: 2px;
+            display: flex;
+            align-items: center;
+        ">
+            <i class="codicon codicon-edit"></i>
+        </button>
+        <button class="tree-action-btn" data-action="delete" title="삭제" style="
+            background: none;
+            border: none;
+            color: var(--text-color-light);
+            cursor: pointer;
+            padding: 2px;
+            display: flex;
+            align-items: center;
+        ">
+            <i class="codicon codicon-trash"></i>
+        </button>
+    `;
+    item.appendChild(actionsDiv);
+    
+    // Show/hide actions on hover
+    item.addEventListener('mouseenter', () => {
+        actionsDiv.style.display = 'flex';
+    });
+    item.addEventListener('mouseleave', () => {
+        actionsDiv.style.display = 'none';
+    });
+    
+    // Action button handlers
+    actionsDiv.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const btn = e.target.closest('.tree-action-btn');
+        if (!btn) return;
+        
+        const action = btn.dataset.action;
+        if (action === 'rename') {
+            renameFile(node.path, node.name, node.type === 'directory');
+        } else if (action === 'delete') {
+            deleteFile(node.path, node.name, node.type === 'directory');
+        }
+    });
 
     if (node.type === 'directory') {
         item.classList.add('closed');
@@ -1181,47 +1265,26 @@ function renderClientFileNode(node, parentEl, depth = 0) {
             item.classList.toggle('closed');
         };
 
-        label.addEventListener('click', toggleFolder);
-        item.addEventListener('click', toggleFolder);
-
-        // Right-click context menu for directory
-        item.addEventListener('contextmenu', (e) => {
-            e.stopPropagation();
-            showFileContextMenu(e, node.path, node.name, true);
-        });
+        labelContainer.addEventListener('click', toggleFolder);
 
         if (node.children && node.children.length > 0) {
             node.children.forEach(child => renderClientFileNode(child, childrenContainer, depth + 1));
         } else {
-            // Empty folder - add placeholder and context menu
+            // Empty folder - add placeholder
             const emptyMsg = document.createElement('div');
             emptyMsg.className = 'empty-folder-msg';
             emptyMsg.style.padding = '5px 10px';
             emptyMsg.style.color = 'var(--text-color-light)';
             emptyMsg.style.fontSize = '11px';
-            emptyMsg.textContent = '빈 폴더 (우클릭하여 파일 추가)';
+            emptyMsg.textContent = '빈 폴더';
             childrenContainer.appendChild(emptyMsg);
         }
-        
-        // Add context menu to children container for empty folders
-        childrenContainer.addEventListener('contextmenu', (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            showFileContextMenu(e, node.path, node.name, true);
-        });
 
         item.appendChild(childrenContainer);
     } else {
         // File - click to open
         const openFile = () => openClientFile(node.path, node.name);
-        label.addEventListener('click', openFile);
-        item.addEventListener('click', openFile);
-
-        // Right-click context menu for file
-        item.addEventListener('contextmenu', (e) => {
-            e.stopPropagation();
-            showFileContextMenu(e, node.path, node.name, false);
-        });
+        labelContainer.addEventListener('click', openFile);
     }
 
     parentEl.appendChild(item);
