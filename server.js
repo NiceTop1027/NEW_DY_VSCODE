@@ -15,6 +15,9 @@ const crypto = require('crypto');
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Trust proxy - Required for Railway/Heroku/etc
+app.set('trust proxy', 1);
+
 // Security: Helmet middleware
 app.use(helmet({
     contentSecurityPolicy: {
