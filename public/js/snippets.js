@@ -2,7 +2,7 @@
 // Advanced code snippets and auto-completion with Emmet
 
 import * as monaco from 'monaco-editor';
-import emmet from 'emmet-monaco-es';
+import { emmetHTML, emmetCSS, emmetJSX } from 'emmet-monaco-es';
 
 // C/C++ Snippets
 const cSnippets = [
@@ -402,8 +402,10 @@ const cssSnippets = [
 
 // Register completion providers
 export function registerSnippets() {
-    // Enable Emmet for HTML, CSS, JSX, etc.
-    emmet(monaco, ['html', 'css', 'php', 'jsx', 'tsx', 'vue', 'svelte']);
+    // Enable Emmet for HTML, CSS, JSX
+    emmetHTML(monaco);
+    emmetCSS(monaco);
+    emmetJSX(monaco);
     
     // C/C++
     monaco.languages.registerCompletionItemProvider('c', {
