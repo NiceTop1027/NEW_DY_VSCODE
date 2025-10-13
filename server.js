@@ -1205,7 +1205,36 @@ app.ws('/api/execute', (ws, req) => {
                     fsSync.mkdirSync(tempDir, { recursive: true });
                 }
 
-                const tempFile = path.join(tempDir, filename || `temp_${processId}.${language}`);
+                // Generate proper temp filename with extension
+                let tempFilename;
+                if (filename && filename.includes('.')) {
+                    tempFilename = filename;
+                } else {
+                    // Map language to extension
+                    const extMap = {
+                        'c': 'c',
+                        'cpp': 'cpp',
+                        'python': 'py',
+                        'py': 'py',
+                        'javascript': 'js',
+                        'js': 'js',
+                        'java': 'java',
+                        'go': 'go',
+                        'rust': 'rs',
+                        'ruby': 'rb',
+                        'php': 'php',
+                        'perl': 'pl',
+                        'lua': 'lua',
+                        'r': 'r',
+                        'typescript': 'ts',
+                        'ts': 'ts',
+                        'bash': 'sh',
+                        'sh': 'sh'
+                    };
+                    const ext = extMap[language] || language;
+                    tempFilename = `temp_${processId}.${ext}`;
+                }
+                const tempFile = path.join(tempDir, tempFilename);
                 await fs.writeFile(tempFile, code, 'utf8');
 
                 let command, args;
@@ -1254,7 +1283,7 @@ app.ws('/api/execute', (ws, req) => {
                         console.log('Auto-fixed C code for interactive I/O');
                     }
                     
-                    const outputFile = tempFile.replace('.c', '');
+                    const outputFile = tempFile.replace(/\.c$/, '.out');
                     // Compile first
                     const compileProcess = spawn('gcc', [tempFile, '-o', outputFile]);
                     
@@ -1299,7 +1328,7 @@ app.ws('/api/execute', (ws, req) => {
                         console.log('Auto-fixed C++ code for interactive I/O');
                     }
                     
-                    const outputFile = tempFile.replace('.cpp', '');
+                    const outputFile = tempFile.replace(/\.cpp$/, '.out');
                     const compileProcess = spawn('g++', [tempFile, '-o', outputFile]);
                     
                     await new Promise((resolve, reject) => {
@@ -1351,7 +1380,7 @@ app.ws('/api/execute', (ws, req) => {
                     command = 'go';
                     args = ['run', tempFile];
                 } else if (language === 'rust' || language === 'rs') {
-                    const outputFile = tempFile.replace('.rs', '');
+                    const outputFile = tempFile.replace(/\.rs$/, '.out');
                     const compileProcess = spawn('rustc', [tempFile, '-o', outputFile]);
                     
                     await new Promise((resolve, reject) => {
@@ -1387,7 +1416,7 @@ app.ws('/api/execute', (ws, req) => {
                     command = 'swift';
                     args = [tempFile];
                 } else if (language === 'kotlin' || language === 'kt') {
-                    const outputFile = tempFile.replace('.kt', '.jar');
+                    const outputFile = tempFile.replace(/\.kt$/, '.jar');
                     const compileProcess = spawn('kotlinc', [tempFile, '-include-runtime', '-d', outputFile]);
                     
                     await new Promise((resolve, reject) => {
@@ -1426,7 +1455,7 @@ app.ws('/api/execute', (ws, req) => {
                     command = 'scala';
                     args = [tempFile];
                 } else if (language === 'haskell' || language === 'hs') {
-                    const outputFile = tempFile.replace('.hs', '');
+                    const outputFile = tempFile.replace(/\.hs$/, '.out');
                     const compileProcess = spawn('ghc', [tempFile, '-o', outputFile]);
                     
                     await new Promise((resolve, reject) => {
@@ -1512,7 +1541,20 @@ app.ws('/api/execute', (ws, req) => {
                     try {
                         fsSync.unlinkSync(tempFile);
                         if (language === 'c' || language === 'cpp') {
-                            const outputFile = tempFile.replace(/\.(c|cpp)$/, '');
+                            const outputFile = tempFile.replace(/\.(c|cpp)$/, '.out');
+                            if (fsSync.existsSync(outputFile)) {
+                                fsSync.unlinkSync(outputFile);
+                            }
+                        }
+                        // Cleanup other compiled files
+                        if (language === 'rust' || language === 'rs' || language === 'haskell' || language === 'hs') {
+                            const outputFile = tempFile.replace(/\.(rs|hs)$/, '.out');
+                            if (fsSync.existsSync(outputFile)) {
+                                fsSync.unlinkSync(outputFile);
+                            }
+                        }
+                        if (language === 'kotlin' || language === 'kt') {
+                            const outputFile = tempFile.replace(/\.kt$/, '.jar');
                             if (fsSync.existsSync(outputFile)) {
                                 fsSync.unlinkSync(outputFile);
                             }
