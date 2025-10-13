@@ -38,31 +38,62 @@ let fitAddon = null;
 function renderFileTree(node, parentEl, depth = 0) {
     const item = document.createElement('div');
     item.className = `tree-item ${node.type}`;
-    item.style.paddingLeft = `${depth * 15}px`;
     item.dataset.path = node.path || node.name;
+    
+    // Create wrapper for the item content
+    const itemContent = document.createElement('div');
+    itemContent.className = 'tree-item-content';
+    itemContent.style.paddingLeft = `${depth * 15}px`;
+    
+    // Add icon
+    const icon = document.createElement('span');
+    icon.className = 'tree-item-icon';
+    if (node.type === 'directory') {
+        icon.innerHTML = '<i class="codicon codicon-folder"></i>';
+    } else {
+        icon.innerHTML = '<i class="codicon codicon-file"></i>';
+    }
+    itemContent.appendChild(icon);
 
+    // Add label
     const label = document.createElement('span');
+    label.className = 'tree-item-label';
     label.textContent = node.name;
-    item.appendChild(label);
-
-    const childrenContainer = document.createElement('div');
-    childrenContainer.className = 'tree-children';
-    item.appendChild(childrenContainer);
+    label.title = node.name; // Tooltip for long names
+    itemContent.appendChild(label);
+    
+    item.appendChild(itemContent);
 
     if (node.type === 'directory') {
         item.classList.add('closed');
-        label.addEventListener('click', e => {
+        
+        // Create children container
+        const childrenContainer = document.createElement('div');
+        childrenContainer.className = 'tree-children';
+        item.appendChild(childrenContainer);
+        
+        // Click handler for folder
+        itemContent.addEventListener('click', e => {
             e.stopPropagation();
             item.classList.toggle('closed');
-            renderVisibleFileItems();
+            
+            // Update icon
+            if (item.classList.contains('closed')) {
+                icon.innerHTML = '<i class="codicon codicon-folder"></i>';
+            } else {
+                icon.innerHTML = '<i class="codicon codicon-folder-opened"></i>';
+            }
         });
-        if (node.children) node.children.forEach(child => renderFileTree(child, childrenContainer, depth + 1));
+        
+        // Render children
+        if (node.children) {
+            node.children.forEach(child => renderFileTree(child, childrenContainer, depth + 1));
+        }
     } else { // file
-        label.addEventListener('click', () => openFile(node.path, node.name));
+        itemContent.addEventListener('click', () => openFile(node.path, node.name));
     }
 
     parentEl.appendChild(item);
-    allFileItems.push(item);
 }
 
 const FILE_ITEM_HEIGHT = 22;

@@ -1035,79 +1035,78 @@ body {
 }
 
 .tree-item {
-    padding: 10px 12px;
+    width: 100%;
+    box-sizing: border-box;
+    display: block;
+}
+
+.tree-item-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
     cursor: pointer;
     color: var(--text-color-light);
     transition: all 0.15s ease-out;
     user-select: none;
-    position: relative;
     border-radius: 4px;
-    width: 100%;
-    box-sizing: border-box;
-    min-height: 38px;
-    display: flex;
-    align-items: center;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    min-height: 32px;
 }
 
-.tree-item > div:first-child {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    min-height: 24px;
-    overflow: hidden;
-}
-
-.tree-item span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    flex: 1;
-}
-
-.tree-item:hover {
+.tree-item-content:hover {
     background-color: var(--hover-background);
-    transform: translateX(3px);
-    padding-left: 14px;
+    color: var(--text-color);
 }
 
-.tree-item:active {
-    transform: translateX(1px);
-    transition: transform 0.05s ease-out;
+.tree-item-content:active {
+    transform: scale(0.98);
 }
 
-.tree-item.selected { /* For selected file/folder */
+.tree-item-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+}
+
+.tree-item-icon .codicon {
+    font-size: 16px;
+}
+
+.tree-item-label {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 13px;
+}
+
+.tree-item.selected .tree-item-content {
     background-color: var(--active-item-background);
     color: var(--text-color);
 }
 
-.tree-item .codicon {
-    margin-right: 6px;
-    font-size: 16px;
-}
-
 /* Folder icons */
-.tree-item.directory .codicon-folder {
-    color: #e0b429;
-}
-.tree-item.directory.closed .codicon-folder {
-    color: #e0b429;
-}
-.tree-item.directory:not(.closed) .codicon-folder-opened {
+.tree-item.directory .codicon-folder,
+.tree-item.directory .codicon-folder-opened {
     color: #e0b429;
 }
 
+/* Tree children - vertical layout */
 .tree-children {
-    display: flex;
-    flex-direction: column;
+    display: block;
     width: 100%;
 }
 
 .tree-item.directory.closed > .tree-children {
     display: none;
+}
+
+/* File icons */
+.tree-item.file .codicon-file {
+    color: var(--text-color-light);
 }
 
 #notification-area {
@@ -1241,34 +1240,7 @@ body {
     margin: 4px 0;
 }
 
-/* File icons */
-.tree-item.file::before {
-    content: '\ea7b';
-    font-family: 'codicon';
-    margin-right: 6px;
-    font-size: 16px;
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.tree-item.directory::before {
-    content: '\ea83';
-    font-family: 'codicon';
-    margin-right: 6px;
-    font-size: 16px;
-    color: #e0b429;
-    display: inline-block;
-    vertical-align: middle;
-}
-
-.tree-item.directory:not(.closed)::before {
-    content: '\ea84';
-}
-
-.tree-item span {
-    display: inline-block;
-    vertical-align: middle;
-}
+/* Old icon styles removed - now using codicon elements in HTML */
 
 /* Loading spinner */
 .loading-spinner {
