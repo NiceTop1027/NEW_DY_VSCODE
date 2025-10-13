@@ -361,10 +361,30 @@ export function initUI() {
         }
     });
 
-    // Run Code Button
+    // Run Code Button - Use PTY system for interactive I/O
     const runCodeBtn = document.getElementById('run-code-btn');
     if (runCodeBtn) {
-        runCodeBtn.addEventListener('click', runCode);
+        runCodeBtn.addEventListener('click', async () => {
+            const editor = getEditor();
+            if (!editor) return;
+
+            const code = editor.getValue();
+            const model = editor.getModel();
+            if (!model) return;
+
+            const language = model.getLanguageId();
+            const uri = model.uri.toString();
+            const filename = uri.split('/').pop();
+            
+            // Switch to output panel
+            const outputTab = document.querySelector('[data-panel-id="output"]');
+            if (outputTab) {
+                outputTab.click();
+            }
+
+            // Run code with PTY support (interactive I/O)
+            await outputPanel.runCode(code, language, filename);
+        });
     }
     
     // Git Push Button

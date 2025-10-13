@@ -126,6 +126,7 @@ class OutputPanel {
         }
 
         this.ws.onopen = () => {
+            console.log('✅ WebSocket connected!');
             this.write('✅ Connected to execution server', 'success');
             
             // Send code to execute
@@ -135,6 +136,12 @@ class OutputPanel {
                 language,
                 filename
             }));
+            
+            console.log('Input field status:', {
+                element: this.outputInput,
+                disabled: this.outputInput?.disabled,
+                visible: this.outputInputLine?.style.display
+            });
         };
 
         this.ws.onmessage = (event) => {
