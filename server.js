@@ -1481,7 +1481,7 @@ app.ws('/api/execute', (ws, req) => {
         try {
             const data = JSON.parse(msg);
 
-            if (data.type === 'run') {
+            if (data.type === 'execute' || data.type === 'run') {
                 const { code, language, filename } = data;
                 
                 // Save code to temp file
@@ -1548,11 +1548,18 @@ app.ws('/api/execute', (ws, req) => {
                     command = 'node';
                     args = [tempFile];
                 } else if (language === 'c') {
-                    // Auto-fix: Add setbuf to disable buffering
+                    // Auto-fix: Add setbuf to disable buffering and fix scanf
                     let modifiedCode = code;
+                    
+                    // Fix scanf format strings - remove trailing \n
+                    modifiedCode = modifiedCode.replace(
+                        /scanf\s*\(\s*"([^"]*?)\\n"\s*,/g,
+                        'scanf("$1",'
+                    );
+                    
                     if (!code.includes('setbuf') && !code.includes('setvbuf')) {
                         // Add setbuf after main() {
-                        modifiedCode = code.replace(
+                        modifiedCode = modifiedCode.replace(
                             /(int\s+main\s*\([^)]*\)\s*\{)/,
                             '$1\n    setbuf(stdout, NULL);  // Auto-added for interactive I/O\n'
                         );
@@ -1562,11 +1569,11 @@ app.ws('/api/execute', (ws, req) => {
                             /(printf\s*\([^;]+;)(\s*scanf)/g,
                             '$1\n    fflush(stdout);  // Auto-added for interactive I/O\n$2'
                         );
-                        
-                        // Write modified code
-                        await fs.writeFile(tempFile, modifiedCode, 'utf8');
-                        console.log('Auto-fixed C code for interactive I/O');
                     }
+                    
+                    // Write modified code
+                    await fs.writeFile(tempFile, modifiedCode, 'utf8');
+                    console.log('Auto-fixed C code for interactive I/O');
                     
                     const outputFile = tempFile.replace(/\.c$/, '.out');
                     // Compile first
