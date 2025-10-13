@@ -684,6 +684,9 @@ export function initUI() {
                 clientFS.setDirectoryHandle(dirHandle);
                 await loadDirectoryWithHandles(dirHandle);
                 
+                // Switch to file explorer view
+                switchToView('files');
+                
                 showNotification(`✓ 폴더 로드 완료 (실시간 저장 가능)`, 'success');
             } catch (err) {
                 if (err.name !== 'AbortError') {
@@ -733,6 +736,9 @@ export function initUI() {
 
         clientFS.sortChildren(clientFS.root);
         renderClientFileTree();
+
+        // Switch to file explorer view
+        switchToView('files');
 
         if (errorCount === 0) {
             showNotification(`✓ ${successCount}개 파일 업로드 완료`, 'success');

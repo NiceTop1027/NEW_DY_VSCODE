@@ -34,23 +34,38 @@ class OutputPanel {
 
     // Send input to running process
     sendInput() {
-        if (!this.ws || !this.isRunning) {
-            console.warn('Cannot send input: ws=', this.ws, 'isRunning=', this.isRunning);
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            console.warn('WebSocket not ready:', this.ws?.readyState);
+            this.writeError('❌ 연결이 끊어졌습니다. 코드를 다시 실행하세요.');
             return;
         }
 
-        const value = this.outputInput.value;
-        
-        console.log('Sending input:', value);
-        
-        // Send to server (don't display yet, let server echo it back)
-        this.ws.send(JSON.stringify({
-            type: 'input',
-            data: value + '\n'
-        }));
+        if (!this.isRunning) {
+            console.warn('Process not running');
+            return;
+        }
 
-        // Clear input
+        const value = this.outputInput.value.trim();
+        
+        if (value === '') {
+            // Empty input, just send newline
+            this.ws.send(JSON.stringify({
+                type: 'input',
+                data: '\n'
+            }));
+        } else {
+            console.log('Sending input:', value);
+            
+            // Send to server
+            this.ws.send(JSON.stringify({
+                type: 'input',
+                data: value + '\n'
+            }));
+        }
+
+        // Clear input and refocus
         this.outputInput.value = '';
+        this.outputInput.focus();
     }
 
     // Clear output
@@ -126,22 +141,30 @@ class OutputPanel {
         }
 
         this.ws.onopen = () => {
-            console.log('✅ WebSocket connected!');
+            console.log('WebSocket opened successfully');
             this.write('✅ Connected to execution server', 'success');
-            this.write('', 'output'); // Empty line for spacing
             
-            // Send code to execute
+            // Send execution request
             this.ws.send(JSON.stringify({
-                type: 'run',
-                code,
+                type: 'execute',
                 language,
+                code,
                 filename
             }));
             
-            console.log('Input field status:', {
+            // Ensure input is ready
+            if (this.outputInput) {
+                this.outputInput.disabled = false;
+                this.outputInput.placeholder = '입력하고 Enter를 누르세요...';
+                setTimeout(() => {
+                    this.outputInput.focus();
+                }, 100);
+            }
+            
+            console.log('Input field ready:', {
                 element: this.outputInput,
                 disabled: this.outputInput?.disabled,
-                visible: this.outputInputLine?.style.display
+                readyState: this.ws.readyState
             });
         };
 
@@ -215,9 +238,9 @@ class OutputPanel {
 
         this.ws.onclose = () => {
             console.log('WebSocket closed, isRunning:', this.isRunning);
+            
+            // Only show error if it was unexpected (not a normal exit)
             if (this.isRunning) {
-                this.write('─'.repeat(60), 'output');
-                this.write('⚠️  Connection closed unexpectedly', 'error');
                 this.isRunning = false;
                 
                 if (this.outputInput) {
@@ -225,6 +248,9 @@ class OutputPanel {
                     this.outputInput.placeholder = '연결 종료됨';
                 }
             }
+            
+            // Clean up WebSocket reference
+            this.ws = null;
         };
     }
 
