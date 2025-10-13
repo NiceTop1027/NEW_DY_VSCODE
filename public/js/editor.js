@@ -4,6 +4,7 @@ import { saveFile } from './api.js';
 import { getLanguageIdFromFilePath } from './utils.js';
 import { openFiles, trackFileChange } from './ui.js';
 import { clientFS } from './fileSystem.js';
+import { registerSnippets } from './snippets.js';
 
 let editor = null;
 let diffEditor = null;
@@ -146,6 +147,9 @@ export function initEditor(editorEl, tabsEl, openFilesMap) {
     window.addEventListener('resize', () => {
         if (editor) editor.layout();
     });
+
+    // Register advanced snippets
+    registerSnippets();
 
     // Keyboard shortcuts
     // Save: Ctrl+S
