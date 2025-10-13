@@ -1842,10 +1842,12 @@ app.ws('/api/execute', (ws, req) => {
                 }
             }
         } catch (error) {
+            console.error('Execution error:', error);
             ws.send(JSON.stringify({
                 type: 'error',
                 data: error.message
             }));
+            // Don't close connection on error, let client decide
         }
     });
 

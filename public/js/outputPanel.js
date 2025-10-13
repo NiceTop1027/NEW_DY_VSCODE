@@ -214,9 +214,10 @@ class OutputPanel {
         };
 
         this.ws.onclose = () => {
+            console.log('WebSocket closed, isRunning:', this.isRunning);
             if (this.isRunning) {
                 this.write('─'.repeat(60), 'output');
-                this.write('Connection closed', 'output');
+                this.write('⚠️  Connection closed unexpectedly', 'error');
                 this.isRunning = false;
                 
                 if (this.outputInput) {
