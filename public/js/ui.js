@@ -6,6 +6,7 @@ import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { clientFS } from './fileSystem.js';
 import { downloadManager } from './downloadManager.js';
+import { commandPalette } from './commandPalette.js';
 
 // DOM Elements
 let fileExplorerEl;
@@ -876,6 +877,9 @@ export function initUI() {
 
     // Initialize download manager
     downloadManager.init();
+
+    // Initialize command palette
+    commandPalette.init();
 }
 
 // Filter file tree based on search term
