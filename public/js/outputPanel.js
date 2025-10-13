@@ -142,7 +142,6 @@ class OutputPanel {
 
         this.ws.onopen = () => {
             console.log('WebSocket opened successfully');
-            this.write('✅ Connected to execution server', 'success');
             
             // Check if WebSocket is still valid
             if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {

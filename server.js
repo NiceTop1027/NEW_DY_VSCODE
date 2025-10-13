@@ -28,7 +28,9 @@ app.use(helmet({
             fontSrc: ["'self'", "data:", "https://cdn.jsdelivr.net"],
             imgSrc: ["'self'", "data:", "https:", "blob:"],
             connectSrc: ["'self'", "ws:", "wss:", "https:"],
-            workerSrc: ["'self'", "blob:"]
+            workerSrc: ["'self'", "blob:"],
+            frameSrc: ["'self'", "blob:"],
+            childSrc: ["'self'", "blob:"]
         }
     },
     hsts: {

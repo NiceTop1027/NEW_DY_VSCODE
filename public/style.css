@@ -625,49 +625,12 @@ body {
     transition: background-color 0.1s ease-in-out; /* Smooth hover transition */
 }
 
-.activity-icon::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 2px;
-    height: 0;
-    background: linear-gradient(180deg, var(--accent-color), var(--success-color));
-    transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border-radius: 0 2px 2px 0;
-}
-
 .activity-icon:hover {
     background: rgba(31, 111, 235, 0.1);
-    transform: translateX(2px);
-}
-
-.activity-icon:hover::before {
-    height: 24px;
 }
 
 .activity-icon.active {
     background: rgba(31, 111, 235, 0.15);
-}
-
-.activity-icon.active::before {
-    height: 32px;
-    box-shadow: 0 0 10px rgba(31, 111, 235, 0.5);
-}
-
-.activity-icon.active {
-    background-color: var(--active-item-background);
-}
-
-.activity-icon.active::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 2px;
-    background-color: var(--active-item-border);
 }
 
 #sidebar {
