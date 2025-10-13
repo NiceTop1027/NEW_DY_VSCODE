@@ -149,27 +149,29 @@ class OutputPanel {
                 const data = JSON.parse(event.data);
 
                 if (data.type === 'output') {
-                    // Write output as-is (preserve formatting)
                     const text = data.data;
                     
-                    // Don't split by newlines, just append to last line or create new
-                    if (text.includes('\n')) {
-                        const lines = text.split('\n');
-                        lines.forEach((line, index) => {
-                            if (index === 0 && this.outputContent.lastChild) {
-                                // Append to last line
-                                this.outputContent.lastChild.textContent += line;
-                            } else if (index < lines.length - 1 || line) {
-                                // Create new line
-                                this.write(line, 'output');
-                            }
-                        });
-                    } else {
-                        // No newline, append to last line
-                        if (this.outputContent.lastChild && this.outputContent.lastChild.classList.contains('output-line')) {
-                            this.outputContent.lastChild.textContent += text;
+                    // Process output character by character for proper formatting
+                    for (let i = 0; i < text.length; i++) {
+                        const char = text[i];
+                        
+                        if (char === '\n') {
+                            // New line
+                            const line = document.createElement('div');
+                            line.className = 'output-line output';
+                            this.outputContent.appendChild(line);
+                        } else if (char === '\r') {
+                            // Carriage return - ignore or handle specially
+                            continue;
                         } else {
-                            this.write(text, 'output');
+                            // Regular character - append to last line
+                            let lastLine = this.outputContent.lastElementChild;
+                            if (!lastLine || !lastLine.classList.contains('output-line')) {
+                                lastLine = document.createElement('div');
+                                lastLine.className = 'output-line output';
+                                this.outputContent.appendChild(lastLine);
+                            }
+                            lastLine.textContent += char;
                         }
                     }
                     
