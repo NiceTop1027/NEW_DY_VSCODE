@@ -128,6 +128,7 @@ class OutputPanel {
         this.ws.onopen = () => {
             console.log('✅ WebSocket connected!');
             this.write('✅ Connected to execution server', 'success');
+            this.write('', 'output'); // Empty line for spacing
             
             // Send code to execute
             this.ws.send(JSON.stringify({
