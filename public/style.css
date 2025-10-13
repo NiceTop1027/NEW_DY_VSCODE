@@ -596,62 +596,6 @@ body {
     position: relative;
 }
 
-/* Sidebar Header */
-.sidebar-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 8px 16px;
-    height: 35px;
-    border-bottom: 1px solid var(--border-color);
-    background-color: var(--sidebar-background);
-    flex-shrink: 0;
-}
-
-.sidebar-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    flex: 1;
-}
-
-.title-text {
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: var(--text-color);
-    opacity: 0.9;
-}
-
-.sidebar-actions {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.sidebar-actions .action-item {
-    width: 22px;
-    height: 22px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 3px;
-    cursor: pointer;
-    color: var(--text-color);
-    opacity: 0.7;
-    transition: all 0.15s ease;
-}
-
-.sidebar-actions .action-item:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-    opacity: 1;
-}
-
-.sidebar-actions .action-item i {
-    font-size: 16px;
-}
-
 /* Sidebar Content */
 .sidebar-content {
     flex: 1;
