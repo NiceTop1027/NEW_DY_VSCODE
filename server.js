@@ -95,8 +95,20 @@ if (!fsSync.existsSync(PROJECT_ROOT)) {
 // Multer setup for file uploads
 const upload = multer({ dest: path.join(PROJECT_ROOT, 'uploads/') });
 
-// Serve static files from the 'public' directory
-app.use(express.static('public'));
+// Serve static files from the 'public' directory with proper MIME types
+app.use(express.static('public', {
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.css')) {
+            res.setHeader('Content-Type', 'text/css');
+        } else if (filePath.endsWith('.js')) {
+            res.setHeader('Content-Type', 'application/javascript');
+        } else if (filePath.endsWith('.json')) {
+            res.setHeader('Content-Type', 'application/json');
+        } else if (filePath.endsWith('.wasm')) {
+            res.setHeader('Content-Type', 'application/wasm');
+        }
+    }
+}));
 app.use(express.json()); // JSON 요청 본문을 파싱하기 위한 미들웨어 추가
 
 // Helper function to validate file paths
