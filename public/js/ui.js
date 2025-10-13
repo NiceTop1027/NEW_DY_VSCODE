@@ -5,6 +5,7 @@ import { showNotification, getLanguageIdFromFilePath } from './utils.js';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
 import { clientFS } from './fileSystem.js';
+import { downloadManager } from './downloadManager.js';
 
 // DOM Elements
 let fileExplorerEl;
@@ -841,6 +842,9 @@ export function initUI() {
 
     // IndexedDB에서 파일 복원
     loadFilesFromIndexedDB();
+
+    // Initialize download manager
+    downloadManager.init();
 }
 
 // Filter file tree based on search term

@@ -5,7 +5,7 @@ import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import download from 'downloadjs';
 import { showNotification } from './utils.js';
-import { clientFileSystem } from './fileSystem.js';
+import { clientFS as clientFileSystem } from './fileSystem.js';
 
 class DownloadManager {
     constructor() {
