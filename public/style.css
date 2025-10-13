@@ -509,8 +509,8 @@ body {
 }
 
 #sidebar {
-    width: 300px;
-    min-width: 200px;
+    width: fit-content;
+    min-width: 300px;
     max-width: 50vw;
     background-color: var(--sidebar-background);
     flex-shrink: 0;
@@ -1018,8 +1018,10 @@ body {
 #file-explorer {
     flex: 1;
     overflow-y: auto;
-    overflow-x: hidden;
+    overflow-x: auto;
     padding: 0 8px 0 12px;
+    min-width: 0;
+    width: fit-content;
 }
 
 #file-explorer h3 {
@@ -1043,11 +1045,13 @@ body {
     user-select: none;
     position: relative;
     border-radius: 4px;
-    width: 100%;
+    width: max-content;
+    min-width: 100%;
     box-sizing: border-box;
     min-height: 38px;
     display: flex;
     align-items: center;
+    white-space: nowrap;
 }
 
 .tree-item > div:first-child {

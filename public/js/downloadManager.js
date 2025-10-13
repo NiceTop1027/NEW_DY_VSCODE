@@ -184,10 +184,21 @@ class DownloadManager {
 
             const file = clientFileSystem.getFile(path);
             if (!file) {
-                throw new Error('File not found');
+                // Try to get from files map
+                const allFiles = Array.from(clientFileSystem.files.values());
+                const foundFile = allFiles.find(f => f.path === path || f.name === path);
+                
+                if (!foundFile) {
+                    throw new Error('File not found');
+                }
+                
+                const blob = new Blob([foundFile.content || ''], { type: 'text/plain' });
+                saveAs(blob, foundFile.name);
+                showNotification(`✅ Downloaded ${foundFile.name}`, 'success');
+                return;
             }
 
-            const blob = new Blob([file.content], { type: 'text/plain' });
+            const blob = new Blob([file.content || ''], { type: 'text/plain' });
             saveAs(blob, file.name);
 
             showNotification(`✅ Downloaded ${file.name}`, 'success');
