@@ -214,10 +214,34 @@ class DownloadManager {
             showNotification(`Creating ZIP for ${path}...`, 'info');
 
             const zip = new JSZip();
-            const folder = clientFileSystem.getFile(path);
+            let folder = clientFileSystem.getFile(path);
             
             if (!folder) {
-                throw new Error('Folder not found');
+                // Try to find folder in files map
+                const allFiles = Array.from(clientFileSystem.files.values());
+                folder = allFiles.find(f => (f.path === path || f.name === path) && f.type === 'directory');
+                
+                if (!folder) {
+                    // Try to find by searching root children
+                    const findFolder = (node, targetPath) => {
+                        if (node.path === targetPath || node.name === targetPath) {
+                            return node;
+                        }
+                        if (node.children) {
+                            for (const child of node.children) {
+                                const found = findFolder(child, targetPath);
+                                if (found) return found;
+                            }
+                        }
+                        return null;
+                    };
+                    
+                    folder = findFolder(clientFileSystem.root, path);
+                }
+                
+                if (!folder) {
+                    throw new Error('Folder not found');
+                }
             }
 
             // Add files to zip recursively
@@ -245,11 +269,17 @@ class DownloadManager {
     async addToZip(zip, item, basePath) {
         if (item.type === 'file') {
             const filePath = basePath ? `${basePath}/${item.name}` : item.name;
-            zip.file(filePath, item.content);
+            const content = item.content || '';
+            zip.file(filePath, content);
         } else if (item.type === 'directory' && item.children) {
             const folderPath = basePath ? `${basePath}/${item.name}` : item.name;
-            const folder = zip.folder(folderPath);
             
+            // Create folder in zip
+            if (folderPath) {
+                zip.folder(folderPath);
+            }
+            
+            // Add all children
             for (const child of item.children) {
                 await this.addToZip(zip, child, folderPath);
             }
