@@ -907,6 +907,8 @@ export function initUI() {
             if (!model) return;
 
             const language = model.getLanguageId();
+            const uri = model.uri.toString();
+            const filename = uri.split('/').pop();
             
             // Switch to output panel
             const outputTab = document.querySelector('[data-panel-id="output"]');
@@ -914,8 +916,8 @@ export function initUI() {
                 outputTab.click();
             }
 
-            // Run code with input support
-            await outputPanel.runCode(code, language);
+            // Run code with WebSocket support
+            await outputPanel.runCode(code, language, filename);
         });
     }
 }

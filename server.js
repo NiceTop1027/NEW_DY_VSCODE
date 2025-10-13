@@ -1185,6 +1185,165 @@ app.ws('/debug', (ws, req) => {
     });
 });
 
+// Interactive code execution with WebSocket
+const activeProcesses = new Map();
+
+app.ws('/api/execute', (ws, req) => {
+    let currentProcess = null;
+    const processId = Date.now().toString();
+
+    ws.on('message', async (msg) => {
+        try {
+            const data = JSON.parse(msg);
+
+            if (data.type === 'run') {
+                const { code, language, filename } = data;
+                
+                // Save code to temp file
+                const tempDir = path.join(PROJECT_ROOT, 'temp');
+                if (!fsSync.existsSync(tempDir)) {
+                    fsSync.mkdirSync(tempDir, { recursive: true });
+                }
+
+                const tempFile = path.join(tempDir, filename || `temp_${processId}.${language}`);
+                await fs.writeFile(tempFile, code, 'utf8');
+
+                let command, args;
+
+                // Determine command based on language
+                if (language === 'python' || language === 'py') {
+                    command = 'python3';
+                    args = [tempFile];
+                } else if (language === 'javascript' || language === 'js') {
+                    command = 'node';
+                    args = [tempFile];
+                } else if (language === 'c') {
+                    const outputFile = tempFile.replace('.c', '');
+                    // Compile first
+                    const compileProcess = spawn('gcc', [tempFile, '-o', outputFile]);
+                    
+                    await new Promise((resolve, reject) => {
+                        let compileError = '';
+                        compileProcess.stderr.on('data', (data) => {
+                            compileError += data.toString();
+                        });
+                        compileProcess.on('close', (code) => {
+                            if (code !== 0) {
+                                ws.send(JSON.stringify({
+                                    type: 'error',
+                                    data: `Compilation error:\n${compileError}`
+                                }));
+                                reject(new Error('Compilation failed'));
+                            } else {
+                                resolve();
+                            }
+                        });
+                    });
+
+                    command = outputFile;
+                    args = [];
+                } else if (language === 'cpp') {
+                    const outputFile = tempFile.replace('.cpp', '');
+                    const compileProcess = spawn('g++', [tempFile, '-o', outputFile]);
+                    
+                    await new Promise((resolve, reject) => {
+                        let compileError = '';
+                        compileProcess.stderr.on('data', (data) => {
+                            compileError += data.toString();
+                        });
+                        compileProcess.on('close', (code) => {
+                            if (code !== 0) {
+                                ws.send(JSON.stringify({
+                                    type: 'error',
+                                    data: `Compilation error:\n${compileError}`
+                                }));
+                                reject(new Error('Compilation failed'));
+                            } else {
+                                resolve();
+                            }
+                        });
+                    });
+
+                    command = outputFile;
+                    args = [];
+                } else {
+                    ws.send(JSON.stringify({
+                        type: 'error',
+                        data: `Unsupported language: ${language}`
+                    }));
+                    return;
+                }
+
+                // Run the program with PTY for interactive I/O
+                currentProcess = pty.spawn(command, args, {
+                    name: 'xterm-color',
+                    cols: 80,
+                    rows: 30,
+                    cwd: tempDir,
+                    env: process.env
+                });
+
+                activeProcesses.set(processId, currentProcess);
+
+                // Send output to client
+                currentProcess.onData((data) => {
+                    ws.send(JSON.stringify({
+                        type: 'output',
+                        data: data
+                    }));
+                });
+
+                // Handle process exit
+                currentProcess.onExit(({ exitCode, signal }) => {
+                    ws.send(JSON.stringify({
+                        type: 'exit',
+                        exitCode,
+                        signal
+                    }));
+                    activeProcesses.delete(processId);
+                    
+                    // Cleanup temp files
+                    try {
+                        fsSync.unlinkSync(tempFile);
+                        if (language === 'c' || language === 'cpp') {
+                            const outputFile = tempFile.replace(/\.(c|cpp)$/, '');
+                            if (fsSync.existsSync(outputFile)) {
+                                fsSync.unlinkSync(outputFile);
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Cleanup error:', e);
+                    }
+                });
+
+            } else if (data.type === 'input') {
+                // Send input to the running process
+                if (currentProcess) {
+                    currentProcess.write(data.data);
+                }
+            } else if (data.type === 'kill') {
+                // Kill the running process
+                if (currentProcess) {
+                    currentProcess.kill();
+                    activeProcesses.delete(processId);
+                }
+            }
+        } catch (error) {
+            ws.send(JSON.stringify({
+                type: 'error',
+                data: error.message
+            }));
+        }
+    });
+
+    ws.on('close', () => {
+        if (currentProcess) {
+            currentProcess.kill();
+            activeProcesses.delete(processId);
+        }
+    });
+});
+
 app.listen(port, () => {
     console.log(`
 ╔════════════════════════════════════════════════════════════╗
