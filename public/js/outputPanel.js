@@ -34,14 +34,16 @@ class OutputPanel {
 
     // Send input to running process
     sendInput() {
-        if (!this.ws || !this.isRunning) return;
+        if (!this.ws || !this.isRunning) {
+            console.warn('Cannot send input: ws=', this.ws, 'isRunning=', this.isRunning);
+            return;
+        }
 
         const value = this.outputInput.value;
         
-        // Display the input
-        this.write(`${value}`, 'input');
+        console.log('Sending input:', value);
         
-        // Send to server
+        // Send to server (don't display yet, let server echo it back)
         this.ws.send(JSON.stringify({
             type: 'input',
             data: value + '\n'

@@ -1402,12 +1402,18 @@ app.ws('/api/execute', (ws, req) => {
                 }
 
                 // Run the program with PTY for interactive I/O
+                const ptyEnv = Object.assign({}, process.env, {
+                    TERM: 'xterm-256color',
+                    COLORTERM: 'truecolor'
+                });
+                
                 currentProcess = pty.spawn(command, args, {
-                    name: 'xterm-color',
+                    name: 'xterm-256color',
                     cols: 80,
                     rows: 30,
                     cwd: tempDir,
-                    env: process.env
+                    env: ptyEnv,
+                    encoding: 'utf8'
                 });
 
                 activeProcesses.set(processId, currentProcess);
@@ -1446,7 +1452,11 @@ app.ws('/api/execute', (ws, req) => {
             } else if (data.type === 'input') {
                 // Send input to the running process
                 if (currentProcess) {
+                    console.log('Received input from client:', data.data);
                     currentProcess.write(data.data);
+                    console.log('Input written to PTY');
+                } else {
+                    console.error('No active process to send input to');
                 }
             } else if (data.type === 'kill') {
                 // Kill the running process
