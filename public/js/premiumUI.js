@@ -1,8 +1,9 @@
 // public/js/premiumUI.js
-// Premium UI/UX System - The Ultimate Experience
+// Premium UI/UX System with Radix UI & Modern Libraries
 
-import 'animate.css';
 import { showNotification } from './utils.js';
+import gsap from 'gsap';
+import anime from 'animejs';
 
 class PremiumUI {
     constructor() {
