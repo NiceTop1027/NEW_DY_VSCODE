@@ -7,7 +7,9 @@ const pty = require('node-pty');
 const axios = require('axios');
 const multer = require('multer');
 const { exec, spawn } = require('child_process'); 
-const inspector = require('inspector'); 
+const inspector = require('inspector');
+const { createConnection } = require('vscode-languageserver/node');
+const { TextDocument } = require('vscode-languageserver-textdocument'); 
 
 const app = express();
 const port = process.env.PORT || 3000;
