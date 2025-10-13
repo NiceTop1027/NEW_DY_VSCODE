@@ -1239,9 +1239,15 @@ app.ws('/debug', (ws, req) => {
 
 // Web Terminal - Admin only (password protected)
 // Security: Use hashed password
-const ADMIN_PASSWORD_HASH = crypto.createHash('sha256')
-    .update(process.env.TERMINAL_PASSWORD || 's13w00')
-    .digest('hex');
+// IMPORTANT: Set TERMINAL_PASSWORD environment variable in Railway
+if (!process.env.TERMINAL_PASSWORD) {
+    console.error('⚠️  WARNING: TERMINAL_PASSWORD environment variable not set!');
+    console.error('   Terminal will be disabled for security.');
+}
+
+const ADMIN_PASSWORD_HASH = process.env.TERMINAL_PASSWORD 
+    ? crypto.createHash('sha256').update(process.env.TERMINAL_PASSWORD).digest('hex')
+    : null;
 
 const authenticatedSessions = new Map(); // sessionId -> { authenticated, timestamp }
 const MAX_AUTH_ATTEMPTS = 3;
@@ -1260,6 +1266,20 @@ setInterval(() => {
 app.ws('/api/terminal', (ws, req) => {
     const clientIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     console.log(`Terminal WebSocket connection from ${clientIP}`);
+    
+    // Security: Check if password is configured
+    if (!ADMIN_PASSWORD_HASH) {
+        ws.send(JSON.stringify({
+            type: 'output',
+            data: '\r\n\x1b[1;31m❌ 터미널이 비활성화되었습니다.\x1b[0m\r\n'
+        }));
+        ws.send(JSON.stringify({
+            type: 'output',
+            data: '\x1b[1;33m관리자에게 TERMINAL_PASSWORD 환경변수 설정을 요청하세요.\x1b[0m\r\n'
+        }));
+        ws.close();
+        return;
+    }
     
     // Security: Check auth attempts
     const attempts = authAttempts.get(clientIP) || { count: 0, lastAttempt: 0 };
