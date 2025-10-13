@@ -130,9 +130,12 @@
                                 </div>
                             </div>
                             <div id="output" class="panel-view">
-                                <div class="panel-empty-state">
-                                    <i class="codicon codicon-output"></i>
-                                    <p>출력 내용이 없습니다</p>
+                                <div id="output-container">
+                                    <div id="output-content"></div>
+                                    <div id="output-input-line" style="display: none;">
+                                        <span class="output-prompt">></span>
+                                        <input type="text" id="output-input" class="output-input" placeholder="입력하고 Enter를 누르세요..." />
+                                    </div>
                                 </div>
                             </div>
                             <div id="debug-console" class="panel-view">

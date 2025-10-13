@@ -8,6 +8,7 @@ import { clientFS } from './fileSystem.js';
 import { downloadManager } from './downloadManager.js';
 import { commandPalette } from './commandPalette.js';
 import { quickOpen } from './quickOpen.js';
+import { outputPanel } from './outputPanel.js';
 
 // DOM Elements
 let fileExplorerEl;
@@ -890,6 +891,33 @@ export function initUI() {
         const { path } = e.detail;
         openFile(path, path.split('/').pop());
     });
+
+    // Initialize output panel
+    outputPanel.init();
+
+    // Add run button functionality
+    const runButton = document.getElementById('run-btn');
+    if (runButton) {
+        runButton.addEventListener('click', async () => {
+            const editor = getEditor();
+            if (!editor) return;
+
+            const code = editor.getValue();
+            const model = editor.getModel();
+            if (!model) return;
+
+            const language = model.getLanguageId();
+            
+            // Switch to output panel
+            const outputTab = document.querySelector('[data-panel-id="output"]');
+            if (outputTab) {
+                outputTab.click();
+            }
+
+            // Run code with input support
+            await outputPanel.runCode(code, language);
+        });
+    }
 }
 
 // Filter file tree based on search term
