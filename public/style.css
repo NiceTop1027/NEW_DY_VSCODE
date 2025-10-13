@@ -1758,26 +1758,37 @@ body {
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 0;
+    padding: 8px 12px;
     border-top: 1px solid var(--border-color);
-    background: rgba(255, 255, 255, 0.02);
+    background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%);
+    position: sticky;
+    bottom: 0;
 }
 
 .output-prompt {
     color: #4ec9b0;
     font-weight: bold;
     font-size: 14px;
+    text-shadow: 0 0 5px rgba(78, 201, 176, 0.3);
 }
 
 .output-input {
     flex: 1;
-    background: transparent;
-    border: none;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(102, 126, 234, 0.3);
+    border-radius: 4px;
     outline: none;
     color: var(--text-color);
     font-family: 'Courier New', monospace;
     font-size: 13px;
-    padding: 4px 8px;
+    padding: 6px 12px;
+    transition: all 0.2s ease;
+}
+
+.output-input:focus {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(102, 126, 234, 0.6);
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
 }
 
 .output-input::placeholder {

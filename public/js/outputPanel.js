@@ -56,7 +56,6 @@ class OutputPanel {
         if (this.outputContent) {
             this.outputContent.innerHTML = '';
         }
-        this.hideInput();
     }
 
     // Write output
@@ -82,22 +81,20 @@ class OutputPanel {
         this.write(text, 'success');
     }
 
-    // Show input field
-    showInput() {
-        if (this.outputInputLine) {
-            this.outputInputLine.style.display = 'flex';
-            setTimeout(() => {
-                if (this.outputInput) {
-                    this.outputInput.focus();
-                }
-            }, 100);
-        }
-    }
-
-    // Hide input field
-    hideInput() {
-        if (this.outputInputLine) {
-            this.outputInputLine.style.display = 'none';
+    // Stop running process
+    stopExecution() {
+        if (this.ws && this.isRunning) {
+            this.ws.send(JSON.stringify({ type: 'kill' }));
+            this.write('─'.repeat(60), 'output');
+            this.write('⚠️  Execution stopped by user', 'error');
+            this.isRunning = false;
+            
+            if (this.outputInput) {
+                this.outputInput.disabled = true;
+                this.outputInput.placeholder = '실행 중지됨';
+            }
+            
+            this.ws.close();
         }
     }
 
@@ -119,8 +116,12 @@ class OutputPanel {
         this.ws = new WebSocket(wsUrl);
         this.isRunning = true;
 
-        // Show input field immediately
-        this.showInput();
+        // Enable input field
+        if (this.outputInput) {
+            this.outputInput.disabled = false;
+            this.outputInput.placeholder = '입력하고 Enter를 누르세요...';
+            this.outputInput.focus();
+        }
 
         this.ws.onopen = () => {
             this.write('✅ Connected to execution server', 'success');
@@ -139,13 +140,32 @@ class OutputPanel {
                 const data = JSON.parse(event.data);
 
                 if (data.type === 'output') {
-                    // Write output directly (no newline, server handles it)
-                    const lines = data.data.split('\n');
-                    lines.forEach((line, index) => {
-                        if (line || index < lines.length - 1) {
-                            this.write(line, 'output');
+                    // Write output as-is (preserve formatting)
+                    const text = data.data;
+                    
+                    // Don't split by newlines, just append to last line or create new
+                    if (text.includes('\n')) {
+                        const lines = text.split('\n');
+                        lines.forEach((line, index) => {
+                            if (index === 0 && this.outputContent.lastChild) {
+                                // Append to last line
+                                this.outputContent.lastChild.textContent += line;
+                            } else if (index < lines.length - 1 || line) {
+                                // Create new line
+                                this.write(line, 'output');
+                            }
+                        });
+                    } else {
+                        // No newline, append to last line
+                        if (this.outputContent.lastChild && this.outputContent.lastChild.classList.contains('output-line')) {
+                            this.outputContent.lastChild.textContent += text;
+                        } else {
+                            this.write(text, 'output');
                         }
-                    });
+                    }
+                    
+                    // Auto scroll
+                    this.outputContent.scrollTop = this.outputContent.scrollHeight;
                 } else if (data.type === 'error') {
                     this.writeError(data.data);
                 } else if (data.type === 'exit') {
@@ -156,7 +176,13 @@ class OutputPanel {
                         this.writeError(`❌ Program exited with code: ${data.exitCode}`);
                     }
                     this.isRunning = false;
-                    this.hideInput();
+                    
+                    // Disable input
+                    if (this.outputInput) {
+                        this.outputInput.disabled = true;
+                        this.outputInput.placeholder = '프로그램이 종료되었습니다';
+                    }
+                    
                     this.ws.close();
                 }
             } catch (error) {
@@ -168,7 +194,11 @@ class OutputPanel {
             this.writeError('❌ WebSocket error occurred');
             console.error('WebSocket error:', error);
             this.isRunning = false;
-            this.hideInput();
+            
+            if (this.outputInput) {
+                this.outputInput.disabled = true;
+                this.outputInput.placeholder = '연결 오류';
+            }
         };
 
         this.ws.onclose = () => {
@@ -176,7 +206,11 @@ class OutputPanel {
                 this.write('─'.repeat(60), 'output');
                 this.write('Connection closed', 'output');
                 this.isRunning = false;
-                this.hideInput();
+                
+                if (this.outputInput) {
+                    this.outputInput.disabled = true;
+                    this.outputInput.placeholder = '연결 종료됨';
+                }
             }
         };
     }
