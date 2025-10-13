@@ -1404,25 +1404,42 @@ app.ws('/api/execute', (ws, req) => {
                 // Run the program with PTY for interactive I/O
                 const ptyEnv = Object.assign({}, process.env, {
                     TERM: 'xterm-256color',
-                    COLORTERM: 'truecolor'
+                    COLORTERM: 'truecolor',
+                    FORCE_COLOR: '1'
                 });
                 
-                currentProcess = pty.spawn(command, args, {
+                // Use shell wrapper to ensure proper stdin/stdout handling
+                let ptyCommand, ptyArgs;
+                if (process.platform === 'win32') {
+                    ptyCommand = 'cmd.exe';
+                    ptyArgs = ['/c', command, ...args];
+                } else {
+                    // Use bash to wrap the command for better I/O handling
+                    ptyCommand = '/bin/bash';
+                    ptyArgs = ['-c', `${command} ${args.join(' ')}`];
+                }
+                
+                console.log('Spawning PTY:', ptyCommand, ptyArgs);
+                
+                currentProcess = pty.spawn(ptyCommand, ptyArgs, {
                     name: 'xterm-256color',
                     cols: 80,
                     rows: 30,
                     cwd: tempDir,
                     env: ptyEnv,
-                    encoding: 'utf8'
+                    encoding: null  // Use raw buffer mode
                 });
 
                 activeProcesses.set(processId, currentProcess);
 
                 // Send output to client
                 currentProcess.onData((data) => {
+                    // Convert buffer to string if needed
+                    const output = typeof data === 'string' ? data : data.toString('utf8');
+                    console.log('PTY output:', output);
                     ws.send(JSON.stringify({
                         type: 'output',
-                        data: data
+                        data: output
                     }));
                 });
 
