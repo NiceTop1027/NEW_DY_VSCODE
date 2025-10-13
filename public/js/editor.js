@@ -60,18 +60,20 @@ export function initEditor(editorEl, tabsEl, openFilesMap) {
         renderWhitespace: 'selection',
         cursorBlinking: 'smooth',
         smoothScrolling: true,
-        // 고급 기능 활성화
+        // 고급 기능 활성화 (VS Code 스타일)
         quickSuggestions: {
             other: 'on',
-            comments: 'off',
+            comments: 'on',
             strings: 'on'
         },
+        quickSuggestionsDelay: 10,
         suggestOnTriggerCharacters: true,
         acceptSuggestionOnEnter: 'on',
         acceptSuggestionOnCommitCharacter: true,
         tabCompletion: 'on',
-        wordBasedSuggestions: 'matchingDocuments',
+        wordBasedSuggestions: 'allDocuments',
         snippetSuggestions: 'top',
+        suggestSelection: 'first',
         suggest: {
             showWords: true,
             showSnippets: true,
@@ -105,7 +107,14 @@ export function initEditor(editorEl, tabsEl, openFilesMap) {
             localityBonus: true,
             shareSuggestSelections: true,
             showInlineDetails: true,
-            snippetsPreventQuickSuggestions: false
+            snippetsPreventQuickSuggestions: false,
+            preview: true,
+            previewMode: 'subwordSmart',
+            showStatusBar: true
+        },
+        inlineSuggest: {
+            enabled: true,
+            mode: 'subwordSmart'
         },
         parameterHints: { 
             enabled: true,
