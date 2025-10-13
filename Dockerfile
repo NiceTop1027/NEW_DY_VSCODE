@@ -1,17 +1,26 @@
 FROM node:20-bullseye
 
-# Docker 설치
+# Install compilers and development tools
 RUN apt-get update && apt-get install -y \
-    apt-transport-https \
-    ca-certificates \
-    curl \
-    gnupg \
-    lsb-release \
-    && curl -fsSL https://download.docker.com/linux/debian/gpg | gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/debian $(lsb_release -cs) stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
-    && apt-get update \
-    && apt-get install -y docker-ce docker-ce-cli containerd.io \
+    build-essential \
+    gcc \
+    g++ \
+    gdb \
+    python3 \
+    python3-pip \
+    default-jdk \
+    golang-go \
+    rustc \
+    cargo \
+    ruby \
+    php \
+    perl \
+    lua5.3 \
+    r-base \
     && rm -rf /var/lib/apt/lists/*
+
+# Install additional language tools
+RUN npm install -g typescript ts-node
 
 # 작업 디렉토리 설정
 WORKDIR /app
@@ -34,13 +43,9 @@ RUN npm prune --production
 # 포트 노출
 EXPOSE 3000
 
-# Docker 데몬 시작 및 애플리케이션 실행
-CMD dockerd > /var/log/dockerd.log 2>&1 & \
-    echo "Waiting for Docker daemon to start..." && \
-    for i in {1..30}; do \
-        docker info > /dev/null 2>&1 && break || sleep 1; \
-    done && \
-    echo "Docker daemon started!" && \
-    docker pull ubuntu:22.04 && \
-    echo "Ubuntu image pulled!" && \
-    USE_DOCKER=true node server.js
+# 환경 변수 설정
+ENV NODE_ENV=production
+ENV TERM=xterm-256color
+
+# 애플리케이션 실행
+CMD ["node", "server.js"]

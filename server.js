@@ -1212,12 +1212,48 @@ app.ws('/api/execute', (ws, req) => {
 
                 // Determine command based on language
                 if (language === 'python' || language === 'py') {
+                    // Auto-fix: Add flush=True to print statements before input
+                    let modifiedCode = code;
+                    if (code.includes('input(')) {
+                        // Add flush=True to print before input
+                        modifiedCode = code.replace(
+                            /(print\s*\([^)]+\))(\s*\n?\s*input\s*\()/g,
+                            '$1, flush=True)$2'
+                        ).replace(
+                            /\), flush=True\)/g,
+                            ', flush=True)'
+                        );
+                        
+                        await fs.writeFile(tempFile, modifiedCode, 'utf8');
+                        console.log('Auto-fixed Python code for interactive I/O');
+                    }
+                    
                     command = 'python3';
-                    args = [tempFile];
+                    args = ['-u', tempFile];  // -u for unbuffered
                 } else if (language === 'javascript' || language === 'js') {
                     command = 'node';
                     args = [tempFile];
                 } else if (language === 'c') {
+                    // Auto-fix: Add setbuf to disable buffering
+                    let modifiedCode = code;
+                    if (!code.includes('setbuf') && !code.includes('setvbuf')) {
+                        // Add setbuf after main() {
+                        modifiedCode = code.replace(
+                            /(int\s+main\s*\([^)]*\)\s*\{)/,
+                            '$1\n    setbuf(stdout, NULL);  // Auto-added for interactive I/O\n'
+                        );
+                        
+                        // Also add fflush after printf if scanf follows
+                        modifiedCode = modifiedCode.replace(
+                            /(printf\s*\([^;]+;)(\s*scanf)/g,
+                            '$1\n    fflush(stdout);  // Auto-added for interactive I/O\n$2'
+                        );
+                        
+                        // Write modified code
+                        await fs.writeFile(tempFile, modifiedCode, 'utf8');
+                        console.log('Auto-fixed C code for interactive I/O');
+                    }
+                    
                     const outputFile = tempFile.replace('.c', '');
                     // Compile first
                     const compileProcess = spawn('gcc', [tempFile, '-o', outputFile]);
@@ -1243,6 +1279,26 @@ app.ws('/api/execute', (ws, req) => {
                     command = outputFile;
                     args = [];
                 } else if (language === 'cpp') {
+                    // Auto-fix: Add cout.flush() and disable buffering
+                    let modifiedCode = code;
+                    if (!code.includes('setbuf') && !code.includes('sync_with_stdio')) {
+                        // Add setbuf after main() {
+                        modifiedCode = code.replace(
+                            /(int\s+main\s*\([^)]*\)\s*\{)/,
+                            '$1\n    setbuf(stdout, NULL);  // Auto-added for interactive I/O\n    std::ios::sync_with_stdio(false);\n'
+                        );
+                        
+                        // Add flush after cout if cin follows
+                        modifiedCode = modifiedCode.replace(
+                            /(cout\s*<<[^;]+;)(\s*cin)/g,
+                            '$1\n    cout.flush();  // Auto-added for interactive I/O\n$2'
+                        );
+                        
+                        // Write modified code
+                        await fs.writeFile(tempFile, modifiedCode, 'utf8');
+                        console.log('Auto-fixed C++ code for interactive I/O');
+                    }
+                    
                     const outputFile = tempFile.replace('.cpp', '');
                     const compileProcess = spawn('g++', [tempFile, '-o', outputFile]);
                     
