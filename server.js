@@ -1266,6 +1266,133 @@ app.ws('/api/execute', (ws, req) => {
 
                     command = outputFile;
                     args = [];
+                } else if (language === 'java') {
+                    // Compile Java
+                    const compileProcess = spawn('javac', [tempFile]);
+                    
+                    await new Promise((resolve, reject) => {
+                        let compileError = '';
+                        compileProcess.stderr.on('data', (data) => {
+                            compileError += data.toString();
+                        });
+                        compileProcess.on('close', (code) => {
+                            if (code !== 0) {
+                                ws.send(JSON.stringify({
+                                    type: 'error',
+                                    data: `Compilation error:\n${compileError}`
+                                }));
+                                reject(new Error('Compilation failed'));
+                            } else {
+                                resolve();
+                            }
+                        });
+                    });
+
+                    const className = path.basename(tempFile, '.java');
+                    command = 'java';
+                    args = ['-cp', tempDir, className];
+                } else if (language === 'go') {
+                    command = 'go';
+                    args = ['run', tempFile];
+                } else if (language === 'rust' || language === 'rs') {
+                    const outputFile = tempFile.replace('.rs', '');
+                    const compileProcess = spawn('rustc', [tempFile, '-o', outputFile]);
+                    
+                    await new Promise((resolve, reject) => {
+                        let compileError = '';
+                        compileProcess.stderr.on('data', (data) => {
+                            compileError += data.toString();
+                        });
+                        compileProcess.on('close', (code) => {
+                            if (code !== 0) {
+                                ws.send(JSON.stringify({
+                                    type: 'error',
+                                    data: `Compilation error:\n${compileError}`
+                                }));
+                                reject(new Error('Compilation failed'));
+                            } else {
+                                resolve();
+                            }
+                        });
+                    });
+
+                    command = outputFile;
+                    args = [];
+                } else if (language === 'ruby' || language === 'rb') {
+                    command = 'ruby';
+                    args = [tempFile];
+                } else if (language === 'php') {
+                    command = 'php';
+                    args = [tempFile];
+                } else if (language === 'perl') {
+                    command = 'perl';
+                    args = [tempFile];
+                } else if (language === 'swift') {
+                    command = 'swift';
+                    args = [tempFile];
+                } else if (language === 'kotlin' || language === 'kt') {
+                    const outputFile = tempFile.replace('.kt', '.jar');
+                    const compileProcess = spawn('kotlinc', [tempFile, '-include-runtime', '-d', outputFile]);
+                    
+                    await new Promise((resolve, reject) => {
+                        let compileError = '';
+                        compileProcess.stderr.on('data', (data) => {
+                            compileError += data.toString();
+                        });
+                        compileProcess.on('close', (code) => {
+                            if (code !== 0) {
+                                ws.send(JSON.stringify({
+                                    type: 'error',
+                                    data: `Compilation error:\n${compileError}`
+                                }));
+                                reject(new Error('Compilation failed'));
+                            } else {
+                                resolve();
+                            }
+                        });
+                    });
+
+                    command = 'java';
+                    args = ['-jar', outputFile];
+                } else if (language === 'typescript' || language === 'ts') {
+                    command = 'ts-node';
+                    args = [tempFile];
+                } else if (language === 'bash' || language === 'sh') {
+                    command = 'bash';
+                    args = [tempFile];
+                } else if (language === 'lua') {
+                    command = 'lua';
+                    args = [tempFile];
+                } else if (language === 'r') {
+                    command = 'Rscript';
+                    args = [tempFile];
+                } else if (language === 'scala') {
+                    command = 'scala';
+                    args = [tempFile];
+                } else if (language === 'haskell' || language === 'hs') {
+                    const outputFile = tempFile.replace('.hs', '');
+                    const compileProcess = spawn('ghc', [tempFile, '-o', outputFile]);
+                    
+                    await new Promise((resolve, reject) => {
+                        let compileError = '';
+                        compileProcess.stderr.on('data', (data) => {
+                            compileError += data.toString();
+                        });
+                        compileProcess.on('close', (code) => {
+                            if (code !== 0) {
+                                ws.send(JSON.stringify({
+                                    type: 'error',
+                                    data: `Compilation error:\n${compileError}`
+                                }));
+                                reject(new Error('Compilation failed'));
+                            } else {
+                                resolve();
+                            }
+                        });
+                    });
+
+                    command = outputFile;
+                    args = [];
                 } else {
                     ws.send(JSON.stringify({
                         type: 'error',
