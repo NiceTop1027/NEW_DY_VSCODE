@@ -434,28 +434,12 @@ app.ws('/terminal', async (ws, req) => {
             ws.send(`완전히 격리된 우분투 환경입니다.\r\n\r\n`);
             
         } catch (error) {
-            ws.send(`\r\n\x1b[1;31m❌ Docker 컨테이너 생성 실패\x1b[0m\r\n`);
-            ws.send(`일반 모드로 전환합니다...\r\n\r\n`);
+            // Docker 실패 시 조용히 일반 모드로 전환
             useDocker = false;
         }
     }
     
-    if (!useDocker) {
-        // 격리 모드: 제한된 가상 터미널 (실제 셸 접근 차단)
-        ws.send('\r\n\x1b[1;33m⚠️  격리 모드\x1b[0m\r\n');
-        ws.send('Docker가 없어 실제 터미널을 사용할 수 없습니다.\r\n');
-        ws.send('코드 실행은 "실행" 버튼을 사용하세요.\r\n\r\n');
-        ws.send('\x1b[1;31m터미널 접근이 차단되었습니다.\x1b[0m\r\n');
-        ws.send('보안상의 이유로 서버 터미널에 직접 접근할 수 없습니다.\r\n\r\n');
-        
-        // 터미널 대신 메시지만 표시
-        ws.onmessage = () => {
-            ws.send('\r\n\x1b[1;31m❌ 터미널 사용 불가\x1b[0m\r\n');
-            ws.send('Docker 환경이 필요합니다.\r\n');
-        };
-        
-        return; // 실제 pty 생성하지 않음
-    }
+    // Docker 없이도 터미널 사용 가능 (관리자 인증 완료)
 
     // 세션 정보 저장 (타임아웃 없음 - 웹 나가면 자동 삭제)
     terminalSessions.set(sessionId, {
@@ -466,14 +450,8 @@ app.ws('/terminal', async (ws, req) => {
     
     console.log(`Terminal WebSocket connected. Session: ${sessionId}`);
     
-    // Send session ID and warning to client
+    // Send session ID to client
     ws.send(JSON.stringify({ type: 'session', sessionId }));
-    
-    // 보안 경고 메시지
-    const warningMessage = `\r\n\x1b[1;33m⚠️  보안 격리 모드\x1b[0m\r\n` +
-                          `작업 디렉토리: ${userWorkspace}\r\n` +
-                          `상위 디렉토리 접근이 제한됩니다.\r\n\r\n`;
-    ws.send(warningMessage);
 
     // 데이터 버퍼링 및 중복 제거
     let lastData = '';
