@@ -93,19 +93,21 @@ body {
     margin: 0 0 20px 0;
     letter-spacing: 2px;
     text-transform: uppercase;
-    background: linear-gradient(135deg, #007acc, #00d4ff);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    text-shadow: 
+        0 0 20px rgba(0, 122, 204, 0.8),
+        0 0 40px rgba(0, 122, 204, 0.6),
+        0 2px 4px rgba(0, 0, 0, 0.8);
+    filter: brightness(1.2);
 }
 
 #intro-screen p {
     font-size: 18px;
-    color: #a0a0a0;
+    color: #e0e0e0;
     margin: 0;
     letter-spacing: 3px;
     text-transform: uppercase;
-    font-weight: 300;
+    font-weight: 400;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 /* Splash Screen */
@@ -1294,14 +1296,21 @@ body {
 }
 
 /* Folder icons */
-.tree-item.directory .codicon-folder,
-.tree-item.directory .codicon-folder-opened {
-    color: #e0b429;
+.tree-item.directory .codicon-folder {
+    color: #dcb67a;
+    font-size: 16px;
 }
 
-/* Tree children - vertical layout */
+.tree-item.directory.open .codicon-folder {
+    color: #dcb67a;
+}
+
+.tree-item.directory .codicon-folder-opened {
+    color: #dcb67a;
+}
+
 .tree-children {
-    display: block;
+    margin-left: 20px;
     width: 100%;
 }
 
@@ -1309,9 +1318,67 @@ body {
     display: none;
 }
 
-/* File icons */
+/* File icons with colors */
 .tree-item.file .codicon-file {
-    color: var(--text-color-light);
+    color: #c5c5c5;
+    font-size: 16px;
+}
+
+/* JavaScript/TypeScript files */
+.tree-item.file[data-path$=".js"] .codicon-file,
+.tree-item.file[data-path$=".jsx"] .codicon-file {
+    color: #f0db4f;
+}
+
+.tree-item.file[data-path$=".ts"] .codicon-file,
+.tree-item.file[data-path$=".tsx"] .codicon-file {
+    color: #3178c6;
+}
+
+/* HTML/CSS files */
+.tree-item.file[data-path$=".html"] .codicon-file {
+    color: #e34c26;
+}
+
+.tree-item.file[data-path$=".css"] .codicon-file,
+.tree-item.file[data-path$=".scss"] .codicon-file {
+    color: #563d7c;
+}
+
+/* JSON files */
+.tree-item.file[data-path$=".json"] .codicon-file {
+    color: #89d185;
+}
+
+/* Markdown files */
+.tree-item.file[data-path$=".md"] .codicon-file {
+    color: #519aba;
+}
+
+/* Python files */
+.tree-item.file[data-path$=".py"] .codicon-file {
+    color: #3776ab;
+}
+
+/* C/C++ files */
+.tree-item.file[data-path$=".c"] .codicon-file,
+.tree-item.file[data-path$=".cpp"] .codicon-file,
+.tree-item.file[data-path$=".h"] .codicon-file {
+    color: #a8b9cc;
+}
+
+/* Java files */
+.tree-item.file[data-path$=".java"] .codicon-file {
+    color: #b07219;
+}
+
+/* Image files */
+.tree-item.file[data-path$=".png"] .codicon-file,
+.tree-item.file[data-path$=".jpg"] .codicon-file,
+.tree-item.file[data-path$=".jpeg"] .codicon-file,
+.tree-item.file[data-path$=".gif"] .codicon-file,
+.tree-item.file[data-path$=".svg"] .codicon-file {
+    color: #a074c4;
 }
 
 /* Premium Download Buttons */
@@ -2228,7 +2295,6 @@ body {
 .search-box {
     padding: 8px 12px;
     background-color: var(--sidebar-background);
-    border-bottom: 1px solid var(--border-color);
     flex-shrink: 0;
 }
 
