@@ -144,27 +144,41 @@ class OutputPanel {
             console.log('WebSocket opened successfully');
             this.write('✅ Connected to execution server', 'success');
             
+            // Check if WebSocket is still valid
+            if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+                console.error('WebSocket not ready in onopen');
+                return;
+            }
+            
             // Send execution request
-            this.ws.send(JSON.stringify({
-                type: 'execute',
-                language,
-                code,
-                filename
-            }));
+            try {
+                this.ws.send(JSON.stringify({
+                    type: 'execute',
+                    language,
+                    code,
+                    filename
+                }));
+            } catch (error) {
+                console.error('Failed to send execution request:', error);
+                this.writeError('❌ 실행 요청 전송 실패');
+                return;
+            }
             
             // Ensure input is ready
             if (this.outputInput) {
                 this.outputInput.disabled = false;
                 this.outputInput.placeholder = '입력하고 Enter를 누르세요...';
                 setTimeout(() => {
-                    this.outputInput.focus();
+                    if (this.outputInput) {
+                        this.outputInput.focus();
+                    }
                 }, 100);
             }
             
             console.log('Input field ready:', {
                 element: this.outputInput,
                 disabled: this.outputInput?.disabled,
-                readyState: this.ws.readyState
+                readyState: this.ws?.readyState
             });
         };
 

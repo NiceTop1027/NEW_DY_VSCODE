@@ -579,20 +579,26 @@ body {
 
 #main-container {
     display: flex;
+    flex-direction: row;
     flex: 1;
     overflow: hidden;
     min-height: 0;
     position: relative;
+    align-items: stretch;
 }
 
 .content-wrapper {
     display: flex;
+    flex-direction: row;
     flex: 1;
     overflow: hidden;
+    min-width: 0;
 }
 
 #activity-bar {
     width: 48px;
+    min-width: 48px;
+    max-width: 48px;
     background: linear-gradient(180deg, var(--sidebar-background) 0%, rgba(22, 27, 34, 0.95) 100%);
     backdrop-filter: blur(10px);
     border-right: 1px solid var(--border-color);
@@ -602,9 +608,9 @@ body {
     align-items: center;
     padding: 0;
     flex-shrink: 0;
-    border-right: 1px solid var(--border-color);
     z-index: 10;
     position: relative;
+    height: 100%;
 }
 
 .activity-icon {
@@ -668,6 +674,7 @@ body {
     width: 320px;
     min-width: 280px;
     max-width: 480px;
+    height: 100%;
     background: linear-gradient(180deg, var(--sidebar-background) 0%, rgba(22, 27, 34, 0.98) 100%);
     border-right: 1px solid var(--glass-border);
     display: flex;
@@ -676,6 +683,7 @@ body {
     position: relative;
     box-shadow: 2px 0 12px rgba(0, 0, 0, 0.3);
     animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    flex-shrink: 0;
 }
 
 /* Sidebar Content */
@@ -711,8 +719,15 @@ body {
 
 #resize-handle {
     width: 3px;
+    min-width: 3px;
     cursor: col-resize;
     background-color: var(--border-color);
+    flex-shrink: 0;
+    transition: background-color 0.2s ease;
+}
+
+#resize-handle:hover {
+    background-color: var(--accent-color);
 }
 
 #main-content {
