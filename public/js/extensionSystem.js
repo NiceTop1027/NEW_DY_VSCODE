@@ -182,26 +182,36 @@ class ExtensionSystem {
             
             console.log('🌐 Fetching from VS Code Marketplace...');
             
+            // Flags from VS Code source
+            // IncludeVersions | IncludeFiles | IncludeCategoryAndTags | IncludeSharedAccounts | 
+            // IncludeVersionProperties | ExcludeNonValidated | IncludeInstallationTargets | 
+            // IncludeAssetUri | IncludeStatistics | IncludeLatestVersionOnly
+            const flags = 0x1 | 0x2 | 0x4 | 0x8 | 0x10 | 0x20 | 0x40 | 0x80 | 0x100 | 0x200; // 950
+            
             const response = await fetch(this.marketplaceAPI, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Accept': 'application/json;api-version=3.0-preview.1'
+                    'Accept': 'application/json;api-version=6.0-preview.1',
+                    'Accept-Encoding': 'gzip, deflate, br'
                 },
                 body: JSON.stringify({
                     filters: [{
                         criteria: [
-                            { filterType: 8, value: 'Microsoft.VisualStudio.Code' },
-                            { filterType: 10, value: 'target:"Microsoft.VisualStudio.Code"' },
-                            { filterType: 12, value: '4096' } // Verified publishers
+                            { filterType: 8, value: 'Microsoft.VisualStudio.Code' }, // Target
+                            { filterType: 12, value: '4096' } // ExcludeNonValidated
                         ],
                         pageNumber: 1,
                         pageSize: pageSize,
-                        sortBy: 4, // Most downloaded
-                        sortOrder: 2
+                        sortBy: 4, // InstallCount
+                        sortOrder: 2 // Descending
                     }],
-                    assetTypes: [],
-                    flags: 914
+                    assetTypes: [
+                        'Microsoft.VisualStudio.Services.Icons.Default',
+                        'Microsoft.VisualStudio.Code.Manifest',
+                        'Microsoft.VisualStudio.Services.VSIXPackage'
+                    ],
+                    flags: flags
                 })
             });
             
@@ -231,18 +241,49 @@ class ExtensionSystem {
         try {
             const results = data.results[0];
             if (!results || !results.extensions) {
+                console.warn('No extensions in response');
                 return this.fallbackExtensions;
             }
             
+            console.log(`📦 Parsing ${results.extensions.length} extensions`);
+            
             return results.extensions.map(ext => {
-                const publisher = ext.publisher.publisherName;
-                const name = ext.extensionName;
-                const displayName = ext.displayName;
+                const publisher = ext.publisher?.publisherName || 'Unknown';
+                const name = ext.extensionName || 'unknown';
+                const displayName = ext.displayName || name;
                 const description = ext.shortDescription || '';
-                const version = ext.versions[0]?.version || '1.0.0';
-                const installs = ext.statistics?.find(s => s.statisticName === 'install')?.value || 0;
-                const rating = ext.statistics?.find(s => s.statisticName === 'averagerating')?.value || 0;
-                const icon = ext.versions[0]?.files?.find(f => f.assetType === 'Microsoft.VisualStudio.Services.Icons.Default')?.source || '';
+                
+                // Get latest version
+                const latestVersion = ext.versions?.[0];
+                const version = latestVersion?.version || '1.0.0';
+                
+                // Get statistics
+                const statistics = ext.statistics || [];
+                const installs = statistics.find(s => s.statisticName === 'install')?.value || 0;
+                const rating = statistics.find(s => s.statisticName === 'averagerating')?.value || 0;
+                const ratingCount = statistics.find(s => s.statisticName === 'ratingcount')?.value || 0;
+                
+                // Get icon from assetUri or files
+                let icon = '';
+                if (latestVersion?.assetUri) {
+                    icon = `${latestVersion.assetUri}/Microsoft.VisualStudio.Services.Icons.Default`;
+                } else if (latestVersion?.files) {
+                    const iconFile = latestVersion.files.find(f => 
+                        f.assetType === 'Microsoft.VisualStudio.Services.Icons.Default'
+                    );
+                    icon = iconFile?.source || '';
+                }
+                
+                // Get VSIX URL
+                let vsixUrl = '';
+                if (latestVersion?.assetUri) {
+                    vsixUrl = `${latestVersion.assetUri}/Microsoft.VisualStudio.Services.VSIXPackage`;
+                } else if (latestVersion?.files) {
+                    const vsixFile = latestVersion.files.find(f => 
+                        f.assetType === 'Microsoft.VisualStudio.Services.VSIXPackage'
+                    );
+                    vsixUrl = vsixFile?.source || '';
+                }
                 
                 // Get category
                 const categories = ext.categories || [];
@@ -258,13 +299,16 @@ class ExtensionSystem {
                     category: category,
                     downloads: installs,
                     rating: rating,
+                    ratingCount: ratingCount,
                     url: `https://marketplace.visualstudio.com/items?itemName=${publisher}.${name}`,
-                    vsixUrl: ext.versions[0]?.files?.find(f => f.assetType === 'Microsoft.VisualStudio.Services.VSIXPackage')?.source,
+                    vsixUrl: vsixUrl,
+                    publishedDate: ext.publishedDate,
+                    lastUpdated: ext.lastUpdated,
                     activate: async (api) => {
                         console.log(`${displayName} activated`);
                     }
                 };
-            });
+            }).filter(ext => ext.name && ext.author); // Filter out invalid extensions
         } catch (error) {
             console.error('Parse marketplace response error:', error);
             return this.fallbackExtensions;
@@ -590,19 +634,26 @@ class ExtensionSystem {
             const isInstalled = this.installedExtensions.has(ext.id);
             const isActive = this.activeExtensions.has(ext.id);
             
+            // Use icon URL if available, otherwise use emoji
+            const iconHtml = ext.icon && ext.icon.startsWith('http') 
+                ? `<img src="${ext.icon}" alt="${ext.name}" style="width: 48px; height: 48px; object-fit: contain;" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                   <div style="display: none; font-size: 48px;">${this.getDefaultIcon(ext.category)}</div>`
+                : ext.icon;
+            
             return `
                 <div class="extension-item" data-id="${ext.id}">
-                    <div class="extension-icon">${ext.icon}</div>
+                    <div class="extension-icon">${iconHtml}</div>
                     <div class="extension-info">
                         <div class="extension-header">
                             <h3>${ext.name}</h3>
                             <span class="extension-version">v${ext.version}</span>
                         </div>
-                        <p class="extension-description">${ext.description}</p>
+                        <p class="extension-description">${ext.description || 'No description available'}</p>
                         <div class="extension-meta">
                             <span>👤 ${ext.author}</span>
-                            <span>⭐ ${ext.rating}</span>
+                            <span>⭐ ${ext.rating ? ext.rating.toFixed(1) : 'N/A'} ${ext.ratingCount ? `(${ext.ratingCount})` : ''}</span>
                             <span>⬇️ ${this.formatDownloads(ext.downloads)}</span>
+                            ${ext.category ? `<span>📁 ${ext.category}</span>` : ''}
                             ${isActive ? '<span class="badge-active">활성</span>' : ''}
                         </div>
                     </div>
