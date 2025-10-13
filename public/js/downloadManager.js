@@ -23,41 +23,59 @@ class DownloadManager {
 
     // Add download buttons to file explorer
     addDownloadButtons() {
-        // Add download button to file explorer header
-        const fileExplorer = document.getElementById('file-explorer');
-        if (!fileExplorer) return;
+        // Wait for file explorer to be ready
+        const tryAddButtons = () => {
+            const fileExplorer = document.getElementById('file-explorer');
+            if (!fileExplorer) {
+                console.log('⏳ Waiting for file-explorer...');
+                setTimeout(tryAddButtons, 100);
+                return;
+            }
 
-        const header = document.createElement('div');
-        header.style.cssText = `
-            padding: 12px 10px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            gap: 8px;
-        `;
+            // Check if buttons already exist
+            if (document.getElementById('download-selected-btn')) {
+                console.log('✅ Download buttons already exist');
+                return;
+            }
 
-        header.innerHTML = `
-            <button id="download-selected-btn" class="premium-download-btn" title="Download selected files">
-                <div class="btn-glow"></div>
-                <i class="codicon codicon-cloud-download"></i>
-                <span>Download Selected</span>
-            </button>
-            <button id="download-all-btn" class="premium-download-btn" title="Download all files">
-                <div class="btn-glow"></div>
-                <i class="codicon codicon-archive"></i>
-                <span>Download All</span>
-            </button>
-        `;
+            const header = document.createElement('div');
+            header.id = 'download-buttons-header';
+            header.style.cssText = `
+                padding: 12px 10px;
+                border-bottom: 1px solid var(--border-color);
+                display: flex;
+                gap: 8px;
+                background: linear-gradient(180deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%);
+            `;
 
-        fileExplorer.insertBefore(header, fileExplorer.firstChild);
+            header.innerHTML = `
+                <button id="download-selected-btn" class="premium-download-btn" title="Download selected files">
+                    <div class="btn-glow"></div>
+                    <i class="codicon codicon-cloud-download"></i>
+                    <span>Download Selected</span>
+                </button>
+                <button id="download-all-btn" class="premium-download-btn" title="Download all files">
+                    <div class="btn-glow"></div>
+                    <i class="codicon codicon-archive"></i>
+                    <span>Download All</span>
+                </button>
+            `;
 
-        // Event listeners
-        document.getElementById('download-selected-btn')?.addEventListener('click', () => {
-            this.downloadSelected();
-        });
+            fileExplorer.insertBefore(header, fileExplorer.firstChild);
 
-        document.getElementById('download-all-btn')?.addEventListener('click', () => {
-            this.downloadAll();
-        });
+            // Event listeners
+            document.getElementById('download-selected-btn')?.addEventListener('click', () => {
+                this.downloadSelected();
+            });
+
+            document.getElementById('download-all-btn')?.addEventListener('click', () => {
+                this.downloadAll();
+            });
+
+            console.log('✅ Download buttons added');
+        };
+
+        tryAddButtons();
     }
 
     // Add context menu items
