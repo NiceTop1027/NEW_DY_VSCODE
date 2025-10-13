@@ -7,6 +7,7 @@ import { FitAddon } from 'xterm-addon-fit';
 import { clientFS } from './fileSystem.js';
 import { downloadManager } from './downloadManager.js';
 import { commandPalette } from './commandPalette.js';
+import { quickOpen } from './quickOpen.js';
 
 // DOM Elements
 let fileExplorerEl;
@@ -880,6 +881,15 @@ export function initUI() {
 
     // Initialize command palette
     commandPalette.init();
+
+    // Initialize quick open
+    quickOpen.init();
+
+    // Listen for quick open file events
+    window.addEventListener('quick-open-file', (e) => {
+        const { path } = e.detail;
+        openFile(path, path.split('/').pop());
+    });
 }
 
 // Filter file tree based on search term
