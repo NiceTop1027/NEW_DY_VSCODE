@@ -36,12 +36,14 @@ class DownloadManager {
         `;
 
         header.innerHTML = `
-            <button id="download-selected-btn" class="btn-secondary" style="flex: 1; padding: 12px 16px; font-size: 13px; cursor: pointer; min-height: 40px; display: flex; align-items: center; justify-content: center; gap: 6px;" title="Download selected files">
-                <i class="codicon codicon-cloud-download" style="font-size: 16px;"></i>
+            <button id="download-selected-btn" class="premium-download-btn" title="Download selected files">
+                <div class="btn-glow"></div>
+                <i class="codicon codicon-cloud-download"></i>
                 <span>Download Selected</span>
             </button>
-            <button id="download-all-btn" class="btn-secondary" style="flex: 1; padding: 12px 16px; font-size: 13px; cursor: pointer; min-height: 40px; display: flex; align-items: center; justify-content: center; gap: 6px;" title="Download all files">
-                <i class="codicon codicon-archive" style="font-size: 16px;"></i>
+            <button id="download-all-btn" class="premium-download-btn" title="Download all files">
+                <div class="btn-glow"></div>
+                <i class="codicon codicon-archive"></i>
                 <span>Download All</span>
             </button>
         `;
