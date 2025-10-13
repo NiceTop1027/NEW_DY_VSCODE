@@ -107,7 +107,9 @@
                     </button>
                     <div id="panel" class="panel-visible">
                         <div id="panel-tabs">
-                            <div class="panel-tab active" data-panel-id="terminal">Terminal</div>
+                            <div class="panel-tab active" data-panel-id="terminal">
+                                <i class="codicon codicon-terminal"></i> Terminal
+                            </div>
                             <div class="panel-tab" data-panel-id="problems">Problems</div>
                             <div class="panel-tab" data-panel-id="output">Output</div>
                             <div class="panel-tab" data-panel-id="debug-console">Debug Console</div>
@@ -119,9 +121,7 @@
                         </div>
                         <div id="panel-content">
                             <div id="terminal" class="panel-view active">
-                                <div id="terminal-container">
-                                    <!-- Terminal will be initialized here -->
-                                </div>
+                                <div id="terminal-view" style="width: 100%; height: 100%;"></div>
                             </div>
                             <div id="problems" class="panel-view">
                                 <div class="panel-empty-state">

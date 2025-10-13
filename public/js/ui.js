@@ -9,6 +9,7 @@ import { downloadManager } from './downloadManager.js';
 import { commandPalette } from './commandPalette.js';
 import { quickOpen } from './quickOpen.js';
 import { outputPanel } from './outputPanel.js';
+import { initTerminal } from './terminal.js';
 
 // DOM Elements
 let fileExplorerEl;
@@ -914,6 +915,9 @@ export function initUI() {
 
     // Initialize output panel
     outputPanel.init();
+
+    // Initialize terminal
+    initTerminal();
 
     // Add run button functionality
     const runButton = document.getElementById('run-btn');

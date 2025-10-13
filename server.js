@@ -7,9 +7,7 @@ const pty = require('node-pty');
 const axios = require('axios');
 const multer = require('multer');
 const { exec, spawn } = require('child_process'); 
-const inspector = require('inspector');
-const { createConnection } = require('vscode-languageserver/node');
-const { TextDocument } = require('vscode-languageserver-textdocument'); 
+const inspector = require('inspector'); 
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -1184,6 +1182,75 @@ app.ws('/debug', (ws, req) => {
 
     ws.on('close', () => {
         console.log('Debug WebSocket disconnected');
+    });
+});
+
+// Web Terminal with PTY
+app.ws('/api/terminal', (ws, req) => {
+    console.log('Terminal WebSocket connection established');
+    
+    // Spawn shell
+    const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
+    const ptyProcess = pty.spawn(shell, [], {
+        name: 'xterm-256color',
+        cols: 80,
+        rows: 30,
+        cwd: PROJECT_ROOT,
+        env: Object.assign({}, process.env, {
+            TERM: 'xterm-256color',
+            COLORTERM: 'truecolor'
+        })
+    });
+
+    // Send output to client
+    ptyProcess.onData((data) => {
+        try {
+            ws.send(JSON.stringify({
+                type: 'output',
+                data: data
+            }));
+        } catch (e) {
+            console.error('Terminal send error:', e);
+        }
+    });
+
+    // Handle process exit
+    ptyProcess.onExit(({ exitCode, signal }) => {
+        console.log('Terminal process exited:', exitCode, signal);
+        try {
+            ws.close();
+        } catch (e) {
+            // Already closed
+        }
+    });
+
+    // Handle messages from client
+    ws.on('message', (msg) => {
+        try {
+            const data = JSON.parse(msg);
+            
+            if (data.type === 'input') {
+                ptyProcess.write(data.data);
+            } else if (data.type === 'resize') {
+                ptyProcess.resize(data.cols || 80, data.rows || 30);
+            }
+        } catch (e) {
+            console.error('Terminal message error:', e);
+        }
+    });
+
+    // Handle client disconnect
+    ws.on('close', () => {
+        console.log('Terminal WebSocket closed');
+        try {
+            ptyProcess.kill();
+        } catch (e) {
+            // Already killed
+        }
+    });
+
+    ws.on('error', (error) => {
+        console.error('Terminal WebSocket error:', error);
     });
 });
 
