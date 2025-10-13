@@ -10,6 +10,7 @@ import { commandPalette } from './commandPalette.js';
 import { quickOpen } from './quickOpen.js';
 import { outputPanel } from './outputPanel.js';
 import { initTerminal } from './terminal.js';
+import { initLanguageClient } from './languageClient.js';
 
 // DOM Elements
 let fileExplorerEl;
@@ -918,6 +919,9 @@ export function initUI() {
 
     // Initialize terminal
     initTerminal();
+    
+    // Initialize VS Code Language Client
+    initLanguageClient();
 
     // Add run button functionality
     const runButton = document.getElementById('run-btn');

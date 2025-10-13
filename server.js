@@ -1240,6 +1240,52 @@ app.ws('/debug', (ws, req) => {
     });
 });
 
+// Language Server Protocol WebSocket
+app.ws('/lsp', (ws, req) => {
+    console.log('LSP WebSocket connection established');
+    
+    // Spawn language server process
+    const { spawn } = require('child_process');
+    const lspProcess = spawn('node', [path.join(__dirname, 'languageServer.js')], {
+        stdio: ['pipe', 'pipe', 'pipe']
+    });
+    
+    // Forward messages between WebSocket and LSP process
+    ws.on('message', (msg) => {
+        try {
+            lspProcess.stdin.write(msg);
+        } catch (e) {
+            console.error('LSP stdin error:', e);
+        }
+    });
+    
+    lspProcess.stdout.on('data', (data) => {
+        try {
+            ws.send(data.toString());
+        } catch (e) {
+            console.error('LSP WebSocket send error:', e);
+        }
+    });
+    
+    lspProcess.stderr.on('data', (data) => {
+        console.error('LSP stderr:', data.toString());
+    });
+    
+    lspProcess.on('exit', (code) => {
+        console.log('LSP process exited:', code);
+        ws.close();
+    });
+    
+    ws.on('close', () => {
+        console.log('LSP WebSocket closed');
+        lspProcess.kill();
+    });
+    
+    ws.on('error', (error) => {
+        console.error('LSP WebSocket error:', error);
+    });
+});
+
 // Web Terminal - Admin only (password protected)
 // Security: Use hashed password
 // IMPORTANT: Set TERMINAL_PASSWORD environment variable in Railway
