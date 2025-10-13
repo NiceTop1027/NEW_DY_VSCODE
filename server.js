@@ -1238,11 +1238,46 @@ app.ws('/debug', (ws, req) => {
 });
 
 // Web Terminal - Admin only (password protected)
-const ADMIN_PASSWORD = process.env.TERMINAL_PASSWORD || 'admin1234';
-const authenticatedSessions = new Set();
+// Security: Use hashed password
+const ADMIN_PASSWORD_HASH = crypto.createHash('sha256')
+    .update(process.env.TERMINAL_PASSWORD || 's13w00')
+    .digest('hex');
+
+const authenticatedSessions = new Map(); // sessionId -> { authenticated, timestamp }
+const MAX_AUTH_ATTEMPTS = 3;
+const authAttempts = new Map(); // IP -> { count, lastAttempt }
+
+// Security: Clean up old sessions every hour
+setInterval(() => {
+    const now = Date.now();
+    for (const [sessionId, data] of authenticatedSessions.entries()) {
+        if (now - data.timestamp > 3600000) { // 1 hour
+            authenticatedSessions.delete(sessionId);
+        }
+    }
+}, 3600000);
 
 app.ws('/api/terminal', (ws, req) => {
-    console.log('Terminal WebSocket connection established');
+    const clientIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    console.log(`Terminal WebSocket connection from ${clientIP}`);
+    
+    // Security: Check auth attempts
+    const attempts = authAttempts.get(clientIP) || { count: 0, lastAttempt: 0 };
+    const now = Date.now();
+    
+    // Reset attempts after 15 minutes
+    if (now - attempts.lastAttempt > 900000) {
+        attempts.count = 0;
+    }
+    
+    if (attempts.count >= MAX_AUTH_ATTEMPTS) {
+        ws.send(JSON.stringify({
+            type: 'output',
+            data: '\r\n\x1b[1;31m❌ 너무 많은 인증 시도. 15분 후 다시 시도하세요.\x1b[0m\r\n'
+        }));
+        ws.close();
+        return;
+    }
     
     let ptyProcess = null;
     let isAuthenticated = false;
@@ -1277,9 +1312,18 @@ app.ws('/api/terminal', (ws, req) => {
                     const input = data.data;
                     
                     if (input === '\r' || input === '\n') {
-                        // Check password
-                        if (passwordBuffer === ADMIN_PASSWORD) {
+                        // Security: Hash password and compare
+                        const inputHash = crypto.createHash('sha256')
+                            .update(passwordBuffer)
+                            .digest('hex');
+                        
+                        if (inputHash === ADMIN_PASSWORD_HASH) {
                             isAuthenticated = true;
+                            attempts.count = 0;
+                            authAttempts.set(clientIP, attempts);
+                            
+                            console.log(`✅ Terminal authentication successful from ${clientIP}`);
+                            
                             ws.send(JSON.stringify({
                                 type: 'output',
                                 data: '\r\n\r\n\x1b[1;32m✓ 인증 성공! 터미널을 시작합니다...\x1b[0m\r\n\r\n'
@@ -1320,9 +1364,16 @@ app.ws('/api/terminal', (ws, req) => {
                                 }
                             });
                         } else {
+                            // Security: Log failed attempt
+                            attempts.count++;
+                            attempts.lastAttempt = now;
+                            authAttempts.set(clientIP, attempts);
+                            
+                            console.warn(`❌ Terminal authentication failed from ${clientIP} (Attempt ${attempts.count}/${MAX_AUTH_ATTEMPTS})`);
+                            
                             ws.send(JSON.stringify({
                                 type: 'output',
-                                data: '\r\n\r\n\x1b[1;31m✗ 비밀번호가 틀렸습니다. 연결을 종료합니다.\x1b[0m\r\n'
+                                data: `\r\n\r\n\x1b[1;31m✗ 비밀번호가 틀렸습니다. (${attempts.count}/${MAX_AUTH_ATTEMPTS})\x1b[0m\r\n`
                             }));
                             setTimeout(() => ws.close(), 1000);
                         }
