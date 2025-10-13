@@ -20,20 +20,71 @@
     --glass-border: rgba(48, 54, 61, 0.5);
 }
 
-/* Smooth animations */
+/* Premium Animations */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { 
+        opacity: 0; 
+        transform: translateY(-10px) scale(0.98);
+        filter: blur(4px);
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
 }
 
 @keyframes slideInRight {
-    from { opacity: 0; transform: translateX(20px); }
-    to { opacity: 1; transform: translateX(0); }
+    from { 
+        opacity: 0; 
+        transform: translateX(20px);
+        filter: blur(2px);
+    }
+    to { 
+        opacity: 1; 
+        transform: translateX(0);
+        filter: blur(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 @keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+    0%, 100% { 
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(31, 111, 235, 0.7);
+    }
+    50% { 
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(31, 111, 235, 0);
+    }
+}
+
+@keyframes glow {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(31, 111, 235, 0.5);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(31, 111, 235, 0.8);
+    }
+}
+
+@keyframes shimmer {
+    0% {
+        background-position: -1000px 0;
+    }
+    100% {
+        background-position: 1000px 0;
+    }
 }
 
 body {
@@ -560,14 +611,43 @@ body {
     width: 100%;
     padding: 10px 0;
     text-align: center;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
     font-size: 24px;
     position: relative;
     transition: background-color 0.1s ease-in-out; /* Smooth hover transition */
 }
 
+.activity-icon::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2px;
+    height: 0;
+    background: linear-gradient(180deg, var(--accent-color), var(--success-color));
+    transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border-radius: 0 2px 2px 0;
+}
+
 .activity-icon:hover {
-    background-color: var(--hover-background);
+    background: rgba(31, 111, 235, 0.1);
+    transform: translateX(2px);
+}
+
+.activity-icon:hover::before {
+    height: 24px;
+}
+
+.activity-icon.active {
+    background: rgba(31, 111, 235, 0.15);
+}
+
+.activity-icon.active::before {
+    height: 32px;
+    box-shadow: 0 0 10px rgba(31, 111, 235, 0.5);
 }
 
 .activity-icon.active {
@@ -633,6 +713,10 @@ body {
     flex: 1 1 auto;
     min-height: 0;
     display: flex;
+    position: relative;
+    background: linear-gradient(135deg, var(--editor-background) 0%, rgba(13, 17, 23, 0.95) 100%);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    animation: fadeIn 0.4s ease-out;
     flex-direction: column;
     overflow: hidden;
     position: relative;
@@ -642,7 +726,10 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: linear-gradient(to bottom, #2d2d2d 0%, #252526 100%);
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--glass-border);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
     flex-shrink: 0;
     border-bottom: 1px solid #1e1e1e;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -744,9 +831,11 @@ body {
 }
 
 .tab:hover {
-    background-color: #2a2d2e;
+    background: linear-gradient(180deg, rgba(31, 111, 235, 0.08) 0%, var(--glass-bg) 100%);
     color: var(--text-color);
     transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    border-top-color: rgba(31, 111, 235, 0.5);
 }
 
 .tab.active {
@@ -900,6 +989,11 @@ body {
     height: 30vh;
     min-height: 120px;
     max-height: 60vh;
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--glass-border);
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
+    animation: slideUp 0.3s ease-out;
     background: #252526;
     border-top: 1px solid var(--border-color);
     flex-shrink: 0;
@@ -1078,8 +1172,11 @@ body {
 
 #status-bar {
     height: 22px;
-    background-color: var(--status-bar-background);
+    background: linear-gradient(90deg, var(--accent-color) 0%, rgba(31, 111, 235, 0.9) 100%);
     color: white;
+    box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    animation: slideUp 0.3s ease-out;
     display: flex;
     justify-content: space-between;
     align-items: center;
