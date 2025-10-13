@@ -29,18 +29,20 @@ class DownloadManager {
 
         const header = document.createElement('div');
         header.style.cssText = `
-            padding: 10px;
+            padding: 12px 10px;
             border-bottom: 1px solid var(--border-color);
             display: flex;
-            gap: 5px;
+            gap: 8px;
         `;
 
         header.innerHTML = `
-            <button id="download-selected-btn" class="btn-secondary" style="flex: 1; padding: 5px; font-size: 12px;" title="Download selected files">
-                <i class="codicon codicon-cloud-download"></i> Download Selected
+            <button id="download-selected-btn" class="btn-secondary" style="flex: 1; padding: 12px 16px; font-size: 13px; cursor: pointer; min-height: 40px; display: flex; align-items: center; justify-content: center; gap: 6px;" title="Download selected files">
+                <i class="codicon codicon-cloud-download" style="font-size: 16px;"></i>
+                <span>Download Selected</span>
             </button>
-            <button id="download-all-btn" class="btn-secondary" style="flex: 1; padding: 5px; font-size: 12px;" title="Download all files">
-                <i class="codicon codicon-archive"></i> Download All
+            <button id="download-all-btn" class="btn-secondary" style="flex: 1; padding: 12px 16px; font-size: 13px; cursor: pointer; min-height: 40px; display: flex; align-items: center; justify-content: center; gap: 6px;" title="Download all files">
+                <i class="codicon codicon-archive" style="font-size: 16px;"></i>
+                <span>Download All</span>
             </button>
         `;
 
@@ -90,17 +92,17 @@ class DownloadManager {
         const isFolder = treeItem.classList.contains('folder');
 
         menu.innerHTML = `
-            <div class="context-menu-item" data-action="download" style="padding: 8px 12px; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 8px;">
-                <i class="codicon codicon-cloud-download"></i>
+            <div class="context-menu-item" data-action="download" style="padding: 12px 16px; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 10px; min-height: 42px; font-size: 14px;">
+                <i class="codicon codicon-cloud-download" style="font-size: 18px;"></i>
                 <span>Download ${isFolder ? 'Folder' : 'File'}</span>
             </div>
-            <div class="context-menu-item" data-action="select" style="padding: 8px 12px; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 8px;">
-                <i class="codicon codicon-check"></i>
+            <div class="context-menu-item" data-action="select" style="padding: 12px 16px; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 10px; min-height: 42px; font-size: 14px;">
+                <i class="codicon codicon-check" style="font-size: 18px;"></i>
                 <span>Select for Download</span>
             </div>
             ${this.selectedFiles.size > 0 || this.selectedFolders.size > 0 ? `
-                <div class="context-menu-item" data-action="download-selected" style="padding: 8px 12px; cursor: pointer; border-radius: 4px; display: flex; align-items: center; gap: 8px;">
-                    <i class="codicon codicon-archive"></i>
+                <div class="context-menu-item" data-action="download-selected" style="padding: 12px 16px; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 10px; min-height: 42px; font-size: 14px;">
+                    <i class="codicon codicon-archive" style="font-size: 18px;"></i>
                     <span>Download Selected (${this.selectedFiles.size + this.selectedFolders.size})</span>
                 </div>
             ` : ''}
