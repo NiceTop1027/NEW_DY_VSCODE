@@ -7,10 +7,50 @@ const pty = require('node-pty');
 const axios = require('axios');
 const multer = require('multer');
 const { exec, spawn } = require('child_process'); 
-const inspector = require('inspector'); 
+const inspector = require('inspector');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Security: Helmet middleware
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net"],
+            styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
+            fontSrc: ["'self'", "data:", "https://cdn.jsdelivr.net"],
+            imgSrc: ["'self'", "data:", "https:", "blob:"],
+            connectSrc: ["'self'", "ws:", "wss:", "https:"],
+            workerSrc: ["'self'", "blob:"]
+        }
+    },
+    hsts: {
+        maxAge: 31536000,
+        includeSubDomains: true,
+        preload: true
+    }
+}));
+
+// Security: Rate limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+    message: '너무 많은 요청을 보냈습니다. 잠시 후 다시 시도하세요.'
+});
+
+const strictLimiter = rateLimit({
+    windowMs: 60 * 1000, // 1 minute
+    max: 10, // limit each IP to 10 requests per minute
+    message: '너무 많은 요청을 보냈습니다. 잠시 후 다시 시도하세요.'
+});
+
+app.use('/api/', limiter);
+app.use('/api/execute', strictLimiter);
+app.use('/api/terminal', strictLimiter);
 
 // CORS 설정 (Railway serves both frontend and backend)
 app.use((req, res, next) => {
@@ -89,6 +129,18 @@ async function getDirectoryStructure(dirPath) {
         return { name, type: 'directory', path: path.relative(PROJECT_ROOT, dirPath), children: children.filter(Boolean) };
     }
     return null;
+}
+
+// Security: Path traversal prevention
+function isPathSafe(requestedPath) {
+    const normalizedPath = path.normalize(requestedPath);
+    const resolvedPath = path.resolve(PROJECT_ROOT, normalizedPath);
+    return resolvedPath.startsWith(PROJECT_ROOT);
+}
+
+// Security: Sanitize filename
+function sanitizeFilename(filename) {
+    return filename.replace(/[^a-zA-Z0-9._-]/g, '_');
 }
 
 // A simple API endpoint to get the file explorer structure
@@ -1185,54 +1237,118 @@ app.ws('/debug', (ws, req) => {
     });
 });
 
-// Web Terminal with PTY
+// Web Terminal - Admin only (password protected)
+const ADMIN_PASSWORD = process.env.TERMINAL_PASSWORD || 'admin1234';
+const authenticatedSessions = new Set();
+
 app.ws('/api/terminal', (ws, req) => {
     console.log('Terminal WebSocket connection established');
     
-    // Spawn shell
-    const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
-    const ptyProcess = pty.spawn(shell, [], {
-        name: 'xterm-256color',
-        cols: 80,
-        rows: 30,
-        cwd: PROJECT_ROOT,
-        env: Object.assign({}, process.env, {
-            TERM: 'xterm-256color',
-            COLORTERM: 'truecolor'
-        })
-    });
-
-    // Send output to client
-    ptyProcess.onData((data) => {
-        try {
-            ws.send(JSON.stringify({
-                type: 'output',
-                data: data
-            }));
-        } catch (e) {
-            console.error('Terminal send error:', e);
-        }
-    });
-
-    // Handle process exit
-    ptyProcess.onExit(({ exitCode, signal }) => {
-        console.log('Terminal process exited:', exitCode, signal);
-        try {
-            ws.close();
-        } catch (e) {
-            // Already closed
-        }
-    });
+    let ptyProcess = null;
+    let isAuthenticated = false;
+    let passwordBuffer = '';
+    
+    // Show password prompt
+    ws.send(JSON.stringify({
+        type: 'output',
+        data: '\r\n\x1b[1;36m╔════════════════════════════════════════════════════════════╗\x1b[0m\r\n'
+    }));
+    ws.send(JSON.stringify({
+        type: 'output',
+        data: '\x1b[1;36m║  🔒 관리자 터미널 - 비밀번호가 필요합니다                  ║\x1b[0m\r\n'
+    }));
+    ws.send(JSON.stringify({
+        type: 'output',
+        data: '\x1b[1;36m╚════════════════════════════════════════════════════════════╝\x1b[0m\r\n\r\n'
+    }));
+    ws.send(JSON.stringify({
+        type: 'output',
+        data: '\x1b[1;33mPassword: \x1b[0m'
+    }));
 
     // Handle messages from client
     ws.on('message', (msg) => {
         try {
             const data = JSON.parse(msg);
             
-            if (data.type === 'input') {
-                ptyProcess.write(data.data);
-            } else if (data.type === 'resize') {
-                ptyProcess.resize(data.cols || 80, data.rows || 30);
+            if (!isAuthenticated) {
+                // Password input mode
+                if (data.type === 'input') {
+                    const input = data.data;
+                    
+                    if (input === '\r' || input === '\n') {
+                        // Check password
+                        if (passwordBuffer === ADMIN_PASSWORD) {
+                            isAuthenticated = true;
+                            ws.send(JSON.stringify({
+                                type: 'output',
+                                data: '\r\n\r\n\x1b[1;32m✓ 인증 성공! 터미널을 시작합니다...\x1b[0m\r\n\r\n'
+                            }));
+                            
+                            // Start shell
+                            const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
+                            ptyProcess = pty.spawn(shell, [], {
+                                name: 'xterm-256color',
+                                cols: 80,
+                                rows: 30,
+                                cwd: PROJECT_ROOT,
+                                env: Object.assign({}, process.env, {
+                                    TERM: 'xterm-256color',
+                                    COLORTERM: 'truecolor'
+                                })
+                            });
+
+                            // Send output to client
+                            ptyProcess.onData((data) => {
+                                try {
+                                    ws.send(JSON.stringify({
+                                        type: 'output',
+                                        data: data
+                                    }));
+                                } catch (e) {
+                                    console.error('Terminal send error:', e);
+                                }
+                            });
+
+                            // Handle process exit
+                            ptyProcess.onExit(({ exitCode, signal }) => {
+                                console.log('Terminal process exited:', exitCode, signal);
+                                try {
+                                    ws.close();
+                                } catch (e) {
+                                    // Already closed
+                                }
+                            });
+                        } else {
+                            ws.send(JSON.stringify({
+                                type: 'output',
+                                data: '\r\n\r\n\x1b[1;31m✗ 비밀번호가 틀렸습니다. 연결을 종료합니다.\x1b[0m\r\n'
+                            }));
+                            setTimeout(() => ws.close(), 1000);
+                        }
+                        passwordBuffer = '';
+                    } else if (input === '\x7f' || input === '\b') {
+                        // Backspace
+                        if (passwordBuffer.length > 0) {
+                            passwordBuffer = passwordBuffer.slice(0, -1);
+                        }
+                    } else if (input.charCodeAt(0) >= 32 && input.charCodeAt(0) <= 126) {
+                        // Printable character
+                        passwordBuffer += input;
+                        // Show asterisk
+                        ws.send(JSON.stringify({
+                            type: 'output',
+                            data: '*'
+                        }));
+                    }
+                }
+            } else {
+                // Authenticated - normal terminal mode
+                if (data.type === 'input' && ptyProcess) {
+                    ptyProcess.write(data.data);
+                } else if (data.type === 'resize' && ptyProcess) {
+                    ptyProcess.resize(data.cols || 80, data.rows || 30);
+                }
             }
         } catch (e) {
             console.error('Terminal message error:', e);
@@ -1242,10 +1358,12 @@ app.ws('/api/terminal', (ws, req) => {
     // Handle client disconnect
     ws.on('close', () => {
         console.log('Terminal WebSocket closed');
-        try {
-            ptyProcess.kill();
-        } catch (e) {
-            // Already killed
+        if (ptyProcess) {
+            try {
+                ptyProcess.kill();
+            } catch (e) {
+                // Already killed
+            }
         }
     });
 
