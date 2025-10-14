@@ -3,7 +3,7 @@ class AIAssistant {
     constructor() {
         this.apiKey = localStorage.getItem('groq_api_key') || '';
         this.enabled = !!this.apiKey;
-        this.baseUrl = 'https://api.groq.com/openai/v1/chat/completions';
+        this.baseUrl = 'https://api.groq.com/v1/chat/completions';
     }
 
     // Call Groq API (OpenAI compatible)
