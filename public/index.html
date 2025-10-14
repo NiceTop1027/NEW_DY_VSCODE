@@ -99,6 +99,10 @@
                                     <i class="codicon codicon-lightbulb"></i>
                                     <span style="font-size: 10px; margin-left: 2px;">생성</span>
                                 </div>
+                                <div class="action-item ai-action-item" id="ai-chat-toggle-btn" title="AI 채팅 (Ctrl+Shift+I)">
+                                    <i class="codicon codicon-comment"></i>
+                                    <span style="font-size: 10px; margin-left: 2px;">채팅</span>
+                                </div>
                                 <div class="action-item" id="zen-mode-btn" title="Zen 모드 (Ctrl+K Z)">
                                     <i class="codicon codicon-screen-full"></i>
                                 </div>
@@ -110,8 +114,35 @@
                             </button>
                             <span class="breadcrumb-item">No file open</span>
                         </div>
-                        <div id="editor">
-                            <!-- Editor content will be shown here -->
+                        <div id="editor-container" style="display: flex; flex: 1; overflow: hidden;">
+                            <div id="editor" style="flex: 1;">
+                                <!-- Editor content will be shown here -->
+                            </div>
+                            <!-- AI Chat Panel -->
+                            <div id="ai-chat-panel" class="ai-chat-panel" style="display: none;">
+                                <div class="ai-chat-header">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <i class="codicon codicon-copilot"></i>
+                                        <span>AI Chat</span>
+                                    </div>
+                                    <button id="ai-chat-close" class="ai-chat-close-btn" title="닫기">
+                                        <i class="codicon codicon-close"></i>
+                                    </button>
+                                </div>
+                                <div id="ai-chat-messages" class="ai-chat-messages">
+                                    <div class="ai-chat-welcome">
+                                        <i class="codicon codicon-sparkle" style="font-size: 48px; opacity: 0.5;"></i>
+                                        <h3>AI 코딩 어시스턴트</h3>
+                                        <p>코드에 대해 질문하거나 도움을 요청하세요</p>
+                                    </div>
+                                </div>
+                                <div class="ai-chat-input-container">
+                                    <textarea id="ai-chat-input" placeholder="메시지를 입력하세요... (Shift+Enter로 전송)" rows="3"></textarea>
+                                    <button id="ai-chat-send" class="ai-chat-send-btn" title="전송 (Shift+Enter)">
+                                        <i class="codicon codicon-send"></i>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div id="panel-resize-handle"></div>

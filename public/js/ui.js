@@ -4,6 +4,7 @@ import { initEditor, setEditorContent, clearEditorContent, getEditor, showDiffEd
 import { showNotification, getLanguageIdFromFilePath } from './utils.js';
 import { Terminal } from 'xterm';
 import { FitAddon } from 'xterm-addon-fit';
+import { initAIChat } from './aiChat.js';
 import { clientFS } from './fileSystem.js';
 import { downloadManager } from './downloadManager.js';
 import { commandPalette } from './commandPalette.js';
@@ -246,6 +247,7 @@ export function initUI() {
     fileSearchInput = document.getElementById('file-search');
 
     initEditor(document.getElementById('editor'), tabsContainer, openFiles); // Initialize editor
+    initAIChat(); // Initialize AI Chat Panel
 
     // Activity Bar Icons
     const activityIcons = [
