@@ -656,11 +656,7 @@ body {
 }
 
 .activity-icon.ai-icon {
-    background: linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
-    border-bottom: 2px solid transparent;
-    border-image: linear-gradient(90deg, #ec4899, #a855f7) 1;
     position: relative;
-    animation: ai-pulse 3s ease-in-out infinite;
 }
 
 .activity-icon.ai-icon::after {
@@ -670,33 +666,6 @@ body {
     right: 2px;
     font-size: 10px;
     opacity: 0.8;
-    animation: sparkle 2s ease-in-out infinite;
-}
-
-.activity-icon.ai-icon:hover {
-    background: linear-gradient(135deg, rgba(236, 72, 153, 0.3) 0%, rgba(168, 85, 247, 0.3) 100%);
-    transform: scale(1.05);
-    box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
-}
-
-@keyframes ai-pulse {
-    0%, 100% {
-        box-shadow: 0 0 5px rgba(236, 72, 153, 0.3);
-    }
-    50% {
-        box-shadow: 0 0 20px rgba(236, 72, 153, 0.6);
-    }
-}
-
-@keyframes sparkle {
-    0%, 100% {
-        opacity: 0.5;
-        transform: scale(1);
-    }
-    50% {
-        opacity: 1;
-        transform: scale(1.2);
-    }
 }
 
 #sidebar {
@@ -849,27 +818,9 @@ body {
 }
 
 .action-item.ai-action-item {
-    background: linear-gradient(135deg, rgba(236, 72, 153, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%);
-    border: 1px solid rgba(236, 72, 153, 0.3);
     display: flex;
     align-items: center;
     gap: 2px;
-    animation: ai-glow 3s ease-in-out infinite;
-}
-
-.action-item.ai-action-item:hover {
-    background: linear-gradient(135deg, rgba(236, 72, 153, 0.25) 0%, rgba(168, 85, 247, 0.25) 100%);
-    border-color: rgba(236, 72, 153, 0.5);
-    box-shadow: 0 0 10px rgba(236, 72, 153, 0.4);
-}
-
-@keyframes ai-glow {
-    0%, 100% {
-        box-shadow: 0 0 5px rgba(236, 72, 153, 0.2);
-    }
-    50% {
-        box-shadow: 0 0 15px rgba(236, 72, 153, 0.4);
-    }
 }
 
 #tabs:empty::after {
