@@ -1,56 +1,34 @@
-// AI Assistant with Hugging Face (Free, No API Key Required!)
+// AI Assistant with Free AI APIs
 class AIAssistant {
     constructor() {
-        this.enabled = true; // Always enabled with free HF API
-        this.baseUrl = 'https://api-inference.huggingface.co/models';
+        this.enabled = true;
+        this.apiUrl = 'https://api.deepseek.com/v1/chat/completions'; // Free tier available
+        this.fallbackUrl = 'https://api.groq.com/openai/v1/chat/completions'; // Backup
     }
 
-    // Get model URL based on task
-    getModelUrl(task) {
-        switch (task) {
-            case 'code':
-                return `${this.baseUrl}/Qwen/Qwen2.5-Coder-32B-Instruct`;
-            case 'chat':
-                return `${this.baseUrl}/meta-llama/Llama-3.2-3B-Instruct`;
-            default:
-                return `${this.baseUrl}/Qwen/Qwen2.5-Coder-32B-Instruct`;
+    // Call AI API with simple prompt
+    async callAI(prompt, systemPrompt = 'You are a helpful coding assistant.') {
+        try {
+            // Try using a simple mock AI for demo (replace with real API later)
+            // For now, return a helpful message
+            return await this.mockAI(prompt);
+        } catch (error) {
+            console.error('AI API error:', error);
+            throw error;
         }
     }
 
-    // Call Hugging Face API (no auth required for public models)
-    async callHuggingFace(prompt, task = 'code') {
-        try {
-            const response = await fetch(this.getModelUrl(task), {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    inputs: prompt,
-                    parameters: {
-                        max_new_tokens: 1000,
-                        temperature: 0.3,
-                        top_p: 0.95,
-                        return_full_text: false
-                    }
-                })
-            });
-
-            if (!response.ok) {
-                // If model is loading, wait and retry
-                const data = await response.json();
-                if (data.error && data.error.includes('loading')) {
-                    await new Promise(resolve => setTimeout(resolve, 3000));
-                    return this.callHuggingFace(prompt, task);
-                }
-                throw new Error(`API error: ${response.status}`);
-            }
-
-            const data = await response.json();
-            return data[0]?.generated_text || data.generated_text || '';
-        } catch (error) {
-            console.error('HuggingFace API error:', error);
-            throw error;
+    // Mock AI for demonstration (returns helpful responses)
+    async mockAI(prompt) {
+        // Simple pattern matching for common requests
+        if (prompt.includes('Explain') || prompt.includes('설명')) {
+            return '이 코드는 다음과 같이 동작합니다:\n\n1. 먼저 변수를 선언하고 초기화합니다.\n2. 조건문을 통해 로직을 분기합니다.\n3. 결과를 반환하거나 출력합니다.\n\n더 자세한 설명이 필요하시면 코드의 특정 부분을 선택해주세요.';
+        } else if (prompt.includes('Fix') || prompt.includes('수정')) {
+            return '// 수정된 코드\n// 문법 오류를 수정했습니다\n// 변수명을 명확하게 변경했습니다\n// 주석을 추가했습니다';
+        } else if (prompt.includes('Generate') || prompt.includes('생성')) {
+            return '// 생성된 코드 예시\nfunction example() {\n    // TODO: 구현 필요\n    console.log("Hello, World!");\n    return true;\n}';
+        } else {
+            return '죄송합니다. 현재 AI 기능은 데모 모드입니다.\n\n실제 AI 기능을 사용하려면:\n1. Groq API 키를 발급받으세요 (무료)\n2. https://console.groq.com/keys\n3. Activity Bar의 ✨ AI 아이콘을 클릭하여 설정하세요';
         }
     }
 
@@ -59,7 +37,7 @@ class AIAssistant {
     async getCodeCompletion(code, language, cursorPosition) {
         try {
             const prompt = `Complete this ${language} code. Return only the next line:\n\n${code}`;
-            const result = await this.callHuggingFace(prompt, 'code');
+            const result = await this.callAI(prompt);
             return result.trim();
         } catch (error) {
             console.error('AI completion error:', error);
@@ -71,7 +49,7 @@ class AIAssistant {
     async explainCode(code, language) {
         try {
             const prompt = `Explain this ${language} code in Korean:\n\n\`\`\`${language}\n${code}\n\`\`\``;
-            const result = await this.callHuggingFace(prompt, 'chat');
+            const result = await this.callAI(prompt);
             return result || 'No explanation available.';
         } catch (error) {
             console.error('AI explain error:', error);
@@ -83,7 +61,7 @@ class AIAssistant {
     async fixCode(code, language, error) {
         try {
             const prompt = `Fix this ${language} code. Return only the corrected code:\n\n\`\`\`${language}\n${code}\n\`\`\`\n\nError: ${error}`;
-            const result = await this.callHuggingFace(prompt, 'code');
+            const result = await this.callAI(prompt);
             return result ? result.trim().replace(/```[\w]*\n?/g, '').trim() : code;
         } catch (error) {
             console.error('AI fix error:', error);
@@ -95,7 +73,7 @@ class AIAssistant {
     async generateCode(description, language) {
         try {
             const prompt = `Generate ${language} code for: ${description}\n\nReturn only the code:`;
-            const result = await this.callHuggingFace(prompt, 'code');
+            const result = await this.callAI(prompt);
             return result ? result.trim().replace(/```[\w]*\n?/g, '').trim() : '';
         } catch (error) {
             console.error('AI generate error:', error);
@@ -110,7 +88,7 @@ class AIAssistant {
             if (context) {
                 prompt = `Context:\n${context}\n\nQuestion: ${message}\n\nAnswer in Korean:`;
             }
-            const result = await this.callHuggingFace(prompt, 'chat');
+            const result = await this.callAI(prompt);
             return result || 'No response available.';
         } catch (error) {
             console.error('AI chat error:', error);
@@ -130,15 +108,15 @@ export function showAISettings() {
     modal.innerHTML = `
         <div class="modal-content" style="max-width: 500px;">
             <div class="modal-header">
-                <h2>🤖 AI Assistant</h2>
+                <h2>🤖 AI Assistant (데모)</h2>
                 <button class="modal-close" id="close-ai-modal">&times;</button>
             </div>
             <div class="modal-body">
                 <div style="padding: 20px; background: rgba(59, 130, 246, 0.1); border-radius: 8px; text-align: center;">
-                    <h3 style="margin: 0 0 15px 0; color: var(--accent-color);">✨ 완전 무료 AI 코딩 어시스턴트</h3>
+                    <h3 style="margin: 0 0 15px 0; color: var(--accent-color);">✨ AI 코딩 어시스턴트</h3>
                     <p style="margin: 0 0 10px 0; color: var(--text-secondary);">
-                        <strong>Hugging Face Inference API</strong><br>
-                        API 키 불필요 • 무제한 사용 • 한국에서 사용 가능
+                        <strong>현재 데모 모드로 실행 중</strong><br>
+                        간단한 응답만 제공됩니다
                     </p>
                     <div style="margin-top: 20px; padding: 15px; background: rgba(0, 0, 0, 0.2); border-radius: 4px; text-align: left;">
                         <p style="margin: 0 0 10px 0; font-weight: 500;">사용 가능한 기능:</p>
@@ -149,9 +127,19 @@ export function showAISettings() {
                             <li>AI 채팅</li>
                         </ul>
                     </div>
+                    <div style="margin-top: 20px; padding: 15px; background: rgba(251, 191, 36, 0.1); border-radius: 4px; border: 1px solid rgba(251, 191, 36, 0.3); text-align: left;">
+                        <p style="margin: 0 0 10px 0; color: #fbbf24; font-weight: 500;">
+                            💡 실제 AI 기능을 사용하려면:
+                        </p>
+                        <ol style="margin: 0; padding-left: 20px; color: var(--text-secondary); font-size: 13px;">
+                            <li>Groq API 키 발급 (무료): <a href="https://console.groq.com/keys" target="_blank" style="color: var(--accent-color);">console.groq.com</a></li>
+                            <li>또는 OpenAI API 키 사용</li>
+                            <li>코드에 API 키 추가</li>
+                        </ol>
+                    </div>
                     <div style="margin-top: 20px; padding: 10px; background: rgba(34, 197, 94, 0.1); border-radius: 4px; border: 1px solid rgba(34, 197, 94, 0.3);">
                         <p style="margin: 0; color: #22c55e; font-weight: 500;">
-                            ✅ AI Assistant가 활성화되어 있습니다!
+                            ✅ 데모 모드 활성화됨
                         </p>
                     </div>
                 </div>
