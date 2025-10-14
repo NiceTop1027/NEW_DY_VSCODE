@@ -144,41 +144,38 @@ class AIAssistant {
 
     // Explain code
     async explainCode(code, language) {
-        if (!this.enabled || !this.apiKey) {
-            return 'AI Assistant is not configured. Please add your Gemini API key.';
+        if (!this.enabled) {
+            return 'AI Assistant를 먼저 설정해주세요. Activity Bar의 ✨ AI 아이콘을 클릭하세요.';
         }
 
         try {
-            const prompt = `Explain the following ${language} code in a clear and concise way:
+            const prompt = `Explain the following ${language} code in a clear and concise way:\n\n\`\`\`${language}\n${code}\n\`\`\``;
 
-\`\`\`${language}
-${code}
-\`\`\``;
-
-            const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: prompt
-                        }]
-                    }],
-                    generationConfig: {
+            if (this.provider === 'puter') {
+                await this.initPuter();
+                const response = await window.puter.ai.chat(prompt);
+                return response || 'No explanation available.';
+            } else if (this.provider === 'openai' || this.provider === 'groq') {
+                const response = await fetch(this.getApiUrl(), {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${this.apiKey}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: this.provider === 'groq' ? 'llama3-8b-8192' : 'gpt-3.5-turbo',
+                        messages: [{ role: 'user', content: prompt }],
                         temperature: 0.3,
-                        maxOutputTokens: 500,
-                    }
-                })
-            });
+                        max_tokens: 500
+                    })
+                });
 
-            if (!response.ok) {
-                throw new Error(`API error: ${response.status}`);
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                const data = await response.json();
+                return data.choices?.[0]?.message?.content || 'No explanation available.';
             }
 
-            const data = await response.json();
-            return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No explanation available.';
+            return 'Provider not supported for this operation.';
         } catch (error) {
             console.error('AI explain error:', error);
             return `Error: ${error.message}`;
@@ -187,49 +184,36 @@ ${code}
 
     // Fix code errors
     async fixCode(code, language, error) {
-        if (!this.enabled || !this.apiKey) {
-            return 'AI Assistant is not configured. Please add your Gemini API key.';
+        if (!this.enabled) {
+            return code;
         }
 
         try {
-            const prompt = `Fix the following ${language} code that has an error. Return only the corrected code without explanations.
+            const prompt = `Fix the following ${language} code. Return only the corrected code without explanations.\n\nCode:\n\`\`\`${language}\n${code}\n\`\`\`\n\nError: ${error}\n\nProvide the fixed code:`;
 
-Code:
-\`\`\`${language}
-${code}
-\`\`\`
-
-Error: ${error}
-
-Provide the fixed code:`;
-
-            const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: prompt
-                        }]
-                    }],
-                    generationConfig: {
+            if (this.provider === 'puter') {
+                await this.initPuter();
+                const response = await window.puter.ai.chat(prompt);
+                return response ? response.trim().replace(/```[\w]*\n?/g, '').trim() : code;
+            } else if (this.provider === 'openai' || this.provider === 'groq') {
+                const response = await fetch(this.getApiUrl(), {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${this.apiKey}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: this.provider === 'groq' ? 'llama3-8b-8192' : 'gpt-3.5-turbo',
+                        messages: [{ role: 'user', content: prompt }],
                         temperature: 0.2,
-                        maxOutputTokens: 1000,
-                    }
-                })
-            });
+                        max_tokens: 1000
+                    })
+                });
 
-            if (!response.ok) {
-                throw new Error(`API error: ${response.status}`);
-            }
-
-            const data = await response.json();
-            const fixedCode = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            
-            if (fixedCode) {
-                return fixedCode.trim().replace(/```[\w]*\n?/g, '').trim();
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                const data = await response.json();
+                const fixedCode = data.choices?.[0]?.message?.content;
+                return fixedCode ? fixedCode.trim().replace(/```[\w]*\n?/g, '').trim() : code;
             }
 
             return code;
@@ -241,44 +225,36 @@ Provide the fixed code:`;
 
     // Generate code from description
     async generateCode(description, language) {
-        if (!this.enabled || !this.apiKey) {
-            return 'AI Assistant is not configured. Please add your Gemini API key.';
+        if (!this.enabled) {
+            return 'AI Assistant를 먼저 설정해주세요.';
         }
 
         try {
-            const prompt = `Generate ${language} code based on this description. Return only the code without explanations.
+            const prompt = `Generate ${language} code based on this description. Return only the code without explanations.\n\nDescription: ${description}\n\nGenerate the code:`;
 
-Description: ${description}
-
-Generate the code:`;
-
-            const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: prompt
-                        }]
-                    }],
-                    generationConfig: {
+            if (this.provider === 'puter') {
+                await this.initPuter();
+                const response = await window.puter.ai.chat(prompt);
+                return response ? response.trim().replace(/```[\w]*\n?/g, '').trim() : '';
+            } else if (this.provider === 'openai' || this.provider === 'groq') {
+                const response = await fetch(this.getApiUrl(), {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${this.apiKey}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: this.provider === 'groq' ? 'llama3-8b-8192' : 'gpt-3.5-turbo',
+                        messages: [{ role: 'user', content: prompt }],
                         temperature: 0.4,
-                        maxOutputTokens: 1000,
-                    }
-                })
-            });
+                        max_tokens: 1000
+                    })
+                });
 
-            if (!response.ok) {
-                throw new Error(`API error: ${response.status}`);
-            }
-
-            const data = await response.json();
-            const code = data.candidates?.[0]?.content?.parts?.[0]?.text;
-            
-            if (code) {
-                return code.trim().replace(/```[\w]*\n?/g, '').trim();
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                const data = await response.json();
+                const code = data.choices?.[0]?.message?.content;
+                return code ? code.trim().replace(/```[\w]*\n?/g, '').trim() : '';
             }
 
             return '';
@@ -290,8 +266,8 @@ Generate the code:`;
 
     // Chat with AI
     async chat(message, context = '') {
-        if (!this.enabled || !this.apiKey) {
-            return 'AI Assistant is not configured. Please add your Gemini API key.';
+        if (!this.enabled) {
+            return 'AI Assistant를 먼저 설정해주세요.';
         }
 
         try {
@@ -300,30 +276,31 @@ Generate the code:`;
                 prompt = `Context:\n${context}\n\nQuestion: ${message}`;
             }
 
-            const response = await fetch(`${this.baseUrl}?key=${this.apiKey}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [{
-                            text: prompt
-                        }]
-                    }],
-                    generationConfig: {
+            if (this.provider === 'puter') {
+                await this.initPuter();
+                const response = await window.puter.ai.chat(prompt);
+                return response || 'No response available.';
+            } else if (this.provider === 'openai' || this.provider === 'groq') {
+                const response = await fetch(this.getApiUrl(), {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${this.apiKey}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        model: this.provider === 'groq' ? 'llama3-8b-8192' : 'gpt-3.5-turbo',
+                        messages: [{ role: 'user', content: prompt }],
                         temperature: 0.7,
-                        maxOutputTokens: 800,
-                    }
-                })
-            });
+                        max_tokens: 800
+                    })
+                });
 
-            if (!response.ok) {
-                throw new Error(`API error: ${response.status}`);
+                if (!response.ok) throw new Error(`API error: ${response.status}`);
+                const data = await response.json();
+                return data.choices?.[0]?.message?.content || 'No response available.';
             }
 
-            const data = await response.json();
-            return data.candidates?.[0]?.content?.parts?.[0]?.text || 'No response available.';
+            return 'Provider not supported.';
         } catch (error) {
             console.error('AI chat error:', error);
             return `Error: ${error.message}`;
