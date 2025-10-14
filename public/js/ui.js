@@ -527,6 +527,39 @@ export function initUI() {
         });
     }
     
+    // AI Buttons
+    const aiExplainBtn = document.getElementById('ai-explain-btn');
+    const aiFixBtn = document.getElementById('ai-fix-btn');
+    const aiGenerateBtn = document.getElementById('ai-generate-btn');
+    
+    if (aiExplainBtn) {
+        aiExplainBtn.addEventListener('click', () => {
+            // Trigger the editor action
+            const editor = getEditor();
+            if (editor) {
+                editor.trigger('toolbar', 'ai-explain-code');
+            }
+        });
+    }
+    
+    if (aiFixBtn) {
+        aiFixBtn.addEventListener('click', () => {
+            const editor = getEditor();
+            if (editor) {
+                editor.trigger('toolbar', 'ai-fix-code');
+            }
+        });
+    }
+    
+    if (aiGenerateBtn) {
+        aiGenerateBtn.addEventListener('click', () => {
+            const editor = getEditor();
+            if (editor) {
+                editor.trigger('toolbar', 'ai-generate-code');
+            }
+        });
+    }
+    
     // Zen Mode Button
     const zenModeBtn = document.getElementById('zen-mode-btn');
     if (zenModeBtn) {
