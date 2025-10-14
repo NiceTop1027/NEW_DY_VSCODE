@@ -25,14 +25,21 @@ class AIAssistant {
                         role: 'user',
                         content: prompt
                     }],
-                    temperature: 0.7,
-                    max_tokens: 2048,
+                    temperature: 0.5,
+                    max_tokens: 1024,
                 })
             });
 
             if (!response.ok) {
+                const errorData = await response.json().catch(() => ({}));
+                console.error('Groq API error response:', errorData);
+                
                 if (response.status === 401) {
                     return '❌ API 키가 유효하지 않습니다.\n\n새로운 API 키를 발급받아주세요:\nhttps://console.groq.com/keys';
+                } else if (response.status === 400) {
+                    return '❌ 요청 형식 오류입니다.\n\n다시 시도해주세요.';
+                } else if (response.status === 429) {
+                    return '⚠️ 요청 한도를 초과했습니다.\n\n잠시 후 다시 시도해주세요.';
                 }
                 throw new Error(`API error: ${response.status}`);
             }
@@ -76,7 +83,7 @@ class AIAssistant {
     // Explain code
     async explainCode(code, language) {
         try {
-            const prompt = `Explain this ${language} code in Korean:\n\n\`\`\`${language}\n${code}\n\`\`\``;
+            const prompt = `다음 ${language} 코드를 한국어로 설명해주세요:\n\n${code}`;
             const result = await this.callAI(prompt);
             return result || 'No explanation available.';
         } catch (error) {
@@ -88,7 +95,7 @@ class AIAssistant {
     // Fix code errors
     async fixCode(code, language, error) {
         try {
-            const prompt = `Fix this ${language} code. Return only the corrected code:\n\n\`\`\`${language}\n${code}\n\`\`\`\n\nError: ${error}`;
+            const prompt = `다음 ${language} 코드를 수정해주세요. 수정된 코드만 반환하세요:\n\n${code}\n\n오류: ${error || '문법 오류'}`;
             const result = await this.callAI(prompt);
             return result ? result.trim().replace(/```[\w]*\n?/g, '').trim() : code;
         } catch (error) {
@@ -100,7 +107,7 @@ class AIAssistant {
     // Generate code from description
     async generateCode(description, language) {
         try {
-            const prompt = `Generate ${language} code for: ${description}\n\nReturn only the code:`;
+            const prompt = `${language}로 다음 기능을 구현하는 코드를 작성해주세요: ${description}`;
             const result = await this.callAI(prompt);
             return result ? result.trim().replace(/```[\w]*\n?/g, '').trim() : '';
         } catch (error) {
@@ -114,7 +121,7 @@ class AIAssistant {
         try {
             let prompt = message;
             if (context) {
-                prompt = `Context:\n${context}\n\nQuestion: ${message}\n\nAnswer in Korean:`;
+                prompt = `코드:\n${context}\n\n질문: ${message}\n\n한국어로 답변해주세요.`;
             }
             const result = await this.callAI(prompt);
             return result || 'No response available.';
