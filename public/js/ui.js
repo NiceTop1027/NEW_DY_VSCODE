@@ -249,6 +249,7 @@ export function initUI() {
 
     // Activity Bar Icons
     const activityIcons = [
+        { name: '덕영고등학교', icon: 'home', action: 'school', isSchool: true },
         { name: 'Explorer', icon: 'files', action: 'explorer' },
         { name: 'Source Control', icon: 'source-control', action: 'source-control' },
         { name: 'GitHub', icon: 'github', action: 'github' },
@@ -258,9 +259,12 @@ export function initUI() {
         { name: 'Upload Folder', icon: 'folder-opened', action: 'upload' }
     ];
 
-    activityIcons.forEach(({name, icon, action}) => {
+    activityIcons.forEach(({name, icon, action, isSchool}) => {
         const iconEl = document.createElement('div');
         iconEl.className = 'activity-icon';
+        if (isSchool) {
+            iconEl.classList.add('school-icon');
+        }
         iconEl.title = name;
         iconEl.dataset.action = action;
         
@@ -291,6 +295,11 @@ export function initUI() {
                 searchBox.style.display = 'none';
 
             switch (action) {
+                case 'school':
+                    // Open school website in new tab
+                    window.open('https://dukyoung-h.goeyi.kr/dukyoung-h/main.do', '_blank');
+                    // Don't change view, keep current view active
+                    return;
                 case 'explorer':
                     fileExplorerView.style.display = 'block';
                     searchBox.style.display = 'block';
