@@ -15,23 +15,22 @@ class AIAssistant {
 
         try {
             const requestBody = {
-                model: 'llama3-8b-8192',
+                model: 'mixtral-8x7b-32768',
                 messages: [
                     {
                         role: 'user',
                         content: prompt
                     }
                 ],
-                temperature: 0.5,
-                max_tokens: 1024,
-                top_p: 1,
-                stream: false
+                temperature: 0.7,
+                max_tokens: 1024
             };
 
-            console.log('Groq API Request:', {
+            console.log('🚀 Groq API Request:', {
                 url: this.baseUrl,
                 model: requestBody.model,
-                hasKey: !!this.apiKey
+                promptLength: prompt.length,
+                apiKeyPrefix: this.apiKey.substring(0, 7) + '...'
             });
 
             const response = await fetch(this.baseUrl, {
@@ -43,27 +42,45 @@ class AIAssistant {
                 body: JSON.stringify(requestBody)
             });
 
+            const responseText = await response.text();
+            console.log('📥 Groq API Raw Response:', responseText);
+
             if (!response.ok) {
-                const errorData = await response.json().catch(() => ({}));
-                console.error('Groq API error response:', errorData);
+                let errorData;
+                try {
+                    errorData = JSON.parse(responseText);
+                } catch (e) {
+                    errorData = { error: { message: responseText } };
+                }
+                
+                console.error('❌ Groq API Error Details:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    error: errorData
+                });
                 
                 if (response.status === 401) {
                     return '❌ API 키가 유효하지 않습니다.\n\n새로운 API 키를 발급받아주세요:\nhttps://console.groq.com/keys';
                 } else if (response.status === 400) {
                     const errorMsg = errorData.error?.message || '요청 형식 오류';
-                    return `❌ 오류: ${errorMsg}\n\n다시 시도해주세요.`;
+                    return `❌ Groq API 오류:\n${errorMsg}\n\nAPI 키를 다시 확인하거나 새로 발급받아주세요.`;
                 } else if (response.status === 429) {
                     return '⚠️ 요청 한도를 초과했습니다.\n\n잠시 후 다시 시도해주세요.';
                 }
-                throw new Error(`API error: ${response.status}`);
+                throw new Error(`API error ${response.status}: ${errorData.error?.message || responseText}`);
             }
 
-            const data = await response.json();
-            console.log('Groq API Response:', data);
+            const data = JSON.parse(responseText);
+            console.log('✅ Groq API Success:', {
+                model: data.model,
+                usage: data.usage,
+                hasContent: !!data.choices?.[0]?.message?.content
+            });
+            
             const text = data.choices?.[0]?.message?.content;
             return text || 'No response from AI.';
         } catch (error) {
-            console.error('Groq API error:', error);
+            console.error('💥 Groq API Fatal Error:', error);
             return `Error: ${error.message}`;
         }
     }
