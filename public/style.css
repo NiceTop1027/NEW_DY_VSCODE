@@ -756,7 +756,6 @@ body {
     border-radius: 8px;
     font-size: 13px;
     line-height: 1.5;
-    white-space: pre-wrap;
     word-wrap: break-word;
 }
 
@@ -844,6 +843,92 @@ body {
 @keyframes ai-chat-pulse {
     0%, 100% { opacity: 0.3; }
     50% { opacity: 1; }
+}
+
+/* Code blocks in AI chat */
+.ai-chat-message-content .code-block {
+    margin: 8px 0;
+    background: var(--editor-background);
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.ai-chat-message-content .code-block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 12px;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 11px;
+}
+
+.ai-chat-message-content .code-language {
+    color: var(--text-secondary);
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.ai-chat-message-content .code-copy-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 3px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    transition: all 0.2s;
+}
+
+.ai-chat-message-content .code-copy-btn:hover {
+    background: var(--hover-background);
+    color: var(--text-color);
+}
+
+.ai-chat-message-content pre {
+    margin: 0;
+    padding: 12px;
+    overflow-x: auto;
+    background: transparent;
+}
+
+.ai-chat-message-content code {
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.6;
+    color: var(--text-color);
+}
+
+.ai-chat-message-content .inline-code {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+    font-size: 12px;
+    color: #e06c75;
+}
+
+.ai-chat-message-content strong {
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.ai-chat-message-content em {
+    font-style: italic;
+    color: var(--text-secondary);
+}
+
+.ai-chat-message-content a {
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+.ai-chat-message-content a:hover {
+    text-decoration: underline;
 }
 
 #sidebar {

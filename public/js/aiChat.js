@@ -136,7 +136,13 @@ function addMessage(role, content) {
     
     const contentDiv = document.createElement('div');
     contentDiv.className = 'ai-chat-message-content';
-    contentDiv.textContent = content;
+    
+    // Parse markdown for AI messages
+    if (role === 'assistant') {
+        contentDiv.innerHTML = parseMarkdown(content);
+    } else {
+        contentDiv.textContent = content;
+    }
     
     messageDiv.appendChild(label);
     messageDiv.appendChild(contentDiv);
@@ -145,6 +151,59 @@ function addMessage(role, content) {
     // Scroll to bottom
     chatMessages.scrollTop = chatMessages.scrollHeight;
 }
+
+// Parse markdown to HTML
+function parseMarkdown(text) {
+    // Escape HTML first
+    let html = text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    
+    // Code blocks with language (```language\ncode\n```)
+    html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+        const language = lang || 'text';
+        return `<div class="code-block"><div class="code-block-header"><span class="code-language">${language}</span><button class="code-copy-btn" onclick="copyCodeBlock(this)" title="복사"><i class="codicon codicon-copy"></i></button></div><pre><code class="language-${language}">${code.trim()}</code></pre></div>`;
+    });
+    
+    // Inline code (`code`)
+    html = html.replace(/`([^`]+)`/g, '<code class="inline-code">$1</code>');
+    
+    // Bold (**text** or __text__)
+    html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+    html = html.replace(/__([^_]+)__/g, '<strong>$1</strong>');
+    
+    // Italic (*text* or _text_)
+    html = html.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+    html = html.replace(/_([^_]+)_/g, '<em>$1</em>');
+    
+    // Links [text](url)
+    html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    
+    // Line breaks
+    html = html.replace(/\n/g, '<br>');
+    
+    return html;
+}
+
+// Global function for copying code blocks
+window.copyCodeBlock = function(button) {
+    const codeBlock = button.closest('.code-block');
+    const code = codeBlock.querySelector('code').textContent;
+    
+    navigator.clipboard.writeText(code).then(() => {
+        const originalHTML = button.innerHTML;
+        button.innerHTML = '<i class="codicon codicon-check"></i>';
+        button.style.color = '#22c55e';
+        
+        setTimeout(() => {
+            button.innerHTML = originalHTML;
+            button.style.color = '';
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+    });
+};
 
 function getCurrentEditorContext() {
     try {
