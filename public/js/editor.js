@@ -5,6 +5,7 @@ import { getLanguageIdFromFilePath } from './utils.js';
 import { openFiles, trackFileChange } from './ui.js';
 import { clientFS } from './fileSystem.js';
 import { registerSnippets } from './snippets.js';
+import { aiAssistant } from './aiAssistant.js';
 
 let editor = null;
 let diffEditor = null;
@@ -160,6 +161,127 @@ export function initEditor(editorEl, tabsEl, openFilesMap) {
     // Register advanced snippets
     registerSnippets();
 
+    // Add AI context menu actions
+    editor.addAction({
+        id: 'ai-explain-code',
+        label: '🤖 AI: Explain Code',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyE],
+        contextMenuGroupId: 'ai-assistant',
+        contextMenuOrder: 1,
+        run: async function(ed) {
+            const selection = ed.getSelection();
+            const selectedText = ed.getModel().getValueInRange(selection);
+            
+            if (!selectedText) {
+                showNotification('선택된 코드가 없습니다', 'warning');
+                return;
+            }
+            
+            if (!aiAssistant.enabled) {
+                showNotification('AI Assistant를 먼저 설정해주세요', 'warning');
+                return;
+            }
+            
+            showNotification('AI가 코드를 분석중입니다...', 'info');
+            
+            const language = ed.getModel().getLanguageId();
+            const explanation = await aiAssistant.explainCode(selectedText, language);
+            
+            // Show explanation in a modal
+            showAIResultModal('코드 설명', explanation);
+        }
+    });
+
+    editor.addAction({
+        id: 'ai-fix-code',
+        label: '🔧 AI: Fix Code',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyF],
+        contextMenuGroupId: 'ai-assistant',
+        contextMenuOrder: 2,
+        run: async function(ed) {
+            const selection = ed.getSelection();
+            const selectedText = ed.getModel().getValueInRange(selection);
+            
+            if (!selectedText) {
+                showNotification('선택된 코드가 없습니다', 'warning');
+                return;
+            }
+            
+            if (!aiAssistant.enabled) {
+                showNotification('AI Assistant를 먼저 설정해주세요', 'warning');
+                return;
+            }
+            
+            showNotification('AI가 코드를 수정중입니다...', 'info');
+            
+            const language = ed.getModel().getLanguageId();
+            const fixedCode = await aiAssistant.fixCode(selectedText, language, 'Please fix any errors');
+            
+            // Replace selection with fixed code
+            ed.executeEdits('ai-fix', [{
+                range: selection,
+                text: fixedCode
+            }]);
+            
+            showNotification('✅ 코드가 수정되었습니다', 'success');
+        }
+    });
+
+    editor.addAction({
+        id: 'ai-generate-code',
+        label: '✨ AI: Generate Code',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyG],
+        contextMenuGroupId: 'ai-assistant',
+        contextMenuOrder: 3,
+        run: async function(ed) {
+            if (!aiAssistant.enabled) {
+                showNotification('AI Assistant를 먼저 설정해주세요', 'warning');
+                return;
+            }
+            
+            const description = prompt('생성할 코드를 설명해주세요:');
+            if (!description) return;
+            
+            showNotification('AI가 코드를 생성중입니다...', 'info');
+            
+            const language = ed.getModel().getLanguageId();
+            const generatedCode = await aiAssistant.generateCode(description, language);
+            
+            // Insert at cursor position
+            const position = ed.getPosition();
+            ed.executeEdits('ai-generate', [{
+                range: new monaco.Range(position.lineNumber, position.column, position.lineNumber, position.column),
+                text: generatedCode
+            }]);
+            
+            showNotification('✅ 코드가 생성되었습니다', 'success');
+        }
+    });
+
+    editor.addAction({
+        id: 'ai-chat',
+        label: '💬 AI: Chat',
+        keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyC],
+        contextMenuGroupId: 'ai-assistant',
+        contextMenuOrder: 4,
+        run: async function(ed) {
+            if (!aiAssistant.enabled) {
+                showNotification('AI Assistant를 먼저 설정해주세요', 'warning');
+                return;
+            }
+            
+            const question = prompt('AI에게 질문하세요:');
+            if (!question) return;
+            
+            showNotification('AI가 답변중입니다...', 'info');
+            
+            const context = ed.getValue();
+            const answer = await aiAssistant.chat(question, context);
+            
+            showAIResultModal('AI 답변', answer);
+        }
+    });
+
     // Keyboard shortcuts
     // Save: Ctrl+S
     editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
@@ -305,6 +427,51 @@ export function clearEditorContent() {
 
 export function getEditor() {
     return editor;
+}
+
+// Show AI result modal
+function showAIResultModal(title, content) {
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'flex';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 700px; max-height: 80vh;">
+            <div class="modal-header">
+                <h2>${title}</h2>
+                <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
+            </div>
+            <div class="modal-body" style="overflow-y: auto; max-height: 60vh;">
+                <div style="background: var(--editor-background); padding: 15px; border-radius: 4px; border: 1px solid var(--border-color); white-space: pre-wrap; font-family: 'Courier New', monospace; line-height: 1.6;">
+                    ${content}
+                </div>
+            </div>
+            <div style="padding: 15px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end;">
+                <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">
+                    닫기
+                </button>
+                <button class="btn btn-primary" onclick="navigator.clipboard.writeText(\`${content.replace(/`/g, '\\`')}\`); showNotification('클립보드에 복사되었습니다', 'success');">
+                    📋 복사
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(modal);
+    
+    // Close on background click
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.remove();
+        }
+    });
+}
+
+// Show notification helper
+function showNotification(message, type) {
+    const event = new CustomEvent('showNotification', { 
+        detail: { message, type } 
+    });
+    document.dispatchEvent(event);
 }
 
 function showWelcomeScreen(editorEl) {
