@@ -98,11 +98,24 @@ async function sendMessage() {
     chatMessages.scrollTop = chatMessages.scrollHeight;
 
     try {
-        // Get current editor context
-        const context = getCurrentEditorContext();
+        // Add user message to history
+        chatHistory.push({ role: 'user', content: message });
         
-        // Call AI
-        const response = await aiAssistant.chat(message, context);
+        // Get current editor context for first message
+        let messages = [...chatHistory];
+        if (chatHistory.length === 1) {
+            const context = getCurrentEditorContext();
+            if (context) {
+                // Add system message with context
+                messages.unshift({
+                    role: 'system',
+                    content: `당신은 친절한 코딩 어시스턴트입니다. 한국어로 답변해주세요.\n\n${context}`
+                });
+            }
+        }
+        
+        // Call AI with conversation history
+        const response = await aiAssistant.callAI('', messages);
         
         // Remove loading
         loadingDiv.remove();
@@ -110,9 +123,13 @@ async function sendMessage() {
         // Add AI response
         addMessage('assistant', response);
         
-        // Save to history
-        chatHistory.push({ role: 'user', content: message });
+        // Save AI response to history
         chatHistory.push({ role: 'assistant', content: response });
+        
+        // Keep only last 10 messages to avoid token limit
+        if (chatHistory.length > 20) {
+            chatHistory = chatHistory.slice(-20);
+        }
     } catch (error) {
         loadingDiv.remove();
         addMessage('assistant', `❌ 오류가 발생했습니다: ${error.message}`);

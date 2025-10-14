@@ -2,13 +2,22 @@
 class AIAssistant {
     constructor() {
         this.apiKey = localStorage.getItem('groq_api_key') || '';
+        this.model = localStorage.getItem('groq_model') || 'llama-3.3-70b-versatile';
         this.enabled = !!this.apiKey;
         // Groq 공식 API 엔드포인트
         this.baseUrl = 'https://api.groq.com/openai/v1/chat/completions';
+        
+        // Available models
+        this.models = {
+            'llama-3.3-70b-versatile': { name: 'Llama 3.3 70B', speed: '⚡⚡⚡', quality: '★★★★★' },
+            'llama-3.1-70b-versatile': { name: 'Llama 3.1 70B', speed: '⚡⚡⚡', quality: '★★★★☆' },
+            'llama-3.1-8b-instant': { name: 'Llama 3.1 8B', speed: '⚡⚡⚡⚡', quality: '★★★☆☆' },
+            'mixtral-8x7b-32768': { name: 'Mixtral 8x7B', speed: '⚡⚡', quality: '★★★★☆' }
+        };
     }
 
     // Call Groq API (OpenAI compatible)
-    async callAI(prompt) {
+    async callAI(prompt, conversationHistory = null) {
         if (!this.apiKey) {
             return '⚠️ Groq API 키가 필요합니다.\n\n1. https://console.groq.com/keys 접속\n2. "Create API Key" 클릭 (무료!)\n3. Activity Bar의 ✨ AI 아이콘을 클릭하여 API 키 입력\n\n✅ 완전 무료\n✅ 한국에서 사용 가능\n✅ 매우 빠른 속도';
         }
@@ -19,24 +28,35 @@ class AIAssistant {
         }
 
         try {
-            const requestBody = {
-                model: 'llama-3.1-8b-instant',
-                messages: [
+            // Build messages array with conversation history
+            let messages = [];
+            
+            if (conversationHistory && conversationHistory.length > 0) {
+                // Use conversation history
+                messages = conversationHistory;
+            } else {
+                // Single message
+                messages = [
                     {
                         role: 'user',
                         content: prompt
                     }
-                ],
+                ];
+            }
+            
+            const requestBody = {
+                model: this.model,
+                messages: messages,
                 temperature: 0.7,
-                max_tokens: 1024
+                max_tokens: 2048
             };
 
             console.log('🚀 Groq API Request:', {
                 url: this.baseUrl,
                 model: requestBody.model,
+                modelInfo: this.models[this.model],
                 promptLength: prompt.length,
-                apiKeyPrefix: this.apiKey.substring(0, 7) + '...',
-                apiKeyLength: this.apiKey.length
+                apiKeyPrefix: this.apiKey.substring(0, 7) + '...'
             });
 
             const response = await fetch(this.baseUrl, {
@@ -96,6 +116,12 @@ class AIAssistant {
         this.apiKey = key;
         localStorage.setItem('groq_api_key', key);
         this.enabled = true;
+    }
+
+    // Save model
+    saveModel(model) {
+        this.model = model;
+        localStorage.setItem('groq_model', model);
     }
 
     // Remove API key
@@ -220,6 +246,26 @@ export function showAISettings() {
                         />
                     </div>
                     
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text-color);">
+                            AI 모델 선택:
+                        </label>
+                        <select 
+                            id="groq-model" 
+                            style="width: 100%; padding: 12px; background: var(--input-background); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-color); font-size: 14px; cursor: pointer;"
+                        >
+                            ${Object.entries(aiAssistant.models).map(([key, info]) => `
+                                <option value="${key}" ${aiAssistant.model === key ? 'selected' : ''}>
+                                    ${info.name} - 속도: ${info.speed} 품질: ${info.quality}
+                                </option>
+                            `).join('')}
+                        </select>
+                        <p style="margin: 8px 0 0 0; font-size: 12px; color: var(--text-secondary);">
+                            💡 <strong>Llama 3.3 70B</strong>: 최고 품질 (추천!)<br>
+                            ⚡ <strong>Llama 3.1 8B</strong>: 최고 속도
+                        </p>
+                    </div>
+                    
                     <div style="margin-bottom: 20px; padding: 15px; background: rgba(0, 0, 0, 0.2); border-radius: 4px;">
                         <p style="margin: 0 0 10px 0; font-weight: 500;">사용 가능한 기능:</p>
                         <ul style="margin: 0; padding-left: 20px; color: var(--text-secondary); line-height: 1.8;">
@@ -258,9 +304,12 @@ export function showAISettings() {
     // Save button
     document.getElementById('save-groq-key').addEventListener('click', () => {
         const key = document.getElementById('groq-api-key').value.trim();
+        const model = document.getElementById('groq-model').value;
+        
         if (key) {
             aiAssistant.saveApiKey(key);
-            showNotification('✅ Groq API 키가 저장되었습니다!', 'success');
+            aiAssistant.saveModel(model);
+            showNotification(`✅ 설정이 저장되었습니다! (모델: ${aiAssistant.models[model].name})`, 'success');
             modal.remove();
         } else {
             showNotification('❌ API 키를 입력해주세요', 'error');
