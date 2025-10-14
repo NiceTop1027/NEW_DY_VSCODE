@@ -3,31 +3,44 @@ class AIAssistant {
     constructor() {
         this.apiKey = localStorage.getItem('groq_api_key') || '';
         this.enabled = !!this.apiKey;
+        // Groq 공식 API 엔드포인트
         this.baseUrl = 'https://api.groq.com/openai/v1/chat/completions';
     }
 
     // Call Groq API (OpenAI compatible)
     async callAI(prompt) {
         if (!this.apiKey) {
-            return '⚠️ Groq API 키가 필요합니다.\n\n1. https://console.groq.com/keys 접속\n2. "Create API Key" 클릭 (무료!)\n3. Activity Bar의 ✨ AI 아이콘을 클릭하여 API 키 입력\n\n✅ 완전 무료\n✅ 한국에서 사용 가능\n✅ 매우 빠른 속도 (Llama 3.1 70B)';
+            return '⚠️ Groq API 키가 필요합니다.\n\n1. https://console.groq.com/keys 접속\n2. "Create API Key" 클릭 (무료!)\n3. Activity Bar의 ✨ AI 아이콘을 클릭하여 API 키 입력\n\n✅ 완전 무료\n✅ 한국에서 사용 가능\n✅ 매우 빠른 속도';
         }
 
         try {
+            const requestBody = {
+                model: 'llama3-8b-8192',
+                messages: [
+                    {
+                        role: 'user',
+                        content: prompt
+                    }
+                ],
+                temperature: 0.5,
+                max_tokens: 1024,
+                top_p: 1,
+                stream: false
+            };
+
+            console.log('Groq API Request:', {
+                url: this.baseUrl,
+                model: requestBody.model,
+                hasKey: !!this.apiKey
+            });
+
             const response = await fetch(this.baseUrl, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${this.apiKey}`,
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({
-                    model: 'llama3-70b-8192',
-                    messages: [{
-                        role: 'user',
-                        content: prompt
-                    }],
-                    temperature: 0.5,
-                    max_tokens: 1024,
-                })
+                body: JSON.stringify(requestBody)
             });
 
             if (!response.ok) {
@@ -37,7 +50,8 @@ class AIAssistant {
                 if (response.status === 401) {
                     return '❌ API 키가 유효하지 않습니다.\n\n새로운 API 키를 발급받아주세요:\nhttps://console.groq.com/keys';
                 } else if (response.status === 400) {
-                    return '❌ 요청 형식 오류입니다.\n\n다시 시도해주세요.';
+                    const errorMsg = errorData.error?.message || '요청 형식 오류';
+                    return `❌ 오류: ${errorMsg}\n\n다시 시도해주세요.`;
                 } else if (response.status === 429) {
                     return '⚠️ 요청 한도를 초과했습니다.\n\n잠시 후 다시 시도해주세요.';
                 }
@@ -45,6 +59,7 @@ class AIAssistant {
             }
 
             const data = await response.json();
+            console.log('Groq API Response:', data);
             const text = data.choices?.[0]?.message?.content;
             return text || 'No response from AI.';
         } catch (error) {
