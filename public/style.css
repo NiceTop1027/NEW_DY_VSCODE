@@ -2034,11 +2034,14 @@ body {
 #output-content {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     white-space: pre-wrap;
     word-wrap: break-word;
     color: var(--text-color);
     font-size: 13px;
     line-height: 1.5;
+    padding: 8px 12px;
+    box-sizing: border-box;
 }
 
 #output-input-line {
@@ -2084,6 +2087,12 @@ body {
 
 .output-line {
     margin: 2px 0;
+    padding: 2px 4px;
+    word-wrap: break-word;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    max-width: 100%;
+    display: block;
 }
 
 .output-line.input {
