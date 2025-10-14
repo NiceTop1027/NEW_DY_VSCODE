@@ -102,8 +102,6 @@ class OutputPanel {
     stopExecution() {
         if (this.ws && this.isRunning) {
             this.ws.send(JSON.stringify({ type: 'kill' }));
-            this.write('─'.repeat(60), 'output');
-            this.write('⚠️  Execution stopped by user', 'error');
             this.isRunning = false;
             
             if (this.outputInput) {
@@ -118,8 +116,6 @@ class OutputPanel {
     // Run code with WebSocket
     async runCode(code, language, filename) {
         this.clear();
-        this.write(`🚀 Running ${language} code...`, 'success');
-        this.write('─'.repeat(60), 'output');
 
         // Close existing WebSocket
         if (this.ws) {
@@ -217,12 +213,6 @@ class OutputPanel {
                 } else if (data.type === 'error') {
                     this.writeError(data.data);
                 } else if (data.type === 'exit') {
-                    this.write('─'.repeat(60), 'output');
-                    if (data.exitCode === 0) {
-                        this.write(`✅ Program exited successfully (code: ${data.exitCode})`, 'success');
-                    } else {
-                        this.writeError(`❌ Program exited with code: ${data.exitCode}`);
-                    }
                     this.isRunning = false;
                     
                     // Disable input
