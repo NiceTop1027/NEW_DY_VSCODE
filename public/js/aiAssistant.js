@@ -13,9 +13,14 @@ class AIAssistant {
             return '⚠️ Groq API 키가 필요합니다.\n\n1. https://console.groq.com/keys 접속\n2. "Create API Key" 클릭 (무료!)\n3. Activity Bar의 ✨ AI 아이콘을 클릭하여 API 키 입력\n\n✅ 완전 무료\n✅ 한국에서 사용 가능\n✅ 매우 빠른 속도';
         }
 
+        // API 키 형식 검증
+        if (!this.apiKey.startsWith('gsk_')) {
+            return '❌ API 키 형식이 올바르지 않습니다.\n\nGroq API 키는 "gsk_"로 시작해야 합니다.\n\n새로운 API 키를 발급받아주세요:\nhttps://console.groq.com/keys';
+        }
+
         try {
             const requestBody = {
-                model: 'mixtral-8x7b-32768',
+                model: 'llama-3.1-8b-instant',
                 messages: [
                     {
                         role: 'user',
@@ -30,7 +35,8 @@ class AIAssistant {
                 url: this.baseUrl,
                 model: requestBody.model,
                 promptLength: prompt.length,
-                apiKeyPrefix: this.apiKey.substring(0, 7) + '...'
+                apiKeyPrefix: this.apiKey.substring(0, 7) + '...',
+                apiKeyLength: this.apiKey.length
             });
 
             const response = await fetch(this.baseUrl, {
