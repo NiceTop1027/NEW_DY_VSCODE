@@ -250,6 +250,7 @@ export function initUI() {
     // Activity Bar Icons
     const activityIcons = [
         { name: '덕영고등학교', icon: 'home', action: 'school', isSchool: true },
+        { name: 'AI Assistant', icon: 'sparkle', action: 'ai', isAI: true },
         { name: 'Explorer', icon: 'files', action: 'explorer' },
         { name: 'Source Control', icon: 'source-control', action: 'source-control' },
         { name: 'GitHub', icon: 'github', action: 'github' },
@@ -259,11 +260,14 @@ export function initUI() {
         { name: 'Upload Folder', icon: 'folder-opened', action: 'upload' }
     ];
 
-    activityIcons.forEach(({name, icon, action, isSchool}) => {
+    activityIcons.forEach(({name, icon, action, isSchool, isAI}) => {
         const iconEl = document.createElement('div');
         iconEl.className = 'activity-icon';
         if (isSchool) {
             iconEl.classList.add('school-icon');
+        }
+        if (isAI) {
+            iconEl.classList.add('ai-icon');
         }
         iconEl.title = name;
         iconEl.dataset.action = action;
@@ -299,6 +303,15 @@ export function initUI() {
                     // Open school website in new tab
                     window.open('https://dukyoung-h.goeyi.kr/dukyoung-h/main.do', '_blank');
                     // Don't change view, keep current view active
+                    return;
+                case 'ai':
+                    // Open AI settings
+                    import('./aiAssistant.js').then(({ showAISettings }) => {
+                        showAISettings();
+                    }).catch(err => {
+                        console.error('Failed to load AI assistant:', err);
+                        showNotification('AI Assistant 로드 실패', 'error');
+                    });
                     return;
                 case 'explorer':
                     fileExplorerView.style.display = 'block';

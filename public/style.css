@@ -655,6 +655,50 @@ body {
     box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
 }
 
+.activity-icon.ai-icon {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+    border-bottom: 2px solid transparent;
+    border-image: linear-gradient(90deg, #ec4899, #a855f7) 1;
+    position: relative;
+    animation: ai-pulse 3s ease-in-out infinite;
+}
+
+.activity-icon.ai-icon::after {
+    content: '✨';
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    font-size: 10px;
+    opacity: 0.8;
+    animation: sparkle 2s ease-in-out infinite;
+}
+
+.activity-icon.ai-icon:hover {
+    background: linear-gradient(135deg, rgba(236, 72, 153, 0.3) 0%, rgba(168, 85, 247, 0.3) 100%);
+    transform: scale(1.05);
+    box-shadow: 0 0 15px rgba(236, 72, 153, 0.5);
+}
+
+@keyframes ai-pulse {
+    0%, 100% {
+        box-shadow: 0 0 5px rgba(236, 72, 153, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(236, 72, 153, 0.6);
+    }
+}
+
+@keyframes sparkle {
+    0%, 100% {
+        opacity: 0.5;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 1;
+        transform: scale(1.2);
+    }
+}
+
 #sidebar {
     width: 320px;
     min-width: 280px;
