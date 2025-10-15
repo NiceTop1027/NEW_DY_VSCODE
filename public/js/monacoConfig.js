@@ -408,21 +408,21 @@ function configurePython() {
                 {
                     label: 'def function',
                     kind: monaco.languages.CompletionItemKind.Snippet,
-                    insertText: 'def ${1:function_name}(${2:params}):\n    ${3:pass}',
+                    insertText: 'def ${1:function_name}(${2:params}):\n    ${3:pass}$0',
                     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
                     documentation: 'Function definition'
                 },
                 {
                     label: 'class',
                     kind: monaco.languages.CompletionItemKind.Snippet,
-                    insertText: 'class ${1:ClassName}:\n    def __init__(self${2:, params}):\n        ${3:pass}',
+                    insertText: 'class ${1:ClassName}:\n    def __init__(self${2:, params}):\n        ${3:pass}$0',
                     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
                     documentation: 'Class definition'
                 },
                 {
                     label: 'if __name__ == "__main__"',
                     kind: monaco.languages.CompletionItemKind.Snippet,
-                    insertText: 'if __name__ == "__main__":\n    ${1:pass}',
+                    insertText: 'if __name__ == "__main__":\n    ${1:pass}$0',
                     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
                     documentation: 'Main guard'
                 }
@@ -470,23 +470,30 @@ function configureCCpp() {
                 })),
                 // Snippets
                 {
+                    label: '#include',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '#include <${1:stdio.h}>$0',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Include header file'
+                },
+                {
                     label: 'main',
                     kind: monaco.languages.CompletionItemKind.Snippet,
-                    insertText: 'int main() {\n    ${1}\n    return 0;\n}',
+                    insertText: 'int main() {\n    ${1}\n    return 0;\n}$0',
                     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
                     documentation: 'Main function'
                 },
                 {
                     label: 'for loop',
                     kind: monaco.languages.CompletionItemKind.Snippet,
-                    insertText: 'for (int ${1:i} = 0; ${1:i} < ${2:n}; ${1:i}++) {\n    ${3}\n}',
+                    insertText: 'for (int ${1:i} = 0; ${1:i} < ${2:n}; ${1:i}++) {\n    ${3}\n}$0',
                     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
                     documentation: 'For loop'
                 },
                 {
                     label: 'struct',
                     kind: monaco.languages.CompletionItemKind.Snippet,
-                    insertText: 'struct ${1:Name} {\n    ${2}\n};',
+                    insertText: 'struct ${1:Name} {\n    ${2}\n};$0',
                     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
                     documentation: 'Struct definition'
                 }
@@ -550,21 +557,21 @@ function configureR() {
                 {
                     label: 'function',
                     kind: monaco.languages.CompletionItemKind.Snippet,
-                    insertText: '${1:name} <- function(${2:params}) {\n    ${3}\n}',
+                    insertText: '${1:name} <- function(${2:params}) {\n    ${3}\n}$0',
                     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
                     documentation: 'Function definition'
                 },
                 {
                     label: 'for loop',
                     kind: monaco.languages.CompletionItemKind.Snippet,
-                    insertText: 'for (${1:i} in ${2:1:10}) {\n    ${3}\n}',
+                    insertText: 'for (${1:i} in ${2:1:10}) {\n    ${3}\n}$0',
                     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
                     documentation: 'For loop'
                 },
                 {
                     label: 'ggplot',
                     kind: monaco.languages.CompletionItemKind.Snippet,
-                    insertText: 'ggplot(${1:data}, aes(x = ${2:x}, y = ${3:y})) +\n    geom_${4:point}()',
+                    insertText: 'ggplot(${1:data}, aes(x = ${2:x}, y = ${3:y})) +\n    geom_${4:point}()$0',
                     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
                     documentation: 'ggplot2 plot'
                 }
