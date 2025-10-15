@@ -894,13 +894,16 @@ body {
     padding: 12px;
     overflow-x: auto;
     background: transparent;
+    white-space: pre;
 }
 
-.ai-chat-message-content code {
+.ai-chat-message-content pre code {
     font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
     font-size: 12px;
     line-height: 1.6;
     color: var(--text-color);
+    white-space: pre;
+    display: block;
 }
 
 .ai-chat-message-content .inline-code {

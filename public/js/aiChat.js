@@ -180,7 +180,9 @@ function parseMarkdown(text) {
     // Code blocks with language (```language\ncode\n```)
     html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
         const language = lang || 'text';
-        return `<div class="code-block"><div class="code-block-header"><span class="code-language">${language}</span><button class="code-copy-btn" onclick="copyCodeBlock(this)" title="복사"><i class="codicon codicon-copy"></i></button></div><pre><code class="language-${language}">${code.trim()}</code></pre></div>`;
+        // Preserve newlines in code - only trim start/end whitespace
+        const trimmedCode = code.replace(/^\n+/, '').replace(/\n+$/, '');
+        return `<div class="code-block"><div class="code-block-header"><span class="code-language">${language}</span><button class="code-copy-btn" onclick="copyCodeBlock(this)" title="복사"><i class="codicon codicon-copy"></i></button></div><pre><code class="language-${language}">${trimmedCode}</code></pre></div>`;
     });
     
     // Inline code (`code`)
