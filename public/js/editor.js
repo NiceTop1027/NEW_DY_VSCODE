@@ -137,7 +137,11 @@ export function initEditor(editorEl, tabsEl, openFilesMap) {
         // 링크 감지
         links: true,
         // 색상 데코레이터
-        colorDecorators: true
+        colorDecorators: true,
+        // Emmet 활성화 (HTML/CSS에서 ! → DOCTYPE, div.class 등)
+        'emmet.triggerExpansionOnTab': true,
+        'emmet.showExpandedAbbreviation': 'always',
+        'emmet.showSuggestionsAsSnippets': true
     });
 
     // Hide editor initially
@@ -926,16 +930,44 @@ function registerCustomSnippets() {
         })
     });
     
-    // HTML snippets
+    // HTML snippets (Emmet-style)
     monaco.languages.registerCompletionItemProvider('html', {
         provideCompletionItems: () => ({
             suggestions: [
                 {
+                    label: '!',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '<!DOCTYPE html>\n<html lang="ko">\n<head>\n\t<meta charset="UTF-8">\n\t<meta name="viewport" content="width=device-width, initial-scale=1.0">\n\t<title>${1:Document}</title>\n</head>\n<body>\n\t${2}\n</body>\n</html>',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'HTML5 DOCTYPE template (Emmet: !)'
+                },
+                {
                     label: 'html5',
                     kind: monaco.languages.CompletionItemKind.Snippet,
-                    insertText: '<!DOCTYPE html>\n<html lang="ko">\n<head>\n\t<meta charset="UTF-8">\n\t<title>${1:Document}</title>\n</head>\n<body>\n\t${2}\n</body>\n</html>',
+                    insertText: '<!DOCTYPE html>\n<html lang="ko">\n<head>\n\t<meta charset="UTF-8">\n\t<meta name="viewport" content="width=device-width, initial-scale=1.0">\n\t<title>${1:Document}</title>\n</head>\n<body>\n\t${2}\n</body>\n</html>',
                     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
                     documentation: 'HTML5 template'
+                },
+                {
+                    label: 'div',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '<div>\n\t${1}\n</div>',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Div element'
+                },
+                {
+                    label: 'link',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '<link rel="stylesheet" href="${1:style.css}">',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Link stylesheet'
+                },
+                {
+                    label: 'script',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '<script src="${1:script.js}"></script>',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Script tag'
                 },
                 {
                     label: 'img',
@@ -947,16 +979,9 @@ function registerCustomSnippets() {
                 {
                     label: 'a',
                     kind: monaco.languages.CompletionItemKind.Snippet,
-                    insertText: '<a href="${1:url}">${2:text}</a>',
+                    insertText: '<a href="${1:#}">${2:Link}</a>',
                     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
                     documentation: 'Anchor tag'
-                },
-                {
-                    label: 'div',
-                    kind: monaco.languages.CompletionItemKind.Snippet,
-                    insertText: '<div class="${1}">\n\t${2}\n</div>',
-                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-                    documentation: 'Div element'
                 },
                 {
                     label: 'button',
