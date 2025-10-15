@@ -266,24 +266,6 @@ export function showAISettings() {
                         </p>
                     </div>
                     
-                    <div style="margin-bottom: 20px; padding: 15px; background: rgba(0, 0, 0, 0.2); border-radius: 4px;">
-                        <p style="margin: 0 0 10px 0; font-weight: 500;">사용 가능한 기능:</p>
-                        <ul style="margin: 0; padding-left: 20px; color: var(--text-secondary); line-height: 1.8;">
-                            <li>코드 설명 (Ctrl+Shift+E)</li>
-                            <li>코드 수정 (Ctrl+Shift+F)</li>
-                            <li>코드 생성 (Ctrl+Shift+G)</li>
-                            <li>AI 채팅</li>
-                        </ul>
-                    </div>
-                    
-                    ${hasKey ? `
-                    <div style="margin-bottom: 20px; padding: 10px; background: rgba(34, 197, 94, 0.1); border-radius: 4px; border: 1px solid rgba(34, 197, 94, 0.3); text-align: center;">
-                        <p style="margin: 0; color: #22c55e; font-weight: 500;">
-                            ✅ AI Assistant 활성화됨!
-                        </p>
-                    </div>
-                    ` : ''}
-                    
                     <div style="display: flex; gap: 10px;">
                         <button id="save-groq-key" class="btn btn-primary" style="flex: 1; padding: 12px; font-weight: 500;">
                             💾 저장

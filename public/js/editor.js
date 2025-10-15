@@ -6,6 +6,7 @@ import { openFiles, trackFileChange } from './ui.js';
 import { clientFS } from './fileSystem.js';
 import { registerSnippets } from './snippets.js';
 import { aiAssistant } from './aiAssistant.js';
+import { registerEnhancedAutocomplete } from './enhancedAutocomplete.js';
 
 let editor = null;
 let diffEditor = null;
@@ -160,6 +161,10 @@ export function initEditor(editorEl, tabsEl, openFilesMap) {
 
     // Register advanced snippets
     registerSnippets();
+    
+    // Register enhanced autocomplete (symbol extraction from code)
+    registerEnhancedAutocomplete();
+    console.log('✅ Enhanced Autocomplete enabled - Extracts symbols from your code!');
 
     // Add AI context menu actions
     editor.addAction({
