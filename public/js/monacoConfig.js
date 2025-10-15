@@ -151,11 +151,22 @@ function configureCSS() {
         }
     };
 
-    monaco.languages.css.cssDefaults.setOptions(cssLintOptions);
-    monaco.languages.scss.scssDefaults.setOptions(cssLintOptions);
-    monaco.languages.less.lessDefaults.setOptions(cssLintOptions);
+    // CSS
+    if (monaco.languages.css && monaco.languages.css.cssDefaults) {
+        monaco.languages.css.cssDefaults.setOptions(cssLintOptions);
+    }
 
-    console.log('  ✓ CSS/SCSS/LESS configured');
+    // SCSS (optional)
+    if (monaco.languages.scss && monaco.languages.scss.scssDefaults) {
+        monaco.languages.scss.scssDefaults.setOptions(cssLintOptions);
+    }
+
+    // LESS (optional)
+    if (monaco.languages.less && monaco.languages.less.lessDefaults) {
+        monaco.languages.less.lessDefaults.setOptions(cssLintOptions);
+    }
+
+    console.log('  ✓ CSS configured');
 }
 
 /**
