@@ -470,11 +470,12 @@ function configureCCpp() {
                 })),
                 // Snippets
                 {
-                    label: '#include',
+                    label: 'include',
                     kind: monaco.languages.CompletionItemKind.Snippet,
-                    insertText: '#include <${1:stdio.h}>$0',
+                    insertText: 'include <${1:stdio.h}>$0',
                     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-                    documentation: 'Include header file'
+                    documentation: 'Include header file',
+                    filterText: '#include'
                 },
                 {
                     label: 'main',
