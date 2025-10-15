@@ -441,6 +441,20 @@ function configurePython() {
 function configureCCpp() {
     const cppCompletions = {
         provideCompletionItems: (model, position) => {
+            const word = model.getWordUntilPosition(position);
+            const lineContent = model.getLineContent(position.lineNumber);
+            const textBeforeCursor = lineContent.substring(0, position.column - 1);
+            
+            // Check if # is before the word
+            const hasHashBefore = textBeforeCursor.trimStart().startsWith('#');
+            
+            const range = {
+                startLineNumber: position.lineNumber,
+                endLineNumber: position.lineNumber,
+                startColumn: word.startColumn,
+                endColumn: word.endColumn
+            };
+            
             const suggestions = [
                 // Standard library functions
                 ...['printf', 'scanf', 'malloc', 'free', 'sizeof', 'strlen', 'strcpy', 'strcmp', 'strcat',
@@ -470,12 +484,13 @@ function configureCCpp() {
                 })),
                 // Snippets
                 {
-                    label: 'include',
+                    label: hasHashBefore ? 'include' : '#include',
                     kind: monaco.languages.CompletionItemKind.Snippet,
-                    insertText: 'include <${1:stdio.h}>$0',
+                    insertText: hasHashBefore ? 'include <${1:stdio.h}>$0' : '#include <${1:stdio.h}>$0',
                     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
                     documentation: 'Include header file',
-                    filterText: '#include'
+                    filterText: hasHashBefore ? 'include' : '#include',
+                    range: range
                 },
                 {
                     label: 'main',
