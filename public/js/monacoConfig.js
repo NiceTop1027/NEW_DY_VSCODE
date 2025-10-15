@@ -21,6 +21,15 @@ export function configureMonacoLanguages() {
     // JSON Configuration (VS Code defaults)
     configureJSON();
 
+    // Python Configuration
+    configurePython();
+
+    // C/C++ Configuration
+    configureCCpp();
+
+    // R Configuration
+    configureR();
+
     console.log('✅ Monaco configured with VS Code language services');
 }
 
@@ -337,3 +346,223 @@ declare function clearInterval(id: number): void;
 
     console.log('  ✓ Type definitions added (Node.js, React, DOM)');
 }
+
+/**
+ * Python Configuration
+ */
+function configurePython() {
+    // Register Python completion provider
+    monaco.languages.registerCompletionItemProvider('python', {
+        provideCompletionItems: (model, position) => {
+            const suggestions = [
+                // Built-in functions
+                ...['print', 'input', 'len', 'range', 'str', 'int', 'float', 'bool', 'list', 'dict', 'set', 'tuple',
+                    'open', 'type', 'isinstance', 'hasattr', 'getattr', 'setattr', 'dir', 'help',
+                    'abs', 'all', 'any', 'ascii', 'bin', 'chr', 'ord', 'hex', 'oct', 'max', 'min', 'sum',
+                    'sorted', 'reversed', 'enumerate', 'zip', 'map', 'filter', 'lambda'].map(func => ({
+                    label: func,
+                    kind: monaco.languages.CompletionItemKind.Function,
+                    insertText: func,
+                    documentation: `Python built-in function: ${func}`
+                })),
+                // Keywords
+                ...['def', 'class', 'if', 'elif', 'else', 'for', 'while', 'try', 'except', 'finally',
+                    'with', 'as', 'import', 'from', 'return', 'yield', 'pass', 'break', 'continue',
+                    'raise', 'assert', 'del', 'global', 'nonlocal', 'lambda', 'and', 'or', 'not', 'in', 'is'].map(kw => ({
+                    label: kw,
+                    kind: monaco.languages.CompletionItemKind.Keyword,
+                    insertText: kw,
+                    documentation: `Python keyword: ${kw}`
+                })),
+                // Common libraries
+                {
+                    label: 'import numpy as np',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'import numpy as np',
+                    documentation: 'Import NumPy library'
+                },
+                {
+                    label: 'import pandas as pd',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'import pandas as pd',
+                    documentation: 'Import Pandas library'
+                },
+                {
+                    label: 'import matplotlib.pyplot as plt',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'import matplotlib.pyplot as plt',
+                    documentation: 'Import Matplotlib library'
+                },
+                // Snippets
+                {
+                    label: 'def function',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'def ${1:function_name}(${2:params}):\n    ${3:pass}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Function definition'
+                },
+                {
+                    label: 'class',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'class ${1:ClassName}:\n    def __init__(self${2:, params}):\n        ${3:pass}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Class definition'
+                },
+                {
+                    label: 'if __name__ == "__main__"',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'if __name__ == "__main__":\n    ${1:pass}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Main guard'
+                }
+            ];
+
+            return { suggestions };
+        }
+    });
+
+    console.log('  ✓ Python configured with IntelliSense');
+}
+
+/**
+ * C/C++ Configuration
+ */
+function configureCCpp() {
+    const cppCompletions = {
+        provideCompletionItems: (model, position) => {
+            const suggestions = [
+                // Standard library functions
+                ...['printf', 'scanf', 'malloc', 'free', 'sizeof', 'strlen', 'strcpy', 'strcmp', 'strcat',
+                    'memcpy', 'memset', 'fopen', 'fclose', 'fread', 'fwrite', 'fprintf', 'fscanf'].map(func => ({
+                    label: func,
+                    kind: monaco.languages.CompletionItemKind.Function,
+                    insertText: func,
+                    documentation: `C standard library function: ${func}`
+                })),
+                // C++ STL
+                ...['std::cout', 'std::cin', 'std::endl', 'std::vector', 'std::string', 'std::map', 'std::set',
+                    'std::pair', 'std::make_pair', 'std::sort', 'std::find', 'std::max', 'std::min'].map(func => ({
+                    label: func,
+                    kind: monaco.languages.CompletionItemKind.Function,
+                    insertText: func,
+                    documentation: `C++ STL: ${func}`
+                })),
+                // Keywords
+                ...['int', 'char', 'float', 'double', 'void', 'long', 'short', 'unsigned', 'signed',
+                    'struct', 'union', 'enum', 'typedef', 'const', 'static', 'extern', 'volatile',
+                    'if', 'else', 'for', 'while', 'do', 'switch', 'case', 'default', 'break', 'continue',
+                    'return', 'goto', 'sizeof', 'auto', 'register'].map(kw => ({
+                    label: kw,
+                    kind: monaco.languages.CompletionItemKind.Keyword,
+                    insertText: kw,
+                    documentation: `C/C++ keyword: ${kw}`
+                })),
+                // Snippets
+                {
+                    label: 'main',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'int main() {\n    ${1}\n    return 0;\n}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Main function'
+                },
+                {
+                    label: 'for loop',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'for (int ${1:i} = 0; ${1:i} < ${2:n}; ${1:i}++) {\n    ${3}\n}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'For loop'
+                },
+                {
+                    label: 'struct',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'struct ${1:Name} {\n    ${2}\n};',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Struct definition'
+                }
+            ];
+
+            return { suggestions };
+        }
+    };
+
+    monaco.languages.registerCompletionItemProvider('c', cppCompletions);
+    monaco.languages.registerCompletionItemProvider('cpp', cppCompletions);
+
+    console.log('  ✓ C/C++ configured with IntelliSense');
+}
+
+/**
+ * R Configuration
+ */
+function configureR() {
+    monaco.languages.registerCompletionItemProvider('r', {
+        provideCompletionItems: (model, position) => {
+            const suggestions = [
+                // Base R functions
+                ...['print', 'cat', 'paste', 'length', 'sum', 'mean', 'median', 'sd', 'var', 'min', 'max',
+                    'range', 'quantile', 'summary', 'str', 'head', 'tail', 'names', 'dim', 'nrow', 'ncol',
+                    'c', 'seq', 'rep', 'matrix', 'array', 'data.frame', 'list', 'factor',
+                    'read.csv', 'write.csv', 'read.table', 'write.table'].map(func => ({
+                    label: func,
+                    kind: monaco.languages.CompletionItemKind.Function,
+                    insertText: func,
+                    documentation: `R base function: ${func}`
+                })),
+                // Keywords
+                ...['function', 'if', 'else', 'for', 'while', 'repeat', 'break', 'next', 'return',
+                    'TRUE', 'FALSE', 'NULL', 'NA', 'NaN', 'Inf', 'in'].map(kw => ({
+                    label: kw,
+                    kind: monaco.languages.CompletionItemKind.Keyword,
+                    insertText: kw,
+                    documentation: `R keyword: ${kw}`
+                })),
+                // Common libraries
+                {
+                    label: 'library(ggplot2)',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'library(ggplot2)',
+                    documentation: 'Load ggplot2 library'
+                },
+                {
+                    label: 'library(dplyr)',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'library(dplyr)',
+                    documentation: 'Load dplyr library'
+                },
+                {
+                    label: 'library(tidyr)',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'library(tidyr)',
+                    documentation: 'Load tidyr library'
+                },
+                // Snippets
+                {
+                    label: 'function',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: '${1:name} <- function(${2:params}) {\n    ${3}\n}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'Function definition'
+                },
+                {
+                    label: 'for loop',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'for (${1:i} in ${2:1:10}) {\n    ${3}\n}',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'For loop'
+                },
+                {
+                    label: 'ggplot',
+                    kind: monaco.languages.CompletionItemKind.Snippet,
+                    insertText: 'ggplot(${1:data}, aes(x = ${2:x}, y = ${3:y})) +\n    geom_${4:point}()',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: 'ggplot2 plot'
+                }
+            ];
+
+            return { suggestions };
+        }
+    });
+
+    console.log('  ✓ R configured with IntelliSense');
+}
+
