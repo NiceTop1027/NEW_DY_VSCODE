@@ -7,6 +7,7 @@ import { clientFS } from './fileSystem.js';
 import { registerSnippets } from './snippets.js';
 import { aiAssistant } from './aiAssistant.js';
 import { registerEnhancedAutocomplete } from './enhancedAutocomplete.js';
+import { configureMonacoLanguages } from './monacoConfig.js';
 
 let editor = null;
 let diffEditor = null;
@@ -36,6 +37,9 @@ function restoreEditorSettingsInternal() {
 
 export function initEditor(editorEl, tabsEl, openFilesMap) {
     tabsContainer = tabsEl;
+
+    // Configure Monaco Language Services (VS Code mode)
+    configureMonacoLanguages();
 
     // Show welcome screen initially
     showWelcomeScreen(editorEl);
