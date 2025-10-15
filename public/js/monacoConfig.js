@@ -445,10 +445,17 @@ function configureCCpp() {
             const lineContent = model.getLineContent(position.lineNumber);
             const textBeforeCursor = lineContent.substring(0, position.column - 1);
             
-            // Check if # is before the word
-            const hasHashBefore = textBeforeCursor.trimStart().startsWith('#');
+            // Check if # is directly before the word (e.g., "#in")
+            const hashMatch = textBeforeCursor.match(/#(\w*)$/);
+            const hasHashBefore = hashMatch !== null;
             
-            const range = {
+            // If # is before, include it in the range to replace
+            const range = hasHashBefore ? {
+                startLineNumber: position.lineNumber,
+                endLineNumber: position.lineNumber,
+                startColumn: position.column - hashMatch[0].length,  // Include #
+                endColumn: word.endColumn
+            } : {
                 startLineNumber: position.lineNumber,
                 endLineNumber: position.lineNumber,
                 startColumn: word.startColumn,
@@ -484,12 +491,13 @@ function configureCCpp() {
                 })),
                 // Snippets
                 {
-                    label: hasHashBefore ? 'include' : '#include',
+                    label: 'include',
                     kind: monaco.languages.CompletionItemKind.Snippet,
-                    insertText: hasHashBefore ? 'include <${1:stdio.h}>$0' : '#include <${1:stdio.h}>$0',
+                    insertText: '#include <${1:stdio.h}>\n$0',
                     insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
-                    documentation: 'Include header file',
-                    filterText: hasHashBefore ? 'include' : '#include',
+                    documentation: 'Include header file (#include <stdio.h>)',
+                    filterText: 'include',
+                    sortText: '0include',
                     range: range
                 },
                 {
