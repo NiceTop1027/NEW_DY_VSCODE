@@ -48,11 +48,20 @@ export function initGitHub() {
             
             const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
             
+            console.log('🔐 GitHub 로그인 시작...');
+            
             // Open popup
             const popup = window.open(authUrl, 'GitHub Login', 'width=600,height=700');
             
-            // Listen for message from popup
-            window.addEventListener('message', (event) => {
+            if (!popup) {
+                alert('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
+                return;
+            }
+            
+            // Listen for message from popup (use named function to avoid duplicates)
+            const handleGitHubAuth = (event) => {
+                console.log('📨 메시지 수신:', event.data);
+                
                 if (event.data.type === 'github-auth') {
                     githubToken = event.data.token;
                     githubUser = event.data.user;
@@ -62,6 +71,7 @@ export function initGitHub() {
                     localStorage.setItem('githubUser', JSON.stringify(githubUser));
                     
                     console.log('✅ GitHub 인증 완료:', githubUser.login);
+                    console.log('💾 localStorage 저장 완료');
                     
                     // Show success notification
                     const notification = document.createElement('div');
@@ -70,11 +80,30 @@ export function initGitHub() {
                     document.body.appendChild(notification);
                     setTimeout(() => notification.remove(), 3000);
                     
+                    // Update UI immediately
                     updateGitHubUI();
                     loadRepositories();
-                    popup.close();
+                    
+                    // Close popup if still open
+                    if (popup && !popup.closed) {
+                        popup.close();
+                    }
+                    
+                    // Remove event listener after successful auth
+                    window.removeEventListener('message', handleGitHubAuth);
                 }
-            });
+            };
+            
+            window.addEventListener('message', handleGitHubAuth);
+            
+            // Check if popup was closed without auth
+            const checkPopup = setInterval(() => {
+                if (popup.closed) {
+                    clearInterval(checkPopup);
+                    console.log('🔴 팝업이 닫혔습니다');
+                    window.removeEventListener('message', handleGitHubAuth);
+                }
+            }, 1000);
         });
     }
     

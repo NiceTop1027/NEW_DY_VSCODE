@@ -663,15 +663,25 @@ app.get('/api/github/callback', async (req, res) => {
                     <p>창이 자동으로 닫힙니다...</p>
                 </div>
                 <script>
-                    if (window.opener) {
-                        window.opener.postMessage({
-                            type: 'github-auth',
-                            token: ${JSON.stringify(accessToken)},
-                            user: ${JSON.stringify(userResponse.data)}
-                        }, window.location.origin);
-                        setTimeout(() => window.close(), 1000);
+                    console.log('✅ GitHub 인증 성공');
+                    console.log('window.opener:', !!window.opener);
+                    
+                    const authData = {
+                        type: 'github-auth',
+                        token: ${JSON.stringify(accessToken)},
+                        user: ${JSON.stringify(userResponse.data)}
+                    };
+                    
+                    if (window.opener && !window.opener.closed) {
+                        console.log('📤 부모 창으로 메시지 전송:', authData);
+                        window.opener.postMessage(authData, '*');
+                        setTimeout(() => {
+                            console.log('🔒 창 닫기');
+                            window.close();
+                        }, 1500);
                     } else {
-                        alert('인증 완료! 이 창을 닫아주세요.');
+                        console.error('❌ 부모 창을 찾을 수 없습니다');
+                        alert('인증 완료! 이 창을 닫고 메인 창을 새로고침해주세요.');
                     }
                 </script>
             </body>
