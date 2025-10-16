@@ -249,13 +249,12 @@ export function initUI() {
     initEditor(document.getElementById('editor'), tabsContainer, openFiles); // Initialize editor
     initAIChat(); // Initialize AI Chat Panel
 
-    // Activity Bar Icons
+    // Activity Bar Icons (GitHub 버튼은 HTML에 직접 정의됨)
     const activityIcons = [
         { name: '덕영고등학교', icon: 'home', action: 'school', isSchool: true },
         { name: 'AI Assistant', icon: 'sparkle', action: 'ai', isAI: true },
         { name: 'Explorer', icon: 'files', action: 'explorer' },
         { name: 'Source Control', icon: 'source-control', action: 'source-control' },
-        { name: 'GitHub', icon: 'github', action: 'github' },
         { name: 'Search', icon: 'search', action: 'search' },
         { name: 'Run and Debug', icon: 'debug-alt', action: 'debug' },
         { name: 'Extensions', icon: 'extensions', action: 'extensions' },

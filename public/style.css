@@ -625,6 +625,7 @@ body {
     justify-content: center;
     transition: all 0.2s ease;
     position: relative;
+    border-left: 2px solid transparent;
 }
 
 .activity-bar-item:hover {
@@ -638,6 +639,21 @@ body {
 
 .activity-bar-item i {
     font-size: 24px;
+}
+
+/* GitHub Button Special Style */
+#github-btn {
+    border-bottom: 1px solid rgba(48, 54, 61, 0.5);
+    margin-bottom: 8px;
+}
+
+#github-btn:hover {
+    background: linear-gradient(135deg, rgba(31, 111, 235, 0.15) 0%, rgba(9, 105, 218, 0.15) 100%);
+    border-left-color: #1f6feb;
+}
+
+#github-btn i {
+    font-size: 26px;
 }
 
 .activity-icon {
