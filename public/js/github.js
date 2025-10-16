@@ -49,53 +49,63 @@ export function initGitHub() {
     // This function just sets up the modal UI update logic
     console.log('✅ GitHub 모달 초기화 완료 (버튼 클릭은 ui.js에서 처리)');
     
-    // GitHub login
+    // Setup sidebar login button
+    const sidebarLoginBtn = document.getElementById('github-sidebar-login-btn');
+    if (sidebarLoginBtn) {
+        sidebarLoginBtn.addEventListener('click', handleGitHubLogin);
+    }
+    
+    // GitHub login (modal)
     if (githubLoginBtn) {
-        githubLoginBtn.addEventListener('click', () => {
-            const clientId = 'Ov23liOXbJBdYDDXCwzF'; // GitHub OAuth App Client ID
-            const redirectUri = `${window.location.origin}/api/github/callback`;
-            const scope = 'repo,user';
+        githubLoginBtn.addEventListener('click', handleGitHubLogin);
+    }
+}
+
+function handleGitHubLogin() {
+    const clientId = 'Ov23liOXbJBdYDDXCwzF'; // GitHub OAuth App Client ID
+    const redirectUri = `${window.location.origin}/api/github/callback`;
+    const scope = 'repo,user';
+    
+    const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+    
+    console.log('🔐 GitHub 로그인 시작...');
+    
+    // Open popup
+    const popup = window.open(authUrl, 'GitHub Login', 'width=600,height=700');
+    
+    if (!popup) {
+        alert('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
+        return;
+    }
+    
+    // Listen for message from popup (use named function to avoid duplicates)
+    const handleGitHubAuth = (event) => {
+        console.log('📨 메시지 수신:', event);
+        console.log('📨 메시지 데이터:', event.data);
+        console.log('📨 메시지 origin:', event.origin);
+        
+        if (event.data && event.data.type === 'github-auth') {
+            console.log('✅ github-auth 메시지 확인됨');
             
-            const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
+            githubToken = event.data.token;
+            githubUser = event.data.user;
             
-            console.log('🔐 GitHub 로그인 시작...');
+            // Save to localStorage
+            localStorage.setItem('githubToken', githubToken);
+            localStorage.setItem('githubUser', JSON.stringify(githubUser));
             
-            // Open popup
-            const popup = window.open(authUrl, 'GitHub Login', 'width=600,height=700');
+            console.log('✅ GitHub 인증 완료:', githubUser.login);
+            console.log('💾 localStorage 저장 완료');
+            console.log('📊 현재 상태:', {
+                token: !!githubToken,
+                user: !!githubUser,
+                userLogin: githubUser?.login
+            });
             
-            if (!popup) {
-                alert('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
-                return;
-            }
-            
-            // Listen for message from popup (use named function to avoid duplicates)
-            const handleGitHubAuth = (event) => {
-                console.log('📨 메시지 수신:', event);
-                console.log('📨 메시지 데이터:', event.data);
-                console.log('📨 메시지 origin:', event.origin);
-                
-                if (event.data && event.data.type === 'github-auth') {
-                    console.log('✅ github-auth 메시지 확인됨');
-                    
-                    githubToken = event.data.token;
-                    githubUser = event.data.user;
-                    
-                    // Save to localStorage
-                    localStorage.setItem('githubToken', githubToken);
-                    localStorage.setItem('githubUser', JSON.stringify(githubUser));
-                    
-                    console.log('✅ GitHub 인증 완료:', githubUser.login);
-                    console.log('💾 localStorage 저장 완료');
-                    console.log('📊 현재 상태:', {
-                        token: !!githubToken,
-                        user: !!githubUser,
-                        userLogin: githubUser?.login
-                    });
-                    
-                    // Show success notification
-                    const notification = document.createElement('div');
-                    notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #22c55e; color: white; padding: 12px 20px; border-radius: 6px; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
-                    notification.textContent = `✅ GitHub 인증 완료! (${githubUser.login})`;
+            // Show success notification
+            const notification = document.createElement('div');
+            notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #22c55e; color: white; padding: 12px 20px; border-radius: 6px; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+            notification.textContent = `✅ GitHub 인증 완료! (${githubUser.login})`;
                     document.body.appendChild(notification);
                     setTimeout(() => notification.remove(), 3000);
                     
@@ -163,20 +173,21 @@ export function initGitHub() {
             
             window.addEventListener('message', handleGitHubAuth);
             
-            console.log('👂 메시지 리스너 등록 완료');
-            
-            // Check if popup was closed without auth
-            const checkPopup = setInterval(() => {
-                if (popup.closed) {
-                    clearInterval(checkPopup);
-                    console.log('🔴 팝업이 닫혔습니다');
-                    window.removeEventListener('message', handleGitHubAuth);
-                }
-            }, 1000);
-        });
-    }
+    console.log('👂 메시지 리스너 등록 완료');
     
-    // Clone repository with isomorphic-git
+    // Check if popup was closed without auth
+    const checkPopup = setInterval(() => {
+        if (popup.closed) {
+            clearInterval(checkPopup);
+            console.log('🔴 팝업이 닫혔습니다');
+            window.removeEventListener('message', handleGitHubAuth);
+        }
+    }, 1000);
+}
+
+// Clone repository with isomorphic-git (moved outside initGitHub)
+export function setupGitHubCloneButton() {
+    const githubCloneBtn = document.getElementById('github-clone-btn');
     if (githubCloneBtn) {
         githubCloneBtn.addEventListener('click', async () => {
             if (!selectedRepo) {

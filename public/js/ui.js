@@ -348,33 +348,31 @@ export function initUI() {
                     renderSourceControlView();
                     break;
                 case 'github':
-                    // Open GitHub modal and update UI
-                    const githubModal = document.getElementById('github-modal');
-                    if (githubModal) {
-                        githubModal.style.display = 'flex';
+                    // Show GitHub sidebar view
+                    githubView.style.display = 'block';
+                    currentView = 'github';
+                    
+                    // Update GitHub sidebar UI
+                    import('./github.js').then(module => {
+                        const hasToken = !!localStorage.getItem('githubToken');
+                        const hasUser = !!localStorage.getItem('githubUser');
                         
-                        // Update GitHub UI (check login status)
-                        import('./github.js').then(module => {
-                            // GitHub 모듈이 로드되면 UI 업데이트
-                            setTimeout(() => {
-                                const authSection = document.getElementById('github-auth-section');
-                                const reposSection = document.getElementById('github-repos-section');
-                                const hasToken = !!localStorage.getItem('githubToken');
-                                const hasUser = !!localStorage.getItem('githubUser');
-                                
-                                if (authSection && reposSection) {
-                                    if (hasToken && hasUser) {
-                                        authSection.style.display = 'none';
-                                        reposSection.style.display = 'block';
-                                    } else {
-                                        authSection.style.display = 'block';
-                                        reposSection.style.display = 'none';
-                                    }
-                                }
-                            }, 100);
-                        });
-                    }
-                    return;
+                        const authSection = document.getElementById('github-sidebar-auth');
+                        const reposSection = document.getElementById('github-sidebar-repos');
+                        
+                        if (authSection && reposSection) {
+                            if (hasToken && hasUser) {
+                                authSection.style.display = 'none';
+                                reposSection.style.display = 'block';
+                                // Load GitHub data
+                                renderGitHubSidebar();
+                            } else {
+                                authSection.style.display = 'block';
+                                reposSection.style.display = 'none';
+                            }
+                        }
+                    });
+                    break;
                 case 'search':
                     // For now, just show explorer and focus search
                     fileExplorerView.style.display = 'block';
@@ -2697,31 +2695,123 @@ function toggleMobileSidebar(e) {
 let githubToken = localStorage.getItem('github_token');
 let githubUser = null;
 
-function renderGitHubView() {
-    const githubView = document.getElementById('github-view');
-    if (!githubView) return;
+// GitHub Sidebar Renderer
+function renderGitHubSidebar() {
+    const hasToken = !!localStorage.getItem('githubToken');
+    const savedUser = localStorage.getItem('githubUser');
+    
+    if (!hasToken || !savedUser) return;
+    
+    try {
+        const user = JSON.parse(savedUser);
+        
+        // Render user info
+        const userCard = document.getElementById('github-sidebar-user');
+        if (userCard) {
+            userCard.innerHTML = `
+                <img src="${user.avatar_url}" alt="${user.login}">
+                <div class="user-info">
+                    <p class="user-name">${user.login}</p>
+                    <p class="user-status">Connected</p>
+                </div>
+            `;
+        }
+        
+        // Load repositories
+        loadGitHubSidebarRepos();
+        loadClonedRepos();
+    } catch (e) {
+        console.error('Failed to render GitHub sidebar:', e);
+    }
+}
 
-    if (!githubToken) {
-        // Show login screen
-        githubView.innerHTML = `
-            <div class="github-login">
-                <h3>GitHub</h3>
-                <div class="github-login-content">
-                    <i class="codicon codicon-github" style="font-size: 64px; margin-bottom: 20px;"></i>
-                    <p>GitHub에 연결하여 레포지토리를 관리하세요</p>
-                    <button class="github-login-btn" id="github-login-btn">
-                        <i class="codicon codicon-github"></i>
-                        GitHub로 로그인
-                    </button>
+async function loadGitHubSidebarRepos() {
+    const reposList = document.getElementById('github-sidebar-repos-list');
+    if (!reposList) return;
+    
+    reposList.innerHTML = '<div class="loading-state"><div class="loading-spinner"></div></div>';
+    
+    try {
+        const token = localStorage.getItem('githubToken');
+        const response = await fetch('https://api.github.com/user/repos?sort=updated&per_page=50', {
+            headers: {
+                'Authorization': `token ${token}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+        
+        if (!response.ok) throw new Error('Failed to fetch repos');
+        
+        const repos = await response.json();
+        
+        if (repos.length === 0) {
+            reposList.innerHTML = '<div class="empty-state"><i class="codicon codicon-repo"></i><p>No repositories found</p></div>';
+            return;
+        }
+        
+        reposList.innerHTML = repos.map(repo => `
+            <div class="repo-item" data-repo="${repo.full_name}">
+                <div class="repo-name">
+                    <i class="codicon codicon-repo"></i>
+                    ${repo.name}
+                </div>
+                ${repo.description ? `<div class="repo-description">${repo.description}</div>` : ''}
+                <div class="repo-meta">
+                    ${repo.language ? `<div class="repo-meta-item"><i class="codicon codicon-circle-filled"></i>${repo.language}</div>` : ''}
+                    <div class="repo-meta-item"><i class="codicon codicon-star"></i>${repo.stargazers_count}</div>
+                    ${repo.private ? '<div class="repo-meta-item"><i class="codicon codicon-lock"></i>Private</div>' : ''}
                 </div>
             </div>
-        `;
-
-        document.getElementById('github-login-btn')?.addEventListener('click', loginToGitHub);
-    } else {
-        // Show repositories
-        loadGitHubRepositories();
+        `).join('');
+        
+        // Add click handlers
+        reposList.querySelectorAll('.repo-item').forEach(item => {
+            item.addEventListener('click', () => {
+                reposList.querySelectorAll('.repo-item').forEach(i => i.classList.remove('selected'));
+                item.classList.add('selected');
+                selectedRepo = item.dataset.repo;
+            });
+        });
+    } catch (error) {
+        console.error('Failed to load repos:', error);
+        reposList.innerHTML = '<div class="empty-state"><i class="codicon codicon-error"></i><p>Failed to load repositories</p></div>';
     }
+}
+
+function loadClonedRepos() {
+    const clonedList = document.getElementById('github-sidebar-cloned-list');
+    if (!clonedList) return;
+    
+    const clonedRepos = JSON.parse(localStorage.getItem('clonedRepos') || '[]');
+    
+    if (clonedRepos.length === 0) {
+        clonedList.innerHTML = '<div class="empty-state"><i class="codicon codicon-folder"></i><p>No cloned repositories</p></div>';
+        return;
+    }
+    
+    clonedList.innerHTML = clonedRepos.map(repo => `
+        <div class="cloned-item">
+            <div class="cloned-info">
+                <div class="cloned-name">
+                    <i class="codicon codicon-folder-opened"></i>
+                    ${repo.repo}
+                </div>
+                <div class="cloned-path">${repo.path}</div>
+            </div>
+            <div class="cloned-actions">
+                <button class="cloned-action-btn" onclick="openClonedRepo('${repo.fullName}')" title="Open">
+                    <i class="codicon codicon-folder-opened"></i>
+                </button>
+            </div>
+        </div>
+    `).join('');
+}
+
+let selectedRepo = null;
+
+function renderGitHubView() {
+    // Deprecated - use renderGitHubSidebar instead
+    renderGitHubSidebar();
 }
 
 function loginToGitHub() {

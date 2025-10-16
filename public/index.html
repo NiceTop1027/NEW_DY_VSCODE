@@ -17,6 +17,7 @@
     <link rel="stylesheet" href="css/radix-theme.css">
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="css/github-premium.css">
+    <link rel="stylesheet" href="css/github-sidebar.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@vscode/codicons/dist/codicon.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
     <script src="config.js"></script>
@@ -52,7 +53,46 @@
                             <!-- Source control view content will be added here -->
                         </div>
                         <div id="github-view" style="display: none;">
-                            <!-- GitHub view content will be added here -->
+                            <!-- GitHub Sidebar View -->
+                            <div class="sidebar-header">
+                                <h3>GitHub</h3>
+                            </div>
+                            
+                            <!-- Auth Section -->
+                            <div id="github-sidebar-auth" class="github-sidebar-section">
+                                <div class="auth-prompt">
+                                    <i class="codicon codicon-github" style="font-size: 48px; color: #58a6ff; margin-bottom: 16px;"></i>
+                                    <p>Sign in to access your repositories</p>
+                                    <button id="github-sidebar-login-btn" class="btn-primary">
+                                        <i class="codicon codicon-github"></i>
+                                        Sign in with GitHub
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Repos Section -->
+                            <div id="github-sidebar-repos" style="display: none;">
+                                <!-- User Info -->
+                                <div id="github-sidebar-user" class="github-user-card"></div>
+                                
+                                <!-- Repositories -->
+                                <div class="sidebar-section">
+                                    <div class="section-title">
+                                        <i class="codicon codicon-repo"></i>
+                                        <span>Your Repositories</span>
+                                    </div>
+                                    <div id="github-sidebar-repos-list" class="repos-list"></div>
+                                </div>
+                                
+                                <!-- Cloned Repos -->
+                                <div class="sidebar-section">
+                                    <div class="section-title">
+                                        <i class="codicon codicon-folder-opened"></i>
+                                        <span>Cloned Repositories</span>
+                                    </div>
+                                    <div id="github-sidebar-cloned-list" class="cloned-list"></div>
+                                </div>
+                            </div>
                         </div>
                         <div id="debug-view" style="display: none;">
                             <!-- Debug view content will be added here -->
