@@ -6,15 +6,29 @@ let githubUser = null;
 let selectedRepo = null;
 
 export function initGitHub() {
+    console.log('🔧 initGitHub() 호출됨');
+    
     const githubBtn = document.getElementById('github-btn');
     const githubModal = document.getElementById('github-modal');
     const githubLoginBtn = document.getElementById('github-login-btn');
     const githubCloneBtn = document.getElementById('github-clone-btn');
     const githubPushBtn = document.getElementById('github-push-btn');
     
+    console.log('🔍 GitHub 버튼 요소 확인:', {
+        githubBtn: !!githubBtn,
+        githubModal: !!githubModal,
+        githubLoginBtn: !!githubLoginBtn
+    });
+    
     // Load saved token
     const savedToken = localStorage.getItem('githubToken');
     const savedUser = localStorage.getItem('githubUser');
+    console.log('💾 localStorage 확인:', {
+        hasToken: !!savedToken,
+        hasUser: !!savedUser,
+        tokenLength: savedToken ? savedToken.length : 0
+    });
+    
     if (savedToken && savedUser) {
         githubToken = savedToken;
         try {
@@ -27,31 +41,40 @@ export function initGitHub() {
             githubToken = null;
             githubUser = null;
         }
+    } else {
+        console.log('⚠️ GitHub 인증 정보 없음');
     }
     
     // Open GitHub modal
     if (githubBtn) {
+        console.log('✅ GitHub 버튼 이벤트 리스너 등록');
         githubBtn.addEventListener('click', () => {
-            console.log('🐙 GitHub 모달 열기');
+            console.log('🐙 GitHub 모달 열기 클릭됨!');
             console.log('   토큰:', !!githubToken);
+            console.log('   토큰 값:', githubToken ? githubToken.substring(0, 10) + '...' : 'null');
             console.log('   사용자:', githubUser ? githubUser.login : null);
-            githubModal.style.display = 'flex';
+            console.log('   localStorage 토큰:', !!localStorage.getItem('githubToken'));
+            console.log('   localStorage 사용자:', localStorage.getItem('githubUser'));
             
-            // Force update UI immediately
-            const authSection = document.getElementById('github-auth-section');
-            const reposSection = document.getElementById('github-repos-section');
-            
-            if (githubToken && githubUser) {
-                console.log('✅ 로그인 상태 - 레포지토리 화면 표시');
-                if (authSection) authSection.style.display = 'none';
-                if (reposSection) reposSection.style.display = 'block';
-                loadRepositories();
+            if (githubModal) {
+                githubModal.style.display = 'flex';
+                console.log('✅ 모달 표시됨');
             } else {
-                console.log('⚠️ 미로그인 상태 - 로그인 화면 표시');
-                if (authSection) authSection.style.display = 'block';
-                if (reposSection) reposSection.style.display = 'none';
+                console.error('❌ githubModal 요소를 찾을 수 없음');
+            }
+            
+            // Force update UI using the function
+            console.log('🔄 updateGitHubUI() 호출...');
+            updateGitHubUI();
+            
+            // Load repositories if logged in
+            if (githubToken && githubUser) {
+                console.log('📥 레포지토리 로드 시작...');
+                loadRepositories();
             }
         });
+    } else {
+        console.error('❌ GitHub 버튼을 찾을 수 없습니다! (github-btn)');
     }
     
     // GitHub login
