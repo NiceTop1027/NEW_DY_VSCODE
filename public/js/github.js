@@ -69,6 +69,21 @@ export function initGitHub() {
     // Setup clone and push buttons
     setupGitHubCloneButton();
     setupGitHubPushButton();
+    
+    // Setup logout button
+    const logoutBtn = document.getElementById('github-logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => {
+            if (confirm('로그아웃하시겠습니까?\n\n다시 로그인하려면 GitHub 인증이 필요합니다.')) {
+                localStorage.removeItem('githubToken');
+                localStorage.removeItem('githubUser');
+                githubToken = null;
+                githubUser = null;
+                alert('✅ 로그아웃되었습니다.\n\n새 토큰으로 다시 로그인해주세요.');
+                window.location.reload();
+            }
+        });
+    }
 }
 
 function handleGitHubLogin() {
@@ -208,7 +223,10 @@ export function setupGitHubCloneButton() {
                 return;
             }
             
-            if (!githubToken) {
+            // Get token from localStorage
+            const token = localStorage.getItem('githubToken');
+            
+            if (!token) {
                 alert('❌ GitHub 토큰이 없습니다.\n\n다시 로그인해주세요.');
                 return;
             }
@@ -222,8 +240,11 @@ export function setupGitHubCloneButton() {
                 
                 console.log('🚀 isomorphic-git 클론 시작:', {
                     url: repoUrl,
-                    hasToken: !!githubToken,
-                    tokenPrefix: githubToken.substring(0, 7) + '...'
+                    owner: owner,
+                    repo: repo,
+                    hasToken: !!token,
+                    tokenLength: token.length,
+                    tokenPrefix: token.substring(0, 7) + '...'
                 });
                 
                 // Import gitClient
@@ -232,7 +253,7 @@ export function setupGitHubCloneButton() {
                 
                 // Clone using isomorphic-git
                 console.log('📡 클론 요청 전송 중...');
-                await gitClient.clone(repoUrl, githubToken);
+                await gitClient.clone(repoUrl, token);
                 console.log('✓ Repository cloned');
                 
                 // Load files into clientFS
@@ -266,15 +287,16 @@ export function setupGitHubCloneButton() {
                 
                 if (error.message.includes('401')) {
                     errorMsg = 'GitHub 인증 실패 (401)';
-                    helpText = '\n\n💡 해결 방법:\n1. GitHub에서 새 토큰 발급\n2. 토큰 권한에 "repo" 포함 확인\n3. 다시 로그인\n\n토큰 발급: https://github.com/settings/tokens';
+                    helpText = '\n\n💡 해결 방법:\n1. 로그아웃 후 다시 로그인\n2. GitHub에서 새 Personal Access Token 발급\n   - Settings → Developer settings → Personal access tokens\n   - "repo" 권한 필수 체크\n3. 토큰으로 다시 로그인\n\n현재 토큰 길이: ' + token.length + '자';
                 } else if (error.message.includes('404')) {
                     errorMsg = '레포지토리를 찾을 수 없음 (404)';
-                    helpText = '\n\n레포지토리가 존재하는지 확인하세요.';
+                    helpText = '\n\n레포지토리: ' + selectedRepo + '\n레포지토리가 존재하는지 확인하세요.';
                 } else if (error.message.includes('403')) {
                     errorMsg = '접근 권한 없음 (403)';
                     helpText = '\n\n레포지토리가 Private인 경우 토큰에 repo 권한이 필요합니다.';
                 } else {
                     errorMsg = error.message;
+                    helpText = '\n\n토큰 정보:\n- 길이: ' + token.length + '자\n- 시작: ' + token.substring(0, 7) + '...';
                 }
                 
                 alert(`❌ 클론 실패\n\n에러: ${errorMsg}${helpText}`);
