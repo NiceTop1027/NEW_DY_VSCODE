@@ -17,14 +17,22 @@ export function initGitHub() {
     const savedUser = localStorage.getItem('githubUser');
     if (savedToken && savedUser) {
         githubToken = savedToken;
-        githubUser = JSON.parse(savedUser);
-        updateGitHubUI();
+        try {
+            githubUser = JSON.parse(savedUser);
+            console.log('✅ GitHub 인증 정보 로드됨:', githubUser.login);
+        } catch (e) {
+            console.error('GitHub 사용자 정보 파싱 실패:', e);
+            localStorage.removeItem('githubToken');
+            localStorage.removeItem('githubUser');
+        }
     }
     
     // Open GitHub modal
     if (githubBtn) {
         githubBtn.addEventListener('click', () => {
             githubModal.style.display = 'flex';
+            // Update UI when modal opens
+            updateGitHubUI();
             if (githubToken) {
                 loadRepositories();
             }
@@ -52,6 +60,15 @@ export function initGitHub() {
                     // Save to localStorage
                     localStorage.setItem('githubToken', githubToken);
                     localStorage.setItem('githubUser', JSON.stringify(githubUser));
+                    
+                    console.log('✅ GitHub 인증 완료:', githubUser.login);
+                    
+                    // Show success notification
+                    const notification = document.createElement('div');
+                    notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #22c55e; color: white; padding: 12px 20px; border-radius: 6px; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+                    notification.textContent = `✅ GitHub 인증 완료! (${githubUser.login})`;
+                    document.body.appendChild(notification);
+                    setTimeout(() => notification.remove(), 3000);
                     
                     updateGitHubUI();
                     loadRepositories();
