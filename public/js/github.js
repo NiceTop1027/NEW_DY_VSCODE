@@ -48,8 +48,20 @@ export function initGitHub() {
     // Open GitHub modal
     if (githubBtn) {
         console.log('✅ GitHub 버튼 이벤트 리스너 등록');
-        githubBtn.addEventListener('click', () => {
-            console.log('🐙 GitHub 모달 열기 클릭됨!');
+        console.log('   버튼 정보:', {
+            id: githubBtn.id,
+            className: githubBtn.className,
+            visible: githubBtn.offsetParent !== null,
+            disabled: githubBtn.disabled,
+            style: githubBtn.style.cssText
+        });
+        
+        // Test click immediately
+        githubBtn.onclick = (e) => {
+            console.log('🐙 GitHub 버튼 클릭됨! (onclick)');
+            e.preventDefault();
+            e.stopPropagation();
+            
             console.log('   토큰:', !!githubToken);
             console.log('   토큰 값:', githubToken ? githubToken.substring(0, 10) + '...' : 'null');
             console.log('   사용자:', githubUser ? githubUser.login : null);
@@ -58,9 +70,11 @@ export function initGitHub() {
             
             if (githubModal) {
                 githubModal.style.display = 'flex';
+                githubModal.style.zIndex = '10000';
                 console.log('✅ 모달 표시됨');
             } else {
                 console.error('❌ githubModal 요소를 찾을 수 없음');
+                return;
             }
             
             // Force update UI using the function
@@ -72,7 +86,9 @@ export function initGitHub() {
                 console.log('📥 레포지토리 로드 시작...');
                 loadRepositories();
             }
-        });
+        };
+        
+        console.log('✅ onclick 이벤트 핸들러 등록 완료');
     } else {
         console.error('❌ GitHub 버튼을 찾을 수 없습니다! (github-btn)');
     }

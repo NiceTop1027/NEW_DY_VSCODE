@@ -16,6 +16,7 @@
     <title>덕영고등학교 VS Code</title>
     <link rel="stylesheet" href="css/radix-theme.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="css/github-premium.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@vscode/codicons/dist/codicon.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm@5.3.0/css/xterm.css">
     <script src="config.js"></script>
@@ -35,9 +36,10 @@
     <div id="vscode-container">
         <div id="main-container">
             <div id="activity-bar">
-                <!-- Icons will be added in a later task -->
                 <input type="file" id="file-upload-input" style="display: none;" multiple webkitdirectory directory>
-                <button id="github-btn" class="activity-bar-item" title="GitHub">
+                
+                <!-- Activity Bar Icons -->
+                <button id="github-btn" class="activity-bar-item" title="GitHub" data-view="github">
                     <i class="codicon codicon-github"></i>
                 </button>
             </div>
@@ -214,32 +216,73 @@
             </div>
             <iframe id="preview-frame" sandbox="allow-scripts allow-same-origin"></iframe>
         </div>
-        <!-- GitHub Modal -->
+        <!-- GitHub Modal - Premium Design -->
         <div id="github-modal" class="modal" style="display: none;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h2>🐙 GitHub 연동</h2>
+            <div class="modal-content github-modal-premium">
+                <div class="modal-header github-header">
+                    <div class="header-content">
+                        <i class="codicon codicon-github" style="font-size: 24px; margin-right: 12px;"></i>
+                        <h2>GitHub</h2>
+                    </div>
                     <button class="modal-close" onclick="document.getElementById('github-modal').style.display='none'">&times;</button>
                 </div>
-                <div class="modal-body">
-                    <div id="github-auth-section">
-                        <p>GitHub 계정으로 로그인하세요</p>
-                        <button id="github-login-btn" class="btn-primary">GitHub 로그인</button>
+                <div class="modal-body github-body">
+                    <!-- Login Section -->
+                    <div id="github-auth-section" class="github-auth-card">
+                        <div class="auth-icon">
+                            <i class="codicon codicon-github" style="font-size: 48px;"></i>
+                        </div>
+                        <h3>Connect to GitHub</h3>
+                        <p class="auth-description">Sign in with your GitHub account to access your repositories</p>
+                        <button id="github-login-btn" class="btn-github-login">
+                            <i class="codicon codicon-github"></i>
+                            Sign in with GitHub
+                        </button>
+                        <div class="auth-features">
+                            <div class="feature-item">
+                                <i class="codicon codicon-check"></i>
+                                <span>Clone repositories</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="codicon codicon-check"></i>
+                                <span>Push changes</span>
+                            </div>
+                            <div class="feature-item">
+                                <i class="codicon codicon-check"></i>
+                                <span>Manage projects</span>
+                            </div>
+                        </div>
                     </div>
+                    
+                    <!-- Repos Section -->
                     <div id="github-repos-section" style="display: none;">
-                        <!-- 사용자 정보 -->
+                        <!-- User Info Card -->
                         <div class="github-user-info"></div>
                         
-                        <div class="github-section">
-                            <h3>📥 내 레포지토리 (클론하기)</h3>
-                            <div id="github-repos-list"></div>
-                            <button id="github-clone-btn" class="btn-primary">선택한 레포 클론</button>
+                        <!-- Repositories List -->
+                        <div class="github-section-premium">
+                            <div class="section-header">
+                                <i class="codicon codicon-repo"></i>
+                                <h3>Your Repositories</h3>
+                            </div>
+                            <div id="github-repos-list" class="repos-grid"></div>
+                            <button id="github-clone-btn" class="btn-action-primary">
+                                <i class="codicon codicon-cloud-download"></i>
+                                Clone Selected Repository
+                            </button>
                         </div>
                         
-                        <div class="github-section" style="margin-top: 20px;">
-                            <h3>📤 클론한 레포지토리 (푸시하기)</h3>
-                            <div id="cloned-repos-list"></div>
-                            <button id="github-push-btn" class="btn-success">변경사항 푸시</button>
+                        <!-- Cloned Repos -->
+                        <div class="github-section-premium">
+                            <div class="section-header">
+                                <i class="codicon codicon-folder-opened"></i>
+                                <h3>Cloned Repositories</h3>
+                            </div>
+                            <div id="cloned-repos-list" class="cloned-repos-grid"></div>
+                            <button id="github-push-btn" class="btn-action-success">
+                                <i class="codicon codicon-cloud-upload"></i>
+                                Push Changes
+                            </button>
                         </div>
                     </div>
                 </div>
