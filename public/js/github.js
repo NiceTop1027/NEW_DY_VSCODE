@@ -3,7 +3,13 @@ import { githubCloneRepo, githubPush, githubGetRepos } from './api.js';
 
 let githubToken = null;
 let githubUser = null;
-let selectedRepo = null;
+export let selectedRepo = null;
+
+// Setter for selectedRepo
+export function setSelectedRepo(repo) {
+    selectedRepo = repo;
+    console.log('✅ 선택된 레포:', selectedRepo);
+}
 
 export function initGitHub() {
     console.log('🔧 initGitHub() 호출됨');
@@ -194,8 +200,11 @@ export function setupGitHubCloneButton() {
     const githubCloneBtn = document.getElementById('github-clone-btn');
     if (githubCloneBtn) {
         githubCloneBtn.addEventListener('click', async () => {
+            console.log('🔍 Clone 버튼 클릭됨');
+            console.log('   selectedRepo:', selectedRepo);
+            
             if (!selectedRepo) {
-                alert('레포지토리를 선택하세요');
+                alert('레포지토리를 선택하세요\n\n현재 선택된 레포: ' + (selectedRepo || 'null'));
                 return;
             }
             

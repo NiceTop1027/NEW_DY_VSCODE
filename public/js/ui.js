@@ -2768,10 +2768,13 @@ async function loadGitHubSidebarRepos() {
         
         // Add click handlers
         reposList.querySelectorAll('.repo-item').forEach(item => {
-            item.addEventListener('click', () => {
+            item.addEventListener('click', async () => {
                 reposList.querySelectorAll('.repo-item').forEach(i => i.classList.remove('selected'));
                 item.classList.add('selected');
-                selectedRepo = item.dataset.repo;
+                
+                // Import and set selected repo
+                const { setSelectedRepo } = await import('./github.js');
+                setSelectedRepo(item.dataset.repo);
                 
                 // Enable clone button
                 if (cloneBtn) {
@@ -2821,8 +2824,6 @@ function loadClonedRepos() {
         </div>
     `).join('');
 }
-
-let selectedRepo = null;
 
 function renderGitHubView() {
     // Deprecated - use renderGitHubSidebar instead
