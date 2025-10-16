@@ -36,13 +36,21 @@ export function initGitHub() {
             console.log('   토큰:', !!githubToken);
             console.log('   사용자:', githubUser ? githubUser.login : null);
             githubModal.style.display = 'flex';
-            // Update UI when modal opens
-            setTimeout(() => {
-                updateGitHubUI();
-                if (githubToken) {
-                    loadRepositories();
-                }
-            }, 100);
+            
+            // Force update UI immediately
+            const authSection = document.getElementById('github-auth-section');
+            const reposSection = document.getElementById('github-repos-section');
+            
+            if (githubToken && githubUser) {
+                console.log('✅ 로그인 상태 - 레포지토리 화면 표시');
+                if (authSection) authSection.style.display = 'none';
+                if (reposSection) reposSection.style.display = 'block';
+                loadRepositories();
+            } else {
+                console.log('⚠️ 미로그인 상태 - 로그인 화면 표시');
+                if (authSection) authSection.style.display = 'block';
+                if (reposSection) reposSection.style.display = 'none';
+            }
         });
     }
     
