@@ -94,6 +94,9 @@ function handleGitHubLogin() {
     const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=${scope}`;
     
     console.log('🔐 GitHub 로그인 시작...');
+    console.log('   Client ID:', clientId);
+    console.log('   Redirect URI:', redirectUri);
+    console.log('   Auth URL:', authUrl);
     
     // Open popup
     const popup = window.open(authUrl, 'GitHub Login', 'width=600,height=700');
@@ -102,6 +105,32 @@ function handleGitHubLogin() {
         alert('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
         return;
     }
+    
+    // Check for popup errors
+    let errorCheckCount = 0;
+    const errorCheck = setInterval(() => {
+        errorCheckCount++;
+        try {
+            if (popup.closed) {
+                clearInterval(errorCheck);
+                return;
+            }
+            
+            // Try to check popup URL (will fail if cross-origin)
+            const popupUrl = popup.location.href;
+            if (popupUrl.includes('error')) {
+                clearInterval(errorCheck);
+                console.error('❌ GitHub 인증 에러 감지:', popupUrl);
+                alert('GitHub 인증 중 오류가 발생했습니다.\n\nCallback URL이 올바르게 설정되었는지 확인하세요:\n' + redirectUri);
+            }
+        } catch (e) {
+            // Cross-origin error is expected
+        }
+        
+        if (errorCheckCount > 60) {
+            clearInterval(errorCheck);
+        }
+    }, 1000);
     
     // Listen for message from popup (use named function to avoid duplicates)
     const handleGitHubAuth = (event) => {
