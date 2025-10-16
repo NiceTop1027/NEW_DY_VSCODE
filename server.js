@@ -665,6 +665,7 @@ app.get('/api/github/callback', async (req, res) => {
                 <script>
                     console.log('✅ GitHub 인증 성공');
                     console.log('window.opener:', !!window.opener);
+                    console.log('window.opener.closed:', window.opener ? window.opener.closed : 'N/A');
                     
                     const authData = {
                         type: 'github-auth',
@@ -672,16 +673,42 @@ app.get('/api/github/callback', async (req, res) => {
                         user: ${JSON.stringify(userResponse.data)}
                     };
                     
+                    console.log('📤 전송할 데이터:', authData);
+                    
                     if (window.opener && !window.opener.closed) {
-                        console.log('📤 부모 창으로 메시지 전송:', authData);
-                        window.opener.postMessage(authData, '*');
-                        setTimeout(() => {
-                            console.log('🔒 창 닫기');
-                            window.close();
-                        }, 1500);
+                        try {
+                            console.log('📤 부모 창으로 메시지 전송 시도...');
+                            window.opener.postMessage(authData, '*');
+                            console.log('✅ 메시지 전송 완료');
+                            
+                            // Also try to call a function directly if possible
+                            if (typeof window.opener.handleGitHubCallback === 'function') {
+                                console.log('📞 직접 함수 호출 시도...');
+                                window.opener.handleGitHubCallback(authData);
+                            }
+                            
+                            setTimeout(() => {
+                                console.log('🔒 창 닫기');
+                                window.close();
+                            }, 2000);
+                        } catch (e) {
+                            console.error('❌ 메시지 전송 실패:', e);
+                            alert('인증 완료! 이 창을 닫고 메인 창을 새로고침해주세요.');
+                        }
                     } else {
                         console.error('❌ 부모 창을 찾을 수 없습니다');
-                        alert('인증 완료! 이 창을 닫고 메인 창을 새로고침해주세요.');
+                        console.log('수동으로 저장합니다...');
+                        
+                        // Fallback: save to localStorage
+                        try {
+                            localStorage.setItem('githubToken', authData.token);
+                            localStorage.setItem('githubUser', JSON.stringify(authData.user));
+                            console.log('💾 localStorage에 저장 완료');
+                            alert('인증 완료! 이 창을 닫고 메인 창을 새로고침해주세요.');
+                        } catch (e) {
+                            console.error('❌ localStorage 저장 실패:', e);
+                            alert('인증 완료! 이 창을 닫아주세요.');
+                        }
                     }
                 </script>
             </body>

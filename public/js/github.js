@@ -60,9 +60,13 @@ export function initGitHub() {
             
             // Listen for message from popup (use named function to avoid duplicates)
             const handleGitHubAuth = (event) => {
-                console.log('📨 메시지 수신:', event.data);
+                console.log('📨 메시지 수신:', event);
+                console.log('📨 메시지 데이터:', event.data);
+                console.log('📨 메시지 origin:', event.origin);
                 
-                if (event.data.type === 'github-auth') {
+                if (event.data && event.data.type === 'github-auth') {
+                    console.log('✅ github-auth 메시지 확인됨');
+                    
                     githubToken = event.data.token;
                     githubUser = event.data.user;
                     
@@ -81,7 +85,9 @@ export function initGitHub() {
                     setTimeout(() => notification.remove(), 3000);
                     
                     // Update UI immediately
+                    console.log('🔄 UI 업데이트 시작...');
                     updateGitHubUI();
+                    console.log('📥 레포지토리 로드 시작...');
                     loadRepositories();
                     
                     // Close popup if still open
@@ -94,7 +100,12 @@ export function initGitHub() {
                 }
             };
             
+            // Global callback function for direct call
+            window.handleGitHubCallback = handleGitHubAuth;
+            
             window.addEventListener('message', handleGitHubAuth);
+            
+            console.log('👂 메시지 리스너 등록 완료');
             
             // Check if popup was closed without auth
             const checkPopup = setInterval(() => {
