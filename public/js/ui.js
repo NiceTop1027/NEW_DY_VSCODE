@@ -2714,7 +2714,23 @@ function renderGitHubSidebar() {
                     <p class="user-name">${user.login}</p>
                     <p class="user-status">Connected</p>
                 </div>
+                <button id="github-logout-btn" class="logout-btn" title="로그아웃">
+                    <i class="codicon codicon-sign-out"></i>
+                </button>
             `;
+            
+            // Setup logout button event
+            const logoutBtn = document.getElementById('github-logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', () => {
+                    if (confirm('로그아웃하시겠습니까?\n\n다시 로그인하려면 GitHub 인증이 필요합니다.')) {
+                        localStorage.removeItem('githubToken');
+                        localStorage.removeItem('githubUser');
+                        alert('✅ 로그아웃되었습니다.\n\n새 토큰으로 다시 로그인해주세요.');
+                        window.location.reload();
+                    }
+                });
+            }
         }
         
         // Load repositories
