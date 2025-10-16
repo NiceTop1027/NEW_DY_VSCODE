@@ -1,12 +1,90 @@
 /* Radix UI Premium Theme */
-@import '@radix-ui/colors/blue-dark.css';
-@import '@radix-ui/colors/violet-dark.css';
-@import '@radix-ui/colors/slate-dark.css';
-@import '@radix-ui/colors/green-dark.css';
-@import '@radix-ui/colors/red-dark.css';
-@import '@radix-ui/colors/amber-dark.css';
 
 :root {
+    /* Slate Colors (Dark) */
+    --slate-1: #111113;
+    --slate-2: #18191b;
+    --slate-3: #212225;
+    --slate-4: #272a2d;
+    --slate-5: #2e3135;
+    --slate-6: #363a3f;
+    --slate-7: #43484e;
+    --slate-8: #5a6169;
+    --slate-9: #696e77;
+    --slate-10: #777b84;
+    --slate-11: #b0b4ba;
+    --slate-12: #edeef0;
+    
+    /* Blue Colors (Dark) */
+    --blue-1: #0d1520;
+    --blue-2: #111927;
+    --blue-3: #0d2847;
+    --blue-4: #003362;
+    --blue-5: #004074;
+    --blue-6: #104d87;
+    --blue-7: #205d9e;
+    --blue-8: #2870bd;
+    --blue-9: #0090ff;
+    --blue-10: #3b9eff;
+    --blue-11: #70b8ff;
+    --blue-12: #c2e6ff;
+    
+    /* Violet Colors (Dark) */
+    --violet-1: #14121f;
+    --violet-2: #1b1525;
+    --violet-3: #291f43;
+    --violet-4: #33255b;
+    --violet-5: #3c2e69;
+    --violet-6: #473876;
+    --violet-7: #56468b;
+    --violet-8: #6958ad;
+    --violet-9: #6e56cf;
+    --violet-10: #7d66d9;
+    --violet-11: #baa7ff;
+    --violet-12: #e2ddfe;
+    
+    /* Green Colors (Dark) */
+    --green-1: #0e1512;
+    --green-2: #121b17;
+    --green-3: #132d21;
+    --green-4: #113b29;
+    --green-5: #174933;
+    --green-6: #20573e;
+    --green-7: #28684a;
+    --green-8: #2f7c57;
+    --green-9: #30a46c;
+    --green-10: #33b074;
+    --green-11: #3dd68c;
+    --green-12: #b1f1cb;
+    
+    /* Red Colors (Dark) */
+    --red-1: #1f1315;
+    --red-2: #291415;
+    --red-3: #3c181a;
+    --red-4: #481a1d;
+    --red-5: #541b1f;
+    --red-6: #671e22;
+    --red-7: #822025;
+    --red-8: #aa2429;
+    --red-9: #e5484d;
+    --red-10: #f2555a;
+    --red-11: #ff6369;
+    --red-12: #feecee;
+    
+    /* Amber Colors (Dark) */
+    --amber-1: #1f1300;
+    --amber-2: #271700;
+    --amber-3: #341c00;
+    --amber-4: #3f2200;
+    --amber-5: #4a2900;
+    --amber-6: #573300;
+    --amber-7: #693f05;
+    --amber-8: #824e00;
+    --amber-9: #ffb224;
+    --amber-10: #ffcb47;
+    --amber-11: #f1a10d;
+    --amber-12: #fef3dd;
+    
     /* Radix Colors */
     --color-bg-primary: var(--slate-1);
     --color-bg-secondary: var(--slate-2);
