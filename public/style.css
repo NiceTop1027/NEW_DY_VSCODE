@@ -613,6 +613,33 @@ body {
     height: 100%;
 }
 
+.activity-bar-item {
+    width: 100%;
+    padding: 12px 0;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.activity-bar-item:hover {
+    background: rgba(31, 111, 235, 0.1);
+    color: var(--accent-color);
+}
+
+.activity-bar-item:active {
+    background: rgba(31, 111, 235, 0.2);
+}
+
+.activity-bar-item i {
+    font-size: 24px;
+}
+
 .activity-icon {
     width: 100%;
     padding: 10px 0;
