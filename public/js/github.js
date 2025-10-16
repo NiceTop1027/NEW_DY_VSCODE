@@ -502,13 +502,41 @@ function updateGitHubUI() {
     const authSection = document.getElementById('github-auth-section');
     const reposSection = document.getElementById('github-repos-section');
     
+    console.log('🔄 updateGitHubUI 호출:', {
+        hasToken: !!githubToken,
+        hasUser: !!githubUser,
+        authSection: !!authSection,
+        reposSection: !!reposSection
+    });
+    
+    if (!authSection || !reposSection) {
+        console.error('❌ GitHub UI 요소를 찾을 수 없습니다');
+        return;
+    }
+    
     if (githubToken && githubUser) {
+        console.log('✅ GitHub 로그인 상태 - UI 업데이트');
         authSection.style.display = 'none';
         reposSection.style.display = 'block';
+        
+        // 사용자 정보 표시
+        const userInfo = reposSection.querySelector('.github-user-info');
+        if (userInfo) {
+            userInfo.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(34, 197, 94, 0.1); border-radius: 6px; margin-bottom: 15px;">
+                    ${githubUser.avatar_url ? `<img src="${githubUser.avatar_url}" style="width: 32px; height: 32px; border-radius: 50%;" />` : ''}
+                    <div>
+                        <strong style="color: #22c55e;">${githubUser.login}</strong>
+                        <div style="font-size: 11px; color: #888;">GitHub 연동됨</div>
+                    </div>
+                </div>
+            `;
+        }
         
         // 클론한 레포지토리 목록 표시
         displayClonedRepos();
     } else {
+        console.log('⚠️ GitHub 미로그인 상태 - 로그인 UI 표시');
         authSection.style.display = 'block';
         reposSection.style.display = 'none';
     }
