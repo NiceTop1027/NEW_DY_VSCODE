@@ -228,25 +228,35 @@ export function initGitHub() {
                 return;
             }
             
+            if (!githubToken) {
+                alert('❌ GitHub 토큰이 없습니다.\n\n다시 로그인해주세요.');
+                return;
+            }
+            
             try {
                 githubCloneBtn.disabled = true;
-                githubCloneBtn.textContent = '클론 중...';
+                githubCloneBtn.innerHTML = '<i class="codicon codicon-loading codicon-modifier-spin"></i> 클론 중...';
                 
                 const [owner, repo] = selectedRepo.split('/');
                 const repoUrl = `https://github.com/${owner}/${repo}`;
                 
-                console.log('🚀 isomorphic-git 클론 시작:', repoUrl);
+                console.log('🚀 isomorphic-git 클론 시작:', {
+                    url: repoUrl,
+                    hasToken: !!githubToken,
+                    tokenPrefix: githubToken.substring(0, 7) + '...'
+                });
                 
                 // Import gitClient
                 const { default: gitClient } = await import('./gitClient.js');
                 const { clientFS } = await import('./fileSystem.js');
                 
                 // Clone using isomorphic-git
+                console.log('📡 클론 요청 전송 중...');
                 await gitClient.clone(repoUrl, githubToken);
                 console.log('✓ Repository cloned');
                 
                 // Load files into clientFS
-                githubCloneBtn.textContent = '파일 로드 중...';
+                githubCloneBtn.innerHTML = '<i class="codicon codicon-loading codicon-modifier-spin"></i> 파일 로드 중...';
                 const files = await loadFilesFromGit(gitClient, clientFS);
                 console.log(`✓ Loaded ${files.length} files`);
                 
@@ -270,10 +280,27 @@ export function initGitHub() {
                 window.location.reload();
             } catch (error) {
                 console.error('❌ Clone error:', error);
-                alert(`❌ 클론 실패\n\n에러: ${error.message}\n\n💡 팁: 토큰 권한을 확인하세요.`);
+                
+                let errorMsg = '알 수 없는 오류';
+                let helpText = '';
+                
+                if (error.message.includes('401')) {
+                    errorMsg = 'GitHub 인증 실패 (401)';
+                    helpText = '\n\n💡 해결 방법:\n1. GitHub에서 새 토큰 발급\n2. 토큰 권한에 "repo" 포함 확인\n3. 다시 로그인\n\n토큰 발급: https://github.com/settings/tokens';
+                } else if (error.message.includes('404')) {
+                    errorMsg = '레포지토리를 찾을 수 없음 (404)';
+                    helpText = '\n\n레포지토리가 존재하는지 확인하세요.';
+                } else if (error.message.includes('403')) {
+                    errorMsg = '접근 권한 없음 (403)';
+                    helpText = '\n\n레포지토리가 Private인 경우 토큰에 repo 권한이 필요합니다.';
+                } else {
+                    errorMsg = error.message;
+                }
+                
+                alert(`❌ 클론 실패\n\n에러: ${errorMsg}${helpText}`);
             } finally {
                 githubCloneBtn.disabled = false;
-                githubCloneBtn.textContent = '선택한 레포 클론';
+                githubCloneBtn.innerHTML = '<i class="codicon codicon-cloud-download"></i> Clone Selected Repository';
             }
         });
     }
