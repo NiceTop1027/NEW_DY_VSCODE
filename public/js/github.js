@@ -24,18 +24,25 @@ export function initGitHub() {
             console.error('GitHub 사용자 정보 파싱 실패:', e);
             localStorage.removeItem('githubToken');
             localStorage.removeItem('githubUser');
+            githubToken = null;
+            githubUser = null;
         }
     }
     
     // Open GitHub modal
     if (githubBtn) {
         githubBtn.addEventListener('click', () => {
+            console.log('🐙 GitHub 모달 열기');
+            console.log('   토큰:', !!githubToken);
+            console.log('   사용자:', githubUser ? githubUser.login : null);
             githubModal.style.display = 'flex';
             // Update UI when modal opens
-            updateGitHubUI();
-            if (githubToken) {
-                loadRepositories();
-            }
+            setTimeout(() => {
+                updateGitHubUI();
+                if (githubToken) {
+                    loadRepositories();
+                }
+            }, 100);
         });
     }
     
@@ -545,18 +552,23 @@ function updateGitHubUI() {
     console.log('🔄 updateGitHubUI 호출:', {
         hasToken: !!githubToken,
         hasUser: !!githubUser,
+        userLogin: githubUser ? githubUser.login : null,
         authSection: !!authSection,
         reposSection: !!reposSection
     });
     
     if (!authSection || !reposSection) {
         console.error('❌ GitHub UI 요소를 찾을 수 없습니다');
+        console.error('   authSection:', authSection);
+        console.error('   reposSection:', reposSection);
         return;
     }
     
     if (githubToken && githubUser) {
         console.log('✅ GitHub 로그인 상태 - UI 업데이트');
+        console.log('   authSection 숨기기');
         authSection.style.display = 'none';
+        console.log('   reposSection 표시');
         reposSection.style.display = 'block';
         
         // 사용자 정보 표시
