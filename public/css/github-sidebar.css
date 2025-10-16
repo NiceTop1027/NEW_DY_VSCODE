@@ -125,6 +125,25 @@
     color: var(--accent-color);
 }
 
+.section-title span {
+    flex: 1;
+}
+
+.section-title .icon-btn {
+    padding: 4px;
+    background: none;
+    border: none;
+    color: var(--text-color-light);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.15s ease;
+}
+
+.section-title .icon-btn:hover {
+    background: var(--hover-background);
+    color: var(--accent-color);
+}
+
 /* Repos List */
 .repos-list {
     padding: 4px 0;

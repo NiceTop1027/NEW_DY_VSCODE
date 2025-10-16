@@ -59,6 +59,10 @@ export function initGitHub() {
     if (githubLoginBtn) {
         githubLoginBtn.addEventListener('click', handleGitHubLogin);
     }
+    
+    // Setup clone and push buttons
+    setupGitHubCloneButton();
+    setupGitHubPushButton();
 }
 
 function handleGitHubLogin() {
@@ -299,8 +303,11 @@ export function setupGitHubCloneButton() {
         await walkDir();
         return files;
     }
-    
-    // Push changes - Open new modal
+}
+
+// Setup Push Button
+export function setupGitHubPushButton() {
+    const githubPushBtn = document.getElementById('github-push-btn');
     if (githubPushBtn) {
         githubPushBtn.addEventListener('click', () => {
             openPushModal();

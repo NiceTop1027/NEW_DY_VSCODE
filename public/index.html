@@ -80,8 +80,17 @@
                                     <div class="section-title">
                                         <i class="codicon codicon-repo"></i>
                                         <span>Your Repositories</span>
+                                        <button id="refresh-repos-btn" class="icon-btn" title="새로고침">
+                                            <i class="codicon codicon-refresh"></i>
+                                        </button>
                                     </div>
                                     <div id="github-sidebar-repos-list" class="repos-list"></div>
+                                    <div class="action-btn-group">
+                                        <button id="github-clone-btn" class="action-btn" disabled>
+                                            <i class="codicon codicon-cloud-download"></i>
+                                            Clone Selected
+                                        </button>
+                                    </div>
                                 </div>
                                 
                                 <!-- Cloned Repos -->
@@ -91,6 +100,12 @@
                                         <span>Cloned Repositories</span>
                                     </div>
                                     <div id="github-sidebar-cloned-list" class="cloned-list"></div>
+                                    <div class="action-btn-group">
+                                        <button id="github-push-btn" class="action-btn success">
+                                            <i class="codicon codicon-cloud-upload"></i>
+                                            Push Changes
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </div>

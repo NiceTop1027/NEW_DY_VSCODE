@@ -2764,14 +2764,29 @@ async function loadGitHubSidebarRepos() {
             </div>
         `).join('');
         
+        const cloneBtn = document.getElementById('github-clone-btn');
+        
         // Add click handlers
         reposList.querySelectorAll('.repo-item').forEach(item => {
             item.addEventListener('click', () => {
                 reposList.querySelectorAll('.repo-item').forEach(i => i.classList.remove('selected'));
                 item.classList.add('selected');
                 selectedRepo = item.dataset.repo;
+                
+                // Enable clone button
+                if (cloneBtn) {
+                    cloneBtn.disabled = false;
+                }
             });
         });
+        
+        // Refresh button
+        const refreshBtn = document.getElementById('refresh-repos-btn');
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => {
+                loadGitHubSidebarRepos();
+            });
+        }
     } catch (error) {
         console.error('Failed to load repos:', error);
         reposList.innerHTML = '<div class="empty-state"><i class="codicon codicon-error"></i><p>Failed to load repositories</p></div>';
