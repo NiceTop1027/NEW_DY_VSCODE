@@ -87,7 +87,7 @@ export function initGitHub() {
 }
 
 function handleGitHubLogin() {
-    const clientId = 'Ov23liOXbJBdYDDXCwzF'; // GitHub OAuth App Client ID
+    const clientId = 'Ov23li22YDn5ymGp9viB'; // GitHub OAuth App Client ID
     const redirectUri = `${window.location.origin}/api/github/callback`;
     const scope = 'repo,user';
     
