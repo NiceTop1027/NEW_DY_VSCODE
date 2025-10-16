@@ -641,19 +641,45 @@ body {
     font-size: 24px;
 }
 
-/* GitHub Button Special Style */
-#github-btn {
-    border-bottom: 1px solid rgba(48, 54, 61, 0.5);
-    margin-bottom: 8px;
+/* GitHub Icon Special Style */
+.github-icon {
+    position: relative;
 }
 
-#github-btn:hover {
-    background: linear-gradient(135deg, rgba(31, 111, 235, 0.15) 0%, rgba(9, 105, 218, 0.15) 100%);
-    border-left-color: #1f6feb;
+.github-icon i {
+    font-size: 26px !important;
 }
 
-#github-btn i {
-    font-size: 26px;
+.github-icon::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 10%;
+    right: 10%;
+    height: 1px;
+    background: rgba(48, 54, 61, 0.5);
+}
+
+.github-icon:hover {
+    background: linear-gradient(135deg, rgba(31, 111, 235, 0.15) 0%, rgba(9, 105, 218, 0.15) 100%) !important;
+}
+
+.github-icon:hover::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: #1f6feb;
+}
+
+/* Activity Bar Separator */
+.activity-separator {
+    width: 32px;
+    height: 1px;
+    background: rgba(48, 54, 61, 0.5);
+    margin: 8px auto;
 }
 
 .activity-icon {

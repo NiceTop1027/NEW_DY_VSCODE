@@ -249,19 +249,38 @@ export function initUI() {
     initEditor(document.getElementById('editor'), tabsContainer, openFiles); // Initialize editor
     initAIChat(); // Initialize AI Chat Panel
 
-    // Activity Bar Icons (GitHub 버튼은 HTML에 직접 정의됨)
+    // Activity Bar Icons (효과적인 순서: 자주 사용하는 기능 우선)
     const activityIcons = [
-        { name: '덕영고등학교', icon: 'home', action: 'school', isSchool: true },
-        { name: 'AI Assistant', icon: 'sparkle', action: 'ai', isAI: true },
+        // 1. GitHub (맨 위, 가장 중요)
+        { name: 'GitHub', icon: 'github', action: 'github', isGitHub: true },
+        
+        // 2. 파일 관리 (가장 자주 사용)
         { name: 'Explorer', icon: 'files', action: 'explorer' },
-        { name: 'Source Control', icon: 'source-control', action: 'source-control' },
         { name: 'Search', icon: 'search', action: 'search' },
+        
+        // 3. Git 관련
+        { name: 'Source Control', icon: 'source-control', action: 'source-control' },
+        
+        // 4. 개발 도구
         { name: 'Run and Debug', icon: 'debug-alt', action: 'debug' },
         { name: 'Extensions', icon: 'extensions', action: 'extensions' },
-        { name: 'Upload Folder', icon: 'folder-opened', action: 'upload' }
+        
+        // 5. AI 도구 (특별 기능)
+        { name: 'AI Assistant', icon: 'sparkle', action: 'ai', isAI: true },
+        
+        // 6. 기타 (맨 아래)
+        { name: 'Upload Folder', icon: 'folder-opened', action: 'upload' },
+        { name: '덕영고등학교', icon: 'home', action: 'school', isSchool: true }
     ];
 
-    activityIcons.forEach(({name, icon, action, isSchool, isAI}) => {
+    activityIcons.forEach(({name, icon, action, isSchool, isAI, isGitHub}, index) => {
+        // 그룹 구분선 추가
+        if (index === 1 || index === 3 || index === 6 || index === 7) {
+            const separator = document.createElement('div');
+            separator.className = 'activity-separator';
+            activityBar.appendChild(separator);
+        }
+        
         const iconEl = document.createElement('div');
         iconEl.className = 'activity-icon';
         if (isSchool) {
@@ -269,6 +288,10 @@ export function initUI() {
         }
         if (isAI) {
             iconEl.classList.add('ai-icon');
+        }
+        if (isGitHub) {
+            iconEl.classList.add('github-icon');
+            iconEl.id = 'github-btn';
         }
         iconEl.title = name;
         iconEl.dataset.action = action;
@@ -325,10 +348,33 @@ export function initUI() {
                     renderSourceControlView();
                     break;
                 case 'github':
-                    githubView.style.display = 'block';
-                    currentView = 'github';
-                    renderGitHubView();
-                    break;
+                    // Open GitHub modal and update UI
+                    const githubModal = document.getElementById('github-modal');
+                    if (githubModal) {
+                        githubModal.style.display = 'flex';
+                        
+                        // Update GitHub UI (check login status)
+                        import('./github.js').then(module => {
+                            // GitHub 모듈이 로드되면 UI 업데이트
+                            setTimeout(() => {
+                                const authSection = document.getElementById('github-auth-section');
+                                const reposSection = document.getElementById('github-repos-section');
+                                const hasToken = !!localStorage.getItem('githubToken');
+                                const hasUser = !!localStorage.getItem('githubUser');
+                                
+                                if (authSection && reposSection) {
+                                    if (hasToken && hasUser) {
+                                        authSection.style.display = 'none';
+                                        reposSection.style.display = 'block';
+                                    } else {
+                                        authSection.style.display = 'block';
+                                        reposSection.style.display = 'none';
+                                    }
+                                }
+                            }, 100);
+                        });
+                    }
+                    return;
                 case 'search':
                     // For now, just show explorer and focus search
                     fileExplorerView.style.display = 'block';
