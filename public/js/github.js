@@ -114,6 +114,11 @@ export function initGitHub() {
                     
                     console.log('✅ GitHub 인증 완료:', githubUser.login);
                     console.log('💾 localStorage 저장 완료');
+                    console.log('📊 현재 상태:', {
+                        token: !!githubToken,
+                        user: !!githubUser,
+                        userLogin: githubUser?.login
+                    });
                     
                     // Show success notification
                     const notification = document.createElement('div');
@@ -122,11 +127,54 @@ export function initGitHub() {
                     document.body.appendChild(notification);
                     setTimeout(() => notification.remove(), 3000);
                     
-                    // Update UI immediately
-                    console.log('🔄 UI 업데이트 시작...');
-                    updateGitHubUI();
-                    console.log('📥 레포지토리 로드 시작...');
-                    loadRepositories();
+                    // Force UI update with delay to ensure DOM is ready
+                    console.log('🔄 UI 강제 업데이트 시작...');
+                    setTimeout(() => {
+                        const authSection = document.getElementById('github-auth-section');
+                        const reposSection = document.getElementById('github-repos-section');
+                        
+                        console.log('🔍 UI 요소 확인:', {
+                            authSection: !!authSection,
+                            reposSection: !!reposSection,
+                            authDisplay: authSection?.style.display,
+                            reposDisplay: reposSection?.style.display
+                        });
+                        
+                        if (authSection && reposSection) {
+                            // Force hide auth section
+                            authSection.style.display = 'none';
+                            authSection.style.visibility = 'hidden';
+                            
+                            // Force show repos section
+                            reposSection.style.display = 'block';
+                            reposSection.style.visibility = 'visible';
+                            
+                            console.log('✅ UI 강제 업데이트 완료');
+                            console.log('   authSection.display:', authSection.style.display);
+                            console.log('   reposSection.display:', reposSection.style.display);
+                            
+                            // Update user info
+                            const userInfo = reposSection.querySelector('.github-user-info');
+                            if (userInfo) {
+                                userInfo.innerHTML = `
+                                    <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(34, 197, 94, 0.1); border-radius: 6px; margin-bottom: 15px;">
+                                        ${githubUser.avatar_url ? `<img src="${githubUser.avatar_url}" style="width: 32px; height: 32px; border-radius: 50%;" />` : ''}
+                                        <div>
+                                            <strong style="color: #22c55e;">${githubUser.login}</strong>
+                                            <div style="font-size: 11px; color: #888;">GitHub 연동됨</div>
+                                        </div>
+                                    </div>
+                                `;
+                                console.log('✅ 사용자 정보 표시 완료');
+                            }
+                            
+                            // Load repositories
+                            console.log('📥 레포지토리 로드 시작...');
+                            loadRepositories();
+                        } else {
+                            console.error('❌ UI 요소를 찾을 수 없음');
+                        }
+                    }, 100);
                     
                     // Close popup if still open
                     if (popup && !popup.closed) {
