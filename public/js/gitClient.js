@@ -18,7 +18,14 @@ class GitClient {
     // Clone repository
     async clone(url, token = null) {
         try {
-            const headers = token ? { Authorization: `Bearer ${token}` } : {};
+            console.log('🔧 GitClient.clone() 호출됨');
+            console.log('   URL:', url);
+            console.log('   Token:', token ? token.substring(0, 7) + '...' : 'null');
+            
+            const onAuth = token ? () => ({
+                username: token,
+                password: 'x-oauth-basic'
+            }) : undefined;
             
             await git.clone({
                 fs: this.fs,
@@ -28,7 +35,7 @@ class GitClient {
                 corsProxy: this.corsProxy,
                 singleBranch: true,
                 depth: 1,
-                headers,
+                onAuth,
                 onProgress: (progress) => {
                     console.log(`Clone progress: ${progress.phase} ${progress.loaded}/${progress.total}`);
                 }
@@ -75,6 +82,11 @@ class GitClient {
     // Push changes
     async push(token, remote = 'origin', branch = 'main') {
         try {
+            const onAuth = () => ({
+                username: token,
+                password: 'x-oauth-basic'
+            });
+            
             const result = await git.push({
                 fs: this.fs,
                 http,
@@ -82,9 +94,7 @@ class GitClient {
                 remote,
                 ref: branch,
                 corsProxy: this.corsProxy,
-                headers: {
-                    Authorization: `Bearer ${token}`
-                },
+                onAuth,
                 onProgress: (progress) => {
                     console.log(`Push progress: ${progress.phase} ${progress.loaded}/${progress.total}`);
                 }
@@ -99,15 +109,18 @@ class GitClient {
     // Pull changes
     async pull(token, remote = 'origin', branch = 'main') {
         try {
+            const onAuth = () => ({
+                username: token,
+                password: 'x-oauth-basic'
+            });
+            
             await git.pull({
                 fs: this.fs,
                 http,
                 dir: this.dir,
                 ref: branch,
                 corsProxy: this.corsProxy,
-                headers: {
-                    Authorization: `Bearer ${token}`
-                },
+                onAuth,
                 author: { name: 'User', email: 'user@example.com' }
             });
             return { success: true };
