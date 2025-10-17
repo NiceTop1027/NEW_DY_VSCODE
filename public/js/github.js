@@ -1,5 +1,6 @@
 // GitHub Integration
 import { githubCloneRepo, githubPush, githubGetRepos } from './api.js';
+import { loadClonedRepos } from './ui.js';
 
 let githubToken = null;
 let githubUser = null;
@@ -350,10 +351,29 @@ export function setupGitHubCloneButton() {
                     localStorage.setItem('clonedRepos', JSON.stringify(clonedRepos));
                 }
                 
-                alert(`✅ ${selectedRepo} 클론 완료!\n\n파일 수: ${files.length}개\n브라우저에서 직접 Git 작업이 가능합니다!`);
+                // Show success notification
+                const notification = document.createElement('div');
+                notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #22c55e; color: white; padding: 16px 24px; border-radius: 8px; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-size: 14px;';
+                notification.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <i class="codicon codicon-check" style="font-size: 20px;"></i>
+                        <div>
+                            <strong>${selectedRepo}</strong> 클론 완료!<br>
+                            <span style="opacity: 0.9;">파일 수: ${files.length}개</span>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 4000);
                 
-                // Refresh UI to show cloned repo
-                window.location.reload();
+                // Update cloned repos list in sidebar
+                loadClonedRepos();
+                
+                // Switch to Explorer view to show files
+                const explorerIcon = document.querySelector('.activity-icon[data-action="explorer"]');
+                if (explorerIcon) {
+                    explorerIcon.click();
+                }
             } catch (error) {
                 console.error('❌ Clone error:', error);
                 

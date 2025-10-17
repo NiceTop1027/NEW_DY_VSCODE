@@ -2812,7 +2812,7 @@ async function loadGitHubSidebarRepos() {
     }
 }
 
-function loadClonedRepos() {
+export function loadClonedRepos() {
     const clonedList = document.getElementById('github-sidebar-cloned-list');
     if (!clonedList) return;
     
