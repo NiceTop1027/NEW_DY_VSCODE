@@ -262,15 +262,68 @@ export function setupGitHubCloneButton() {
             
             try {
                 githubCloneBtn.disabled = true;
-                githubCloneBtn.innerHTML = '<i class="codicon codicon-loading codicon-modifier-spin"></i> 클론 중...';
+                githubCloneBtn.innerHTML = '<i class="codicon codicon-loading codicon-modifier-spin"></i> 토큰 확인 중...';
+                
+                // Test token validity first
+                console.log('🔍 토큰 유효성 검사 중...');
+                const testResponse = await fetch('https://api.github.com/user', {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (!testResponse.ok) {
+                    const errorText = await testResponse.text();
+                    console.error('❌ 토큰 검증 실패:', testResponse.status, errorText);
+                    
+                    if (testResponse.status === 401) {
+                        alert('❌ GitHub 토큰이 유효하지 않습니다.\n\n로그아웃 후 다시 로그인해주세요.\n\n토큰 상태: ' + testResponse.status + ' ' + testResponse.statusText);
+                        return;
+                    }
+                }
+                
+                const userData = await testResponse.json();
+                console.log('✅ 토큰 유효 확인:', userData.login);
                 
                 const [owner, repo] = selectedRepo.split('/');
                 const repoUrl = `https://github.com/${owner}/${repo}`;
+                
+                // Check repository access
+                githubCloneBtn.innerHTML = '<i class="codicon codicon-loading codicon-modifier-spin"></i> 레포 접근 확인 중...';
+                console.log('🔍 레포지토리 접근 권한 확인 중...');
+                
+                const repoResponse = await fetch(`https://api.github.com/repos/${selectedRepo}`, {
+                    headers: {
+                        'Authorization': `token ${token}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                
+                if (!repoResponse.ok) {
+                    const errorText = await repoResponse.text();
+                    console.error('❌ 레포 접근 실패:', repoResponse.status, errorText);
+                    
+                    if (repoResponse.status === 404) {
+                        alert('❌ 레포지토리를 찾을 수 없거나 접근 권한이 없습니다.\n\n레포: ' + selectedRepo + '\n\nPrivate 레포의 경우 토큰에 "repo" 권한이 필요합니다.');
+                        return;
+                    } else if (repoResponse.status === 401) {
+                        alert('❌ 레포지토리 접근 권한이 없습니다.\n\n토큰에 "repo" 권한이 있는지 확인하세요.');
+                        return;
+                    }
+                }
+                
+                const repoData = await repoResponse.json();
+                console.log('✅ 레포 접근 확인:', repoData.full_name, '(Private:', repoData.private + ')');
+                
+                githubCloneBtn.innerHTML = '<i class="codicon codicon-loading codicon-modifier-spin"></i> 클론 중...';
                 
                 console.log('🚀 isomorphic-git 클론 시작:', {
                     url: repoUrl,
                     owner: owner,
                     repo: repo,
+                    user: userData.login,
+                    isPrivate: repoData.private,
                     hasToken: !!token,
                     tokenLength: token.length,
                     tokenPrefix: token.substring(0, 7) + '...'
