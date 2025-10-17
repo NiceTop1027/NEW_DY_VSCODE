@@ -14,15 +14,9 @@ export function setSelectedRepo(repo) {
 export function initGitHub() {
     console.log('🔧 initGitHub() 호출됨');
     
-    const githubBtn = document.getElementById('github-btn');
-    const githubModal = document.getElementById('github-modal');
     const githubLoginBtn = document.getElementById('github-login-btn');
-    const githubCloneBtn = document.getElementById('github-clone-btn');
-    const githubPushBtn = document.getElementById('github-push-btn');
     
     console.log('🔍 GitHub 버튼 요소 확인:', {
-        githubBtn: !!githubBtn,
-        githubModal: !!githubModal,
         githubLoginBtn: !!githubLoginBtn
     });
     
@@ -357,9 +351,8 @@ export function setupGitHubCloneButton() {
                 }
                 
                 alert(`✅ ${selectedRepo} 클론 완료!\n\n파일 수: ${files.length}개\n브라우저에서 직접 Git 작업이 가능합니다!`);
-                githubModal.style.display = 'none';
                 
-                // Refresh UI
+                // Refresh UI to show cloned repo
                 window.location.reload();
             } catch (error) {
                 console.error('❌ Clone error:', error);
