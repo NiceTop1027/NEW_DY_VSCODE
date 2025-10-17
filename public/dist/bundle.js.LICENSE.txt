@@ -1,16 +1,4 @@
 /*!
-
-JSZip v3.10.1 - A JavaScript class for generating and reading zip files
-<http://stuartk.com/jszip>
-
-(c) 2009-2016 Stuart Knightley <stuart [at] stuartk.com>
-Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/jszip/main/LICENSE.markdown.
-
-JSZip uses the library pako released under the MIT license :
-https://github.com/nodeca/pako/blob/main/LICENSE
-*/
-
-/*!
  * GSAP 3.13.0
  * https://gsap.com
  *
@@ -18,6 +6,13 @@ https://github.com/nodeca/pako/blob/main/LICENSE
  * Subject to the terms at https://gsap.com/standard-license
  * @author: Jack Doyle, jack@greensock.com
 */
+
+/*!
+ * The buffer module from node.js, for the browser.
+ *
+ * @author   Feross Aboukhadijeh <https://feross.org>
+ * @license  MIT
+ */
 
 /*!
  * Toastify js 1.12.0
@@ -28,6 +23,8 @@ https://github.com/nodeca/pako/blob/main/LICENSE
  */
 
 /*! @license DOMPurify 3.1.7 | (c) Cure53 and other contributors | Released under the Apache license 2.0 and Mozilla Public License 2.0 | github.com/cure53/DOMPurify/blob/3.1.7/LICENSE */
+
+/*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 
 /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/babel/babel/blob/main/packages/babel-helpers/LICENSE */
 

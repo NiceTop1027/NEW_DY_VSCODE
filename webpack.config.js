@@ -35,10 +35,15 @@ module.exports = {
       "path": false,
       "crypto": false,
       "stream": false,
-      "buffer": require.resolve('buffer/')
+      "buffer": require.resolve('buffer/'),
+      "process": require.resolve('process/browser.js')
     }
   },
   plugins: [
+    new webpack.ProvidePlugin({
+      Buffer: ['buffer', 'Buffer'],
+      process: 'process/browser.js',
+    }),
     new MonacoWebpackPlugin({
       languages: [
         'javascript', 'typescript', 'html', 'css', 'json', 'python', 'markdown',
