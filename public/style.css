@@ -2421,7 +2421,7 @@ body {
 }
 
 #output-input-line {
-    display: flex;
+    display: flex !important;
     align-items: center;
     gap: 8px;
     padding: 8px 12px;
@@ -2429,6 +2429,8 @@ body {
     background: linear-gradient(90deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%);
     position: sticky;
     bottom: 0;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 .output-prompt {

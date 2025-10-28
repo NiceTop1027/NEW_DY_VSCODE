@@ -1628,22 +1628,51 @@ app.ws('/api/execute', (ws, req) => {
                     console.log('Auto-fixed C code for interactive I/O');
                     
                     const outputFile = tempFile.replace(/\.c$/, '.out');
-                    // Compile first
-                    const compileProcess = spawn('gcc', [tempFile, '-o', outputFile]);
-                    
+                    // Compile first with standard library includes
+                    const compileProcess = spawn('gcc', [
+                        tempFile,
+                        '-o',
+                        outputFile,
+                        '-lm',  // Link math library
+                        '-std=c11',  // Use C11 standard
+                        '-Wall'  // Enable all warnings
+                    ]);
+
                     await new Promise((resolve, reject) => {
                         let compileError = '';
+                        let compileOutput = '';
+
+                        compileProcess.stdout.on('data', (data) => {
+                            compileOutput += data.toString();
+                        });
+
                         compileProcess.stderr.on('data', (data) => {
                             compileError += data.toString();
                         });
+
                         compileProcess.on('close', (code) => {
                             if (code !== 0) {
+                                let errorMsg = '❌ C 컴파일 오류:\n\n';
+                                errorMsg += compileError || compileOutput;
+                                errorMsg += '\n\n💡 확인사항:\n';
+                                errorMsg += '  - 필요한 헤더 파일을 포함했는지 확인하세요\n';
+                                errorMsg += '    예: #include <stdio.h>, #include <stdlib.h>, #include <string.h>, #include <math.h>\n';
+                                errorMsg += '  - 세미콜론(;) 누락 여부를 확인하세요\n';
+                                errorMsg += '  - 변수 선언 및 함수 정의가 올바른지 확인하세요\n';
+                                errorMsg += '  - main() 함수가 존재하는지 확인하세요\n';
+
                                 ws.send(JSON.stringify({
                                     type: 'error',
-                                    data: `Compilation error:\n${compileError}`
+                                    data: errorMsg
                                 }));
                                 reject(new Error('Compilation failed'));
                             } else {
+                                if (compileOutput || compileError) {
+                                    ws.send(JSON.stringify({
+                                        type: 'output',
+                                        data: `✅ 컴파일 성공!\n${compileOutput || compileError}\n\n`
+                                    }));
+                                }
                                 resolve();
                             }
                         });
@@ -1673,21 +1702,50 @@ app.ws('/api/execute', (ws, req) => {
                     }
                     
                     const outputFile = tempFile.replace(/\.cpp$/, '.out');
-                    const compileProcess = spawn('g++', [tempFile, '-o', outputFile]);
-                    
+                    const compileProcess = spawn('g++', [
+                        tempFile,
+                        '-o',
+                        outputFile,
+                        '-lm',  // Link math library
+                        '-std=c++17',  // Use C++17 standard
+                        '-Wall'  // Enable all warnings
+                    ]);
+
                     await new Promise((resolve, reject) => {
                         let compileError = '';
+                        let compileOutput = '';
+
+                        compileProcess.stdout.on('data', (data) => {
+                            compileOutput += data.toString();
+                        });
+
                         compileProcess.stderr.on('data', (data) => {
                             compileError += data.toString();
                         });
+
                         compileProcess.on('close', (code) => {
                             if (code !== 0) {
+                                let errorMsg = '❌ C++ 컴파일 오류:\n\n';
+                                errorMsg += compileError || compileOutput;
+                                errorMsg += '\n\n💡 확인사항:\n';
+                                errorMsg += '  - 필요한 헤더 파일을 포함했는지 확인하세요\n';
+                                errorMsg += '    예: #include <iostream>, #include <string>, #include <vector>, #include <cmath>\n';
+                                errorMsg += '  - 네임스페이스를 사용했는지 확인하세요 (using namespace std;)\n';
+                                errorMsg += '  - 세미콜론(;) 누락 여부를 확인하세요\n';
+                                errorMsg += '  - main() 함수가 존재하는지 확인하세요\n';
+
                                 ws.send(JSON.stringify({
                                     type: 'error',
-                                    data: `Compilation error:\n${compileError}`
+                                    data: errorMsg
                                 }));
                                 reject(new Error('Compilation failed'));
                             } else {
+                                if (compileOutput || compileError) {
+                                    ws.send(JSON.stringify({
+                                        type: 'output',
+                                        data: `✅ 컴파일 성공!\n${compileOutput || compileError}\n\n`
+                                    }));
+                                }
                                 resolve();
                             }
                         });

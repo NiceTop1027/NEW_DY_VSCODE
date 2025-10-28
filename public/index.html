@@ -211,8 +211,8 @@
                             <div class="panel-tab active" data-panel-id="terminal">
                                 <i class="codicon codicon-terminal"></i> Terminal
                             </div>
-                            <div class="panel-tab" data-panel-id="problems">Problems</div>
                             <div class="panel-tab" data-panel-id="output">Output</div>
+                            <div class="panel-tab" data-panel-id="problems">Problems</div>
                             <div class="panel-tab" data-panel-id="debug-console">Debug Console</div>
                             <div class="panel-actions">
                                 <button id="toggle-panel-btn" class="panel-action-btn" title="패널 닫기 (Ctrl+J)">
@@ -224,12 +224,6 @@
                             <div id="terminal" class="panel-view active">
                                 <div id="terminal-view" style="width: 100%; height: 100%;"></div>
                             </div>
-                            <div id="problems" class="panel-view">
-                                <div class="panel-empty-state">
-                                    <i class="codicon codicon-info"></i>
-                                    <p>문제가 발견되지 않았습니다</p>
-                                </div>
-                            </div>
                             <div id="output" class="panel-view">
                                 <div id="output-container">
                                     <div id="output-content"></div>
@@ -237,6 +231,12 @@
                                         <span class="output-prompt">></span>
                                         <input type="text" id="output-input" class="output-input" placeholder="프로그램 실행 중... 입력 대기" autocomplete="off" />
                                     </div>
+                                </div>
+                            </div>
+                            <div id="problems" class="panel-view">
+                                <div class="panel-empty-state">
+                                    <i class="codicon codicon-info"></i>
+                                    <p>문제가 발견되지 않았습니다</p>
                                 </div>
                             </div>
                             <div id="debug-console" class="panel-view">

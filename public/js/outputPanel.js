@@ -122,10 +122,13 @@ class OutputPanel {
             this.ws.close();
         }
 
+        // Ensure input field is visible
+        this.showInput();
+
         // Create WebSocket connection
         const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
         const wsUrl = `${protocol}//${window.location.host}/api/execute`;
-        
+
         this.ws = new WebSocket(wsUrl);
         this.isRunning = true;
 
@@ -264,8 +267,31 @@ class OutputPanel {
             this.write('─'.repeat(60), 'output');
             this.write('⚠️  Execution stopped by user', 'error');
             this.isRunning = false;
-            this.hideInput();
+
+            if (this.outputInput) {
+                this.outputInput.disabled = true;
+                this.outputInput.placeholder = '실행 중지됨';
+            }
+
             this.ws.close();
+        }
+    }
+
+    // Show input field
+    showInput() {
+        if (this.outputInputLine) {
+            this.outputInputLine.style.display = 'flex';
+        }
+        if (this.outputInput) {
+            this.outputInput.disabled = false;
+            this.outputInput.focus();
+        }
+    }
+
+    // Hide input field
+    hideInput() {
+        if (this.outputInputLine) {
+            this.outputInputLine.style.display = 'none';
         }
     }
 
