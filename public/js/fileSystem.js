@@ -369,15 +369,73 @@ class ClientFileSystem {
 
     // Rename file or directory using File System Access API
     async renameEntry(oldPath, newName) {
+        // Memory mode - rename in memory
         if (!this.directoryHandle) {
-            return { success: false, error: 'No directory handle available' };
+            try {
+                const fileData = this.files.get(oldPath);
+                if (!fileData) {
+                    return { success: false, error: 'File not found' };
+                }
+
+                // Calculate new path
+                const pathParts = oldPath.split('/').filter(p => p);
+                pathParts[pathParts.length - 1] = newName;
+                const newPath = pathParts.join('/');
+
+                // Update in memory
+                this.files.delete(oldPath);
+                this.files.set(newPath, {
+                    ...fileData,
+                    name: newName,
+                    path: newPath
+                });
+
+                // Update parent's children
+                const parentPath = pathParts.slice(0, -1).join('/');
+                let parent = parentPath ? this.files.get(parentPath) : this.root;
+
+                // If not found in files map, traverse root tree
+                if (!parent && parentPath) {
+                    const parts = parentPath.split('/').filter(p => p);
+                    parent = this.root;
+                    for (const part of parts) {
+                        const found = parent.children?.find(c => c.name === part && c.type === 'directory');
+                        if (found) {
+                            parent = found;
+                        } else {
+                            break;
+                        }
+                    }
+                }
+
+                if (parent && parent.children) {
+                    const childIndex = parent.children.findIndex(c => c.path === oldPath);
+                    if (childIndex !== -1) {
+                        parent.children[childIndex] = {
+                            ...parent.children[childIndex],
+                            name: newName,
+                            path: newPath
+                        };
+                    }
+                }
+
+                // Save to persistent storage
+                await persistentStorage.saveFile(newPath, fileData.content);
+                await persistentStorage.deleteFile(oldPath);
+
+                return { success: true, renamed: true };
+            } catch (err) {
+                console.error('Memory mode rename failed:', err);
+                return { success: false, error: err.message };
+            }
         }
 
+        // Disk mode - use File System Access API
         try {
             const pathParts = oldPath.split('/').filter(p => p);
             const oldName = pathParts[pathParts.length - 1];
             const parentParts = pathParts.slice(0, -1);
-            
+
             let parentDir = this.directoryHandle;
             for (const part of parentParts) {
                 parentDir = await parentDir.getDirectoryHandle(part);
@@ -421,6 +479,83 @@ class ClientFileSystem {
             }
         } catch (err) {
             console.error('Failed to rename:', err);
+            return { success: false, error: err.message };
+        }
+    }
+
+    // Move file (memory mode only)
+    async moveFile(sourcePath, targetPath) {
+        try {
+            const fileData = this.files.get(sourcePath);
+            if (!fileData) {
+                return { success: false, error: 'Source file not found' };
+            }
+
+            if (fileData.type === 'directory') {
+                return { success: false, error: 'Cannot move directories' };
+            }
+
+            // Extract file name from target path
+            const targetFileName = targetPath.split('/').filter(p => p).pop() || fileData.name;
+
+            // Remove from old location
+            this.files.delete(sourcePath);
+
+            // Update parent's children
+            const sourceParentPath = sourcePath.split('/').slice(0, -1).join('/');
+            const sourceParent = sourceParentPath ? this.files.get(sourceParentPath) : this.root;
+            if (sourceParent && sourceParent.children) {
+                sourceParent.children = sourceParent.children.filter(c => c.path !== sourcePath);
+            }
+
+            // Add to new location with updated info
+            this.files.set(targetPath, {
+                ...fileData,
+                name: targetFileName,
+                path: targetPath
+            });
+
+            // Update target parent's children
+            const targetParentPath = targetPath.split('/').slice(0, -1).join('/');
+            let targetParent = targetParentPath ? this.files.get(targetParentPath) : this.root;
+
+            // If not found in files map, traverse root tree
+            if (!targetParent && targetParentPath) {
+                const parts = targetParentPath.split('/').filter(p => p);
+                targetParent = this.root;
+                for (const part of parts) {
+                    const found = targetParent.children?.find(c => c.name === part && c.type === 'directory');
+                    if (found) {
+                        targetParent = found;
+                    } else {
+                        console.error('Could not find parent folder:', part);
+                        break;
+                    }
+                }
+            }
+
+            if (targetParent) {
+                if (!targetParent.children) {
+                    targetParent.children = [];
+                }
+                // Check if already exists (avoid duplicates)
+                const existingIndex = targetParent.children.findIndex(c => c.path === targetPath);
+                if (existingIndex === -1) {
+                    targetParent.children.push({
+                        name: targetFileName,
+                        type: 'file',
+                        path: targetPath
+                    });
+                }
+            }
+
+            // Update persistent storage
+            await persistentStorage.saveFile(targetPath, fileData.content);
+            await persistentStorage.deleteFile(sourcePath);
+
+            return { success: true };
+        } catch (err) {
+            console.error('Move file failed:', err);
             return { success: false, error: err.message };
         }
     }

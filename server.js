@@ -6,11 +6,10 @@ const expressWs = require('express-ws');
 const pty = require('node-pty');
 const axios = require('axios');
 const multer = require('multer');
-const { exec, spawn } = require('child_process'); 
+const { exec, spawn } = require('child_process');
 const inspector = require('inspector');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
-const crypto = require('crypto');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -56,7 +55,6 @@ const strictLimiter = rateLimit({
 
 app.use('/api/', limiter);
 app.use('/api/execute', strictLimiter);
-app.use('/api/terminal', strictLimiter);
 
 // CORS 설정 (Railway serves both frontend and backend)
 app.use((req, res, next) => {
@@ -1313,212 +1311,6 @@ app.ws('/lsp', (ws, req) => {
     
     ws.on('error', (error) => {
         console.error('LSP WebSocket error:', error);
-    });
-});
-
-// Web Terminal - Admin only (password protected)
-// Security: Use hashed password
-// IMPORTANT: Set TERMINAL_PASSWORD environment variable in Railway
-if (!process.env.TERMINAL_PASSWORD) {
-    console.error('⚠️  WARNING: TERMINAL_PASSWORD environment variable not set!');
-    console.error('   Terminal will be disabled for security.');
-}
-
-const ADMIN_PASSWORD_HASH = process.env.TERMINAL_PASSWORD 
-    ? crypto.createHash('sha256').update(process.env.TERMINAL_PASSWORD).digest('hex')
-    : null;
-
-const authenticatedSessions = new Map(); // sessionId -> { authenticated, timestamp }
-const MAX_AUTH_ATTEMPTS = 3;
-const authAttempts = new Map(); // IP -> { count, lastAttempt }
-
-// Security: Clean up old sessions every hour
-setInterval(() => {
-    const now = Date.now();
-    for (const [sessionId, data] of authenticatedSessions.entries()) {
-        if (now - data.timestamp > 3600000) { // 1 hour
-            authenticatedSessions.delete(sessionId);
-        }
-    }
-}, 3600000);
-
-app.ws('/api/terminal', (ws, req) => {
-    const clientIP = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    console.log(`Terminal WebSocket connection from ${clientIP}`);
-    
-    // Security: Check if password is configured
-    if (!ADMIN_PASSWORD_HASH) {
-        ws.send(JSON.stringify({
-            type: 'output',
-            data: '\r\n\x1b[1;31m❌ 터미널이 비활성화되었습니다.\x1b[0m\r\n'
-        }));
-        ws.send(JSON.stringify({
-            type: 'output',
-            data: '\x1b[1;33m관리자에게 TERMINAL_PASSWORD 환경변수 설정을 요청하세요.\x1b[0m\r\n'
-        }));
-        ws.close();
-        return;
-    }
-    
-    // Security: Check auth attempts
-    const attempts = authAttempts.get(clientIP) || { count: 0, lastAttempt: 0 };
-    const now = Date.now();
-    
-    // Reset attempts after 15 minutes
-    if (now - attempts.lastAttempt > 900000) {
-        attempts.count = 0;
-    }
-    
-    if (attempts.count >= MAX_AUTH_ATTEMPTS) {
-        ws.send(JSON.stringify({
-            type: 'output',
-            data: '\r\n\x1b[1;31m❌ 너무 많은 인증 시도. 15분 후 다시 시도하세요.\x1b[0m\r\n'
-        }));
-        ws.close();
-        return;
-    }
-    
-    let ptyProcess = null;
-    let isAuthenticated = false;
-    let passwordBuffer = '';
-    
-    // Show password prompt
-    ws.send(JSON.stringify({
-        type: 'output',
-        data: '\r\n\x1b[1;36m╔════════════════════════════════════════════════════════════╗\x1b[0m\r\n'
-    }));
-    ws.send(JSON.stringify({
-        type: 'output',
-        data: '\x1b[1;36m║  🔒 관리자 터미널 - 비밀번호가 필요합니다                  ║\x1b[0m\r\n'
-    }));
-    ws.send(JSON.stringify({
-        type: 'output',
-        data: '\x1b[1;36m╚════════════════════════════════════════════════════════════╝\x1b[0m\r\n\r\n'
-    }));
-    ws.send(JSON.stringify({
-        type: 'output',
-        data: '\x1b[1;33mPassword: \x1b[0m'
-    }));
-
-    // Handle messages from client
-    ws.on('message', (msg) => {
-        try {
-            const data = JSON.parse(msg);
-            
-            if (!isAuthenticated) {
-                // Password input mode
-                if (data.type === 'input') {
-                    const input = data.data;
-                    
-                    if (input === '\r' || input === '\n') {
-                        // Security: Hash password and compare
-                        const inputHash = crypto.createHash('sha256')
-                            .update(passwordBuffer)
-                            .digest('hex');
-                        
-                        if (inputHash === ADMIN_PASSWORD_HASH) {
-                            isAuthenticated = true;
-                            attempts.count = 0;
-                            authAttempts.set(clientIP, attempts);
-                            
-                            console.log(`✅ Terminal authentication successful from ${clientIP}`);
-                            
-                            ws.send(JSON.stringify({
-                                type: 'output',
-                                data: '\r\n\r\n\x1b[1;32m✓ 인증 성공! 터미널을 시작합니다...\x1b[0m\r\n\r\n'
-                            }));
-                            
-                            // Start shell
-                            const shell = process.platform === 'win32' ? 'powershell.exe' : 'bash';
-                            ptyProcess = pty.spawn(shell, [], {
-                                name: 'xterm-256color',
-                                cols: 80,
-                                rows: 30,
-                                cwd: PROJECT_ROOT,
-                                env: Object.assign({}, process.env, {
-                                    TERM: 'xterm-256color',
-                                    COLORTERM: 'truecolor'
-                                })
-                            });
-
-                            // Send output to client
-                            ptyProcess.onData((data) => {
-                                try {
-                                    ws.send(JSON.stringify({
-                                        type: 'output',
-                                        data: data
-                                    }));
-                                } catch (e) {
-                                    console.error('Terminal send error:', e);
-                                }
-                            });
-
-                            // Handle process exit
-                            ptyProcess.onExit(({ exitCode, signal }) => {
-                                console.log('Terminal process exited:', exitCode, signal);
-                                try {
-                                    ws.close();
-                                } catch (e) {
-                                    // Already closed
-                                }
-                            });
-                        } else {
-                            // Security: Log failed attempt
-                            attempts.count++;
-                            attempts.lastAttempt = now;
-                            authAttempts.set(clientIP, attempts);
-                            
-                            console.warn(`❌ Terminal authentication failed from ${clientIP} (Attempt ${attempts.count}/${MAX_AUTH_ATTEMPTS})`);
-                            
-                            ws.send(JSON.stringify({
-                                type: 'output',
-                                data: `\r\n\r\n\x1b[1;31m✗ 비밀번호가 틀렸습니다. (${attempts.count}/${MAX_AUTH_ATTEMPTS})\x1b[0m\r\n`
-                            }));
-                            setTimeout(() => ws.close(), 1000);
-                        }
-                        passwordBuffer = '';
-                    } else if (input === '\x7f' || input === '\b') {
-                        // Backspace
-                        if (passwordBuffer.length > 0) {
-                            passwordBuffer = passwordBuffer.slice(0, -1);
-                        }
-                    } else if (input.charCodeAt(0) >= 32 && input.charCodeAt(0) <= 126) {
-                        // Printable character
-                        passwordBuffer += input;
-                        // Show asterisk
-                        ws.send(JSON.stringify({
-                            type: 'output',
-                            data: '*'
-                        }));
-                    }
-                }
-            } else {
-                // Authenticated - normal terminal mode
-                if (data.type === 'input' && ptyProcess) {
-                    ptyProcess.write(data.data);
-                } else if (data.type === 'resize' && ptyProcess) {
-                    ptyProcess.resize(data.cols || 80, data.rows || 30);
-                }
-            }
-        } catch (e) {
-            console.error('Terminal message error:', e);
-        }
-    });
-
-    // Handle client disconnect
-    ws.on('close', () => {
-        console.log('Terminal WebSocket closed');
-        if (ptyProcess) {
-            try {
-                ptyProcess.kill();
-            } catch (e) {
-                // Already killed
-            }
-        }
-    });
-
-    ws.on('error', (error) => {
-        console.error('Terminal WebSocket error:', error);
     });
 });
 
