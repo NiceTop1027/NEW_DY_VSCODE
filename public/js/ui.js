@@ -1689,7 +1689,15 @@ console.error = (...args) => {
 // Initialize UI when DOM is ready
 document.addEventListener('DOMContentLoaded', async () => {
     initUI();
-    
+
+    // Initialize file system with persistent storage
+    try {
+        await clientFS.init();
+        console.log('✅ File system initialized');
+    } catch (err) {
+        console.error('파일 시스템 초기화 실패:', err);
+    }
+
     // Initialize GitHub
     try {
         const { initGitHub } = await import('./github.js');
@@ -1697,7 +1705,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (err) {
         console.warn('GitHub 초기화 실패:', err);
     }
-    
+
     // Hide splash screen after animation
     setTimeout(() => {
         const splashScreen = document.getElementById('splash-screen');

@@ -136,7 +136,14 @@ class ClientFileSystem {
         const file = this.files.get(path);
         if (file) {
             file.content = content;
-            
+
+            // Save to persistent storage
+            if (this.initialized) {
+                persistentStorage.saveFile(path, content).catch(err => {
+                    console.error('Failed to save to persistent storage:', err);
+                });
+            }
+
             // Try to write to actual file system if handle exists
             const fileHandle = this.fileHandles.get(path);
             if (fileHandle) {
