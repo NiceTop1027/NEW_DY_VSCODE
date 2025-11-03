@@ -15,18 +15,82 @@ class GitClient {
         this.corsProxy = 'https://cors.isomorphic-git.org';
     }
 
+    // Clear workspace directory
+    async clearWorkspace() {
+        try {
+            console.log('🧹 Clearing workspace...');
+
+            // Check if directory exists
+            try {
+                const files = await this.fs.promises.readdir(this.dir);
+
+                // Delete all files and directories
+                for (const file of files) {
+                    const fullPath = `${this.dir}/${file}`;
+                    try {
+                        const stat = await this.fs.promises.stat(fullPath);
+                        if (stat.isDirectory()) {
+                            await this.deleteDirRecursive(fullPath);
+                        } else {
+                            await this.fs.promises.unlink(fullPath);
+                        }
+                    } catch (err) {
+                        console.warn(`Could not delete ${fullPath}:`, err.message);
+                    }
+                }
+
+                console.log('✅ Workspace cleared');
+            } catch (err) {
+                // Directory doesn't exist, create it
+                console.log('📁 Creating workspace directory');
+                await this.fs.promises.mkdir(this.dir, { recursive: true });
+            }
+        } catch (error) {
+            console.error('Clear workspace error:', error);
+            // Don't throw, just log - we'll try to clone anyway
+        }
+    }
+
+    // Helper: Delete directory recursively
+    async deleteDirRecursive(dirPath) {
+        const files = await this.fs.promises.readdir(dirPath);
+
+        for (const file of files) {
+            const fullPath = `${dirPath}/${file}`;
+            const stat = await this.fs.promises.stat(fullPath);
+
+            if (stat.isDirectory()) {
+                await this.deleteDirRecursive(fullPath);
+            } else {
+                await this.fs.promises.unlink(fullPath);
+            }
+        }
+
+        await this.fs.promises.rmdir(dirPath);
+    }
+
     // Clone repository
     async clone(url, token = null) {
         try {
-            console.log('🔧 GitClient.clone() 호출됨');
+            console.log('🔧 GitClient.clone() 시작');
             console.log('   URL:', url);
-            console.log('   Token:', token ? token.substring(0, 7) + '...' : 'null');
-            
-            const onAuth = token ? () => ({
-                username: token,
-                password: 'x-oauth-basic'
-            }) : undefined;
-            
+            console.log('   Token 존재:', !!token);
+            console.log('   Token 길이:', token ? token.length : 0);
+
+            // Clear workspace before cloning
+            await this.clearWorkspace();
+
+            // Prepare auth callback
+            const onAuth = token ? () => {
+                console.log('🔐 onAuth 콜백 호출됨');
+                return {
+                    username: token,
+                    password: 'x-oauth-basic'
+                };
+            } : undefined;
+
+            console.log('📡 isomorphic-git.clone() 호출...');
+
             await git.clone({
                 fs: this.fs,
                 http,
@@ -37,14 +101,40 @@ class GitClient {
                 depth: 1,
                 onAuth,
                 onProgress: (progress) => {
-                    console.log(`Clone progress: ${progress.phase} ${progress.loaded}/${progress.total}`);
+                    console.log(`📦 Clone progress: ${progress.phase} ${progress.loaded}/${progress.total || '?'}`);
+                },
+                onMessage: (message) => {
+                    console.log('💬 Git message:', message);
+                },
+                onAuthFailure: ({ url, auth }) => {
+                    console.error('❌ Auth failed for:', url);
+                    console.error('   Auth method:', auth);
+                    throw new Error('GitHub authentication failed. Please check your token.');
                 }
             });
 
+            console.log('✅ Clone 완료!');
             return { success: true, message: 'Repository cloned successfully' };
         } catch (error) {
-            console.error('Clone error:', error);
-            throw new Error(`Clone failed: ${error.message}`);
+            console.error('❌ Clone error:', error);
+            console.error('   Error name:', error.name);
+            console.error('   Error message:', error.message);
+            console.error('   Error stack:', error.stack);
+
+            // Provide more helpful error messages
+            let userMessage = error.message;
+
+            if (error.message.includes('401') || error.message.includes('authentication')) {
+                userMessage = 'GitHub authentication failed (401). Your token may be invalid or expired.';
+            } else if (error.message.includes('404')) {
+                userMessage = 'Repository not found (404). Check if the repository exists and you have access.';
+            } else if (error.message.includes('403')) {
+                userMessage = 'Access forbidden (403). Your token may not have the required "repo" permission.';
+            } else if (error.message.includes('CORS')) {
+                userMessage = 'CORS error. This is usually a temporary issue with the proxy server.';
+            }
+
+            throw new Error(userMessage);
         }
     }
 

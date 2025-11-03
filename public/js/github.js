@@ -323,20 +323,24 @@ export function setupGitHubCloneButton() {
                     tokenLength: token.length,
                     tokenPrefix: token.substring(0, 7) + '...'
                 });
-                
-                // Import gitClient
+
+                // Import gitClient and fileSystem
                 const { default: gitClient } = await import('./gitClient.js');
                 const { clientFS } = await import('./fileSystem.js');
-                
+
                 // Clone using isomorphic-git
                 console.log('📡 클론 요청 전송 중...');
+                githubCloneBtn.innerHTML = '<i class="codicon codicon-loading codicon-modifier-spin"></i> 클론 중... (이 작업은 몇 분 걸릴 수 있습니다)';
+
                 await gitClient.clone(repoUrl, token);
-                console.log('✓ Repository cloned');
-                
+                console.log('✓ Repository cloned to Lightning FS');
+
                 // Load files into clientFS
                 githubCloneBtn.innerHTML = '<i class="codicon codicon-loading codicon-modifier-spin"></i> 파일 로드 중...';
+                console.log('📂 파일 시스템으로 로드 시작...');
+
                 const files = await loadFilesFromGit(gitClient, clientFS);
-                console.log(`✓ Loaded ${files.length} files`);
+                console.log(`✓ Loaded ${files.length} files to clientFS`);
                 
                 // Save cloned repo info
                 const clonedRepos = JSON.parse(localStorage.getItem('clonedRepos') || '[]');
@@ -405,28 +409,50 @@ export function setupGitHubCloneButton() {
     // Helper: Load files from git to clientFS
     async function loadFilesFromGit(gitClient, clientFS) {
         const files = [];
-        
+        let fileCount = 0;
+        let dirCount = 0;
+
         async function walkDir(dirPath = '') {
-            const items = await gitClient.listFiles(dirPath);
-            
-            for (const item of items) {
-                if (item === '.git') continue;
-                
-                const fullPath = dirPath ? `${dirPath}/${item}` : item;
-                
-                try {
-                    // Try to read as file
-                    const content = await gitClient.readFile(fullPath);
-                    clientFS.addFile(fullPath, content);
-                    files.push(fullPath);
-                } catch (err) {
-                    // It's a directory, recurse
-                    await walkDir(fullPath);
+            try {
+                const items = await gitClient.listFiles(dirPath);
+                console.log(`📁 Reading directory: ${dirPath || '/'} (${items.length} items)`);
+
+                for (const item of items) {
+                    // Skip .git directory
+                    if (item === '.git') {
+                        console.log('  ⏭️  Skipping .git');
+                        continue;
+                    }
+
+                    const fullPath = dirPath ? `${dirPath}/${item}` : item;
+
+                    try {
+                        // Try to read as file
+                        const content = await gitClient.readFile(fullPath);
+
+                        // Add to clientFS
+                        await clientFS.addFile(fullPath, content);
+                        files.push(fullPath);
+                        fileCount++;
+
+                        if (fileCount % 10 === 0) {
+                            console.log(`  📄 Loaded ${fileCount} files...`);
+                        }
+                    } catch (err) {
+                        // It's a directory, recurse
+                        dirCount++;
+                        await walkDir(fullPath);
+                    }
                 }
+            } catch (err) {
+                console.error(`❌ Error reading directory ${dirPath}:`, err.message);
             }
         }
-        
+
+        console.log('🚀 Starting file system walk...');
         await walkDir();
+        console.log(`✅ Completed! Files: ${fileCount}, Directories: ${dirCount}`);
+
         return files;
     }
 }
