@@ -12,6 +12,7 @@ import { quickOpen } from './quickOpen.js';
 import { outputPanel } from './outputPanel.js';
 import { initTerminal } from './terminal.js';
 import { initLanguageClient } from './languageClient.js';
+import { fileIcons } from './fileIcons.js';
 
 // DOM Elements
 let fileExplorerEl;
@@ -45,19 +46,21 @@ function renderFileTree(node, parentEl, depth = 0) {
     const item = document.createElement('div');
     item.className = `tree-item ${node.type}`;
     item.dataset.path = node.path || node.name;
-    
+
     // Create wrapper for the item content
     const itemContent = document.createElement('div');
     itemContent.className = 'tree-item-content';
     itemContent.style.paddingLeft = `${depth * 15}px`;
-    
+
     // Add icon
     const icon = document.createElement('span');
     icon.className = 'tree-item-icon';
     if (node.type === 'directory') {
-        icon.innerHTML = '<i class="codicon codicon-folder"></i>';
+        // Use emoji folder icon
+        icon.textContent = fileIcons.getFolderIcon(false);
     } else {
-        icon.innerHTML = '<i class="codicon codicon-file"></i>';
+        // Use file-specific emoji icon
+        icon.textContent = fileIcons.getFileIcon(node.name);
     }
     itemContent.appendChild(icon);
 
@@ -67,30 +70,27 @@ function renderFileTree(node, parentEl, depth = 0) {
     label.textContent = node.name;
     label.title = node.name; // Tooltip for long names
     itemContent.appendChild(label);
-    
+
     item.appendChild(itemContent);
 
     if (node.type === 'directory') {
         item.classList.add('closed');
-        
+
         // Create children container
         const childrenContainer = document.createElement('div');
         childrenContainer.className = 'tree-children';
         item.appendChild(childrenContainer);
-        
+
         // Click handler for folder
         itemContent.addEventListener('click', e => {
             e.stopPropagation();
             item.classList.toggle('closed');
-            
-            // Update icon
-            if (item.classList.contains('closed')) {
-                icon.innerHTML = '<i class="codicon codicon-folder"></i>';
-            } else {
-                icon.innerHTML = '<i class="codicon codicon-folder-opened"></i>';
-            }
+
+            // Update folder icon (closed/open)
+            const isOpen = !item.classList.contains('closed');
+            icon.textContent = fileIcons.getFolderIcon(isOpen);
         });
-        
+
         // Render children
         if (node.children) {
             node.children.forEach(child => renderFileTree(child, childrenContainer, depth + 1));
