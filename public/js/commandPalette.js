@@ -167,16 +167,6 @@ class CommandPalette {
                 action: () => this.executeCommand('downloadAll')
             },
 
-            // Extension commands
-            {
-                id: 'extensions.show',
-                label: 'Extensions: Show Extensions',
-                category: 'Extensions',
-                icon: '🧩',
-                shortcut: 'Ctrl+Shift+X',
-                action: () => this.executeCommand('showExtensions')
-            },
-
             // Settings
             {
                 id: 'settings.open',
