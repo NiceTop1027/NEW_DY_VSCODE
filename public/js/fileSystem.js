@@ -35,12 +35,17 @@ class ClientFileSystem {
     async loadFromStorage() {
         try {
             const savedFiles = await persistentStorage.loadAllFiles();
-            
+
             if (savedFiles.size > 0) {
                 savedFiles.forEach((fileData, path) => {
                     this.addFile(path, fileData.content, false); // false = don't save back
                 });
                 console.log(`📂 Restored ${savedFiles.size} files from storage`);
+
+                // Dispatch event to refresh UI
+                window.dispatchEvent(new CustomEvent('files-restored', {
+                    detail: { count: savedFiles.size }
+                }));
             }
         } catch (error) {
             console.error('Load from storage error:', error);
@@ -185,6 +190,14 @@ class ClientFileSystem {
         }
 
         this.files.delete(path);
+
+        // Delete from persistent storage
+        if (this.initialized) {
+            persistentStorage.deleteFile(path).catch(err => {
+                console.error('Failed to delete from persistent storage:', err);
+            });
+        }
+
         return true;
     }
 

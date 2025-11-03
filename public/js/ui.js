@@ -1698,6 +1698,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('파일 시스템 초기화 실패:', err);
     }
 
+    // Listen for file restoration events
+    window.addEventListener('files-restored', (event) => {
+        console.log(`📂 ${event.detail.count} files restored, refreshing UI...`);
+        // Refresh file tree if in explorer view
+        if (currentView === 'files' || currentView === 'explorer') {
+            try {
+                renderClientFileTree();
+                showNotification(`${event.detail.count}개 파일 복원됨`, 'success');
+            } catch (err) {
+                console.error('Failed to refresh file tree:', err);
+            }
+        }
+    });
+
     // Initialize GitHub
     try {
         const { initGitHub } = await import('./github.js');
