@@ -12,7 +12,6 @@ import { quickOpen } from './quickOpen.js';
 import { outputPanel } from './outputPanel.js';
 import { initTerminal } from './terminal.js';
 import { initLanguageClient } from './languageClient.js';
-import { premiumIntro } from './premiumIntro.js';
 
 // DOM Elements
 let fileExplorerEl;
@@ -1699,9 +1698,6 @@ console.error = (...args) => {
 
 // Initialize UI when DOM is ready
 document.addEventListener('DOMContentLoaded', async () => {
-    // Show premium intro
-    premiumIntro.init();
-    
     initUI();
     
     // Initialize GitHub
