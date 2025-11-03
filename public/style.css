@@ -3398,8 +3398,8 @@ body {
     position: fixed;
     top: 50px;
     right: 20px;
-    width: 600px;
-    height: 500px;
+    width: 1200px;
+    height: 800px;
     background: var(--bg-color);
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -3409,10 +3409,10 @@ body {
     flex-direction: column;
     resize: both;
     overflow: hidden;
-    min-width: 300px;
-    min-height: 200px;
-    max-width: 90vw;
-    max-height: 90vh;
+    min-width: 400px;
+    min-height: 300px;
+    max-width: calc(100vw - 40px);
+    max-height: calc(100vh - 100px);
 }
 
 .preview-header {

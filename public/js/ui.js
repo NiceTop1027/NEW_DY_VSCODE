@@ -504,6 +504,58 @@ export function initUI() {
         });
     }
     
+    // Preview Fullscreen Button
+    const previewFullscreen = document.getElementById('preview-fullscreen');
+    if (previewFullscreen && previewModal) {
+        let isFullscreen = false;
+        let savedPosition = {};
+
+        previewFullscreen.addEventListener('click', (e) => {
+            e.stopPropagation();
+
+            if (!isFullscreen) {
+                // Save current position and size
+                savedPosition = {
+                    top: previewModal.style.top,
+                    left: previewModal.style.left,
+                    right: previewModal.style.right,
+                    width: previewModal.style.width,
+                    height: previewModal.style.height
+                };
+
+                // Set fullscreen
+                previewModal.style.top = '0';
+                previewModal.style.left = '0';
+                previewModal.style.right = '0';
+                previewModal.style.width = '100vw';
+                previewModal.style.height = '100vh';
+                previewModal.style.borderRadius = '0';
+
+                // Change icon
+                previewFullscreen.innerHTML = '<i class="codicon codicon-screen-normal"></i>';
+                previewFullscreen.title = '전체 화면 해제';
+
+                isFullscreen = true;
+                showNotification('전체 화면 모드', 'info');
+            } else {
+                // Restore position and size
+                previewModal.style.top = savedPosition.top || '50px';
+                previewModal.style.left = savedPosition.left || 'auto';
+                previewModal.style.right = savedPosition.right || '20px';
+                previewModal.style.width = savedPosition.width || '1200px';
+                previewModal.style.height = savedPosition.height || '800px';
+                previewModal.style.borderRadius = '8px';
+
+                // Change icon back
+                previewFullscreen.innerHTML = '<i class="codicon codicon-screen-full"></i>';
+                previewFullscreen.title = '전체 화면';
+
+                isFullscreen = false;
+                showNotification('전체 화면 해제', 'info');
+            }
+        });
+    }
+
     // Preview Refresh Button
     const previewRefresh = document.getElementById('preview-refresh');
     if (previewRefresh) {
