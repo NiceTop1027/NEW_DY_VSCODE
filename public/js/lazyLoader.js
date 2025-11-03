@@ -127,11 +127,6 @@ export const ModuleRegistry = {
         GITHUB: './github.js'
     },
 
-    // Extension system (lazy loaded)
-    EXTENSIONS: {
-        EXTENSION_SYSTEM: './extensionSystem.js'
-    },
-
     // UI Effects (lazy loaded)
     EFFECTS: {
         ANIMATIONS: './animations.js',
