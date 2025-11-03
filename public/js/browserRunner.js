@@ -9,6 +9,8 @@ class BrowserCodeRunner {
         this.quickjs = null;
         this.pyodideLoading = false;
         this.quickjsLoading = false;
+        this.isRunning = false;
+        this.shouldStop = false;
     }
 
     // Initialize Pyodide (Python)
@@ -76,14 +78,23 @@ class BrowserCodeRunner {
     }
 
     // Run Python code
-    async runPython(code, onOutput) {
+    async runPython(code, onOutput, signal) {
+        this.isRunning = true;
+        this.shouldStop = false;
+
         try {
             const pyodide = await this.initPyodide();
+
+            // Check if already aborted
+            if (signal && signal.aborted) {
+                throw new Error('Execution aborted');
+            }
 
             // Capture stdout
             let output = '';
             pyodide.setStdout({
                 batched: (text) => {
+                    if (this.shouldStop) return;
                     output += text + '\n';
                     if (onOutput) onOutput(text + '\n');
                 }
@@ -92,6 +103,16 @@ class BrowserCodeRunner {
             // Run code
             const result = await pyodide.runPythonAsync(code);
 
+            // Check if stopped
+            if (this.shouldStop) {
+                this.isRunning = false;
+                return {
+                    success: false,
+                    output: output + '\n⛔ 실행이 중단되었습니다.\n',
+                    error: 'Execution stopped'
+                };
+            }
+
             // Get final output
             if (result !== undefined && result !== null) {
                 const resultStr = String(result);
@@ -99,12 +120,14 @@ class BrowserCodeRunner {
                 if (onOutput) onOutput(resultStr + '\n');
             }
 
+            this.isRunning = false;
             return {
                 success: true,
                 output: output,
                 result: result
             };
         } catch (error) {
+            this.isRunning = false;
             const errorMsg = `Error: ${error.message}\n`;
             if (onOutput) onOutput(errorMsg);
             return {
@@ -116,15 +139,24 @@ class BrowserCodeRunner {
     }
 
     // Run JavaScript code (sandboxed)
-    async runJavaScript(code, onOutput) {
+    async runJavaScript(code, onOutput, signal) {
+        this.isRunning = true;
+        this.shouldStop = false;
+
         try {
             const QuickJS = await this.initQuickJS();
             const vm = QuickJS.newContext();
+
+            // Check if already aborted
+            if (signal && signal.aborted) {
+                throw new Error('Execution aborted');
+            }
 
             let output = '';
 
             // Add console.log
             const logHandle = vm.newFunction('log', (...args) => {
+                if (this.shouldStop) return;
                 const message = args.map(arg => {
                     const str = vm.dump(arg);
                     return str;
@@ -140,14 +172,30 @@ class BrowserCodeRunner {
             // Run code
             const result = vm.evalCode(code);
 
+            // Check if stopped
+            if (this.shouldStop) {
+                logHandle.dispose();
+                consoleHandle.dispose();
+                vm.dispose();
+                this.isRunning = false;
+                return {
+                    success: false,
+                    output: output + '\n⛔ 실행이 중단되었습니다.\n',
+                    error: 'Execution stopped'
+                };
+            }
+
             if (result.error) {
                 const error = vm.dump(result.error);
                 result.error.dispose();
                 const errorMsg = `Error: ${error}\n`;
                 output += errorMsg;
                 if (onOutput) onOutput(errorMsg);
-                
+
+                logHandle.dispose();
+                consoleHandle.dispose();
                 vm.dispose();
+                this.isRunning = false;
                 return {
                     success: false,
                     output: output,
@@ -168,12 +216,14 @@ class BrowserCodeRunner {
             consoleHandle.dispose();
             vm.dispose();
 
+            this.isRunning = false;
             return {
                 success: true,
                 output: output,
                 result: resultValue
             };
         } catch (error) {
+            this.isRunning = false;
             const errorMsg = `Error: ${error.message}\n`;
             if (onOutput) onOutput(errorMsg);
             return {
@@ -185,17 +235,17 @@ class BrowserCodeRunner {
     }
 
     // Run code based on language
-    async runCode(code, language, onOutput) {
+    async runCode(code, language, onOutput, signal) {
         console.log(`🚀 Running ${language} code in browser...`);
 
         switch (language.toLowerCase()) {
             case 'python':
             case 'py':
-                return await this.runPython(code, onOutput);
+                return await this.runPython(code, onOutput, signal);
 
             case 'javascript':
             case 'js':
-                return await this.runJavaScript(code, onOutput);
+                return await this.runJavaScript(code, onOutput, signal);
 
             default:
                 const errorMsg = `Language ${language} is not supported for browser execution.\nSupported: Python, JavaScript\n`;
@@ -206,6 +256,12 @@ class BrowserCodeRunner {
                     error: 'Unsupported language'
                 };
         }
+    }
+
+    // Stop current execution
+    stopExecution() {
+        this.shouldStop = true;
+        this.isRunning = false;
     }
 
     // Install Python package

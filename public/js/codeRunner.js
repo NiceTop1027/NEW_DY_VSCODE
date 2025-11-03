@@ -8,6 +8,10 @@ const PISTON_API = 'https://emkc.org/api/v2/piston';
 // Languages that can run in browser
 const BROWSER_LANGUAGES = ['python', 'py', 'javascript', 'js'];
 
+// Current running process control
+let currentAbortController = null;
+let isRunning = false;
+
 // 언어 이름 매핑 (Piston Language Names)
 const LANGUAGE_NAMES = {
     // Bash
@@ -162,27 +166,33 @@ function getLanguageName(fileExtension) {
 
 // 코드 실행 (Browser-first approach)
 export async function runCode(code, fileExtension, onOutput) {
+    // Set running state
+    isRunning = true;
+    currentAbortController = new AbortController();
+
     const language = getLanguageName(fileExtension);
     const ext = fileExtension.toLowerCase().replace('.', '');
-    
+
     if (!language) {
         const supportedLanguages = Object.keys(LANGUAGE_NAMES).sort().join(', ');
+        isRunning = false;
         return {
             output: '',
             error: `지원하지 않는 파일 형식: .${fileExtension}\n\n지원하는 확장자:\n${supportedLanguages}`,
             execError: 'Unsupported language'
         };
     }
-    
+
     // Try browser execution first for supported languages
     if (BROWSER_LANGUAGES.includes(ext)) {
         try {
             console.log(`🌐 Running ${language} in browser...`);
             if (onOutput) onOutput(`🌐 Running ${language} in browser...\n`);
             
-            const result = await browserRunner.runCode(code, language, onOutput);
-            
+            const result = await browserRunner.runCode(code, language, onOutput, currentAbortController.signal);
+
             if (result.success) {
+                isRunning = false;
                 return {
                     output: result.output,
                     error: '',
@@ -206,7 +216,7 @@ export async function runCode(code, fileExtension, onOutput) {
     try {
         console.log(`☁️ Running ${language} on Piston API...`);
         if (onOutput) onOutput(`☁️ Running ${language} on online compiler...\n`);
-        
+
         const response = await fetch(`${PISTON_API}/execute`, {
             method: 'POST',
             headers: {
@@ -224,7 +234,8 @@ export async function runCode(code, fileExtension, onOutput) {
                 run_timeout: 3000,
                 compile_memory_limit: -1,
                 run_memory_limit: -1
-            })
+            }),
+            signal: currentAbortController.signal
         });
         
         if (!response.ok) {
@@ -247,7 +258,8 @@ export async function runCode(code, fileExtension, onOutput) {
         
         if (onOutput && output) onOutput(output);
         if (onOutput && error) onOutput(error);
-        
+
+        isRunning = false;
         return {
             output: output.trim(),
             error: error.trim(),
@@ -256,8 +268,21 @@ export async function runCode(code, fileExtension, onOutput) {
             version: result.language || 'unknown',
             executionMode: 'piston'
         };
-        
+
     } catch (err) {
+        isRunning = false;
+
+        // Check if it was aborted
+        if (err.name === 'AbortError') {
+            const abortMsg = '\n⛔ 실행이 중단되었습니다.\n';
+            if (onOutput) onOutput(abortMsg);
+            return {
+                output: '',
+                error: abortMsg,
+                execError: 'Execution aborted'
+            };
+        }
+
         console.error('Piston API Error:', err);
         const errorMsg = `실행 실패: ${err.message}\n\n온라인 컴파일러 서비스에 연결할 수 없습니다.`;
         if (onOutput) onOutput(errorMsg);
@@ -267,6 +292,22 @@ export async function runCode(code, fileExtension, onOutput) {
             execError: err.toString()
         };
     }
+}
+
+// Stop current execution
+export function stopExecution() {
+    if (currentAbortController && isRunning) {
+        currentAbortController.abort();
+        isRunning = false;
+        browserRunner.stopExecution();
+        return true;
+    }
+    return false;
+}
+
+// Check if code is running
+export function isCodeRunning() {
+    return isRunning;
 }
 
 // 지원하는 언어 목록 가져오기

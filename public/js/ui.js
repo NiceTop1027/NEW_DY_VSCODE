@@ -2093,43 +2093,72 @@ async function startDebugging() {
         return;
     }
 
-    const filePath = activeTab.dataset.filePath;
-    const breakpoints = Array.from((await import('./editor.js')).getBreakpoints().get(filePath) || []);
+    const filePath = activeTab.dataset.filePath || activeTab.dataset.path;
+    const fileName = filePath.split('/').pop();
 
     try {
-        const response = await fetch('/api/debug/start', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ filePath, breakpoints })
-        });
+        // Get code and breakpoints
+        const { getEditorContent, getBreakpoints } = await import('./editor.js');
+        const code = getEditorContent();
+        const breakpoints = getBreakpoints().get(filePath);
 
-        const result = await response.json();
+        if (!breakpoints || breakpoints.size === 0) {
+            showNotification('브레이크포인트를 먼저 설정하세요 (왼쪽 여백 클릭)', 'warning');
+            return;
+        }
+
+        // Import debugger
+        const { simpleDebugger } = await import('./debugger.js');
+
+        // Start debugging (inserts debug statements)
+        const result = await simpleDebugger.startDebugging(filePath, code, breakpoints);
+
         if (result.success) {
-            showNotification('디버깅 시작됨', 'success');
+            showNotification(`🔍 디버그 모드로 실행 중... (${breakpoints.size}개 브레이크포인트)`, 'info');
+
+            // Switch to OUTPUT tab
+            const outputTab = document.querySelector('.panel-tab[data-panel-id="output"]');
+            if (outputTab) {
+                outputTab.click();
+            }
+
+            // Get language extension
+            const fileExtension = filePath.split('.').pop();
+
+            // Execute the debug code using codeRunner
+            const { runCode: executeCode } = await import('./codeRunner.js');
+            const debugResult = await executeCode(result.debugCode, fileExtension);
+            displayOutput(debugResult, fileName + ' (Debug)');
+
+            // Update UI
             updateDebugControls(true);
-            connectDebugWebSocket();
-        } else {
-            showNotification('디버깅 시작 실패', 'error');
         }
     } catch (error) {
         console.error('Failed to start debugging:', error);
-        showNotification('디버깅 시작 실패', 'error');
+        showNotification('디버깅 시작 실패: ' + error.message, 'error');
     }
 }
 
 async function stopDebugging() {
     try {
-        const response = await fetch('/api/debug/stop', {
-            method: 'POST'
-        });
+        // Stop code execution first
+        const { stopExecution } = await import('./codeRunner.js');
+        const wasStopped = stopExecution();
 
-        const result = await response.json();
-        if (result.success) {
-            showNotification('디버깅 중지됨', 'info');
-            updateDebugControls(false);
+        // Then update debugger state
+        const { simpleDebugger } = await import('./debugger.js');
+        simpleDebugger.stopDebugging();
+
+        if (wasStopped) {
+            showNotification('⛔ 디버깅 중지됨', 'info');
+        } else {
+            showNotification('디버깅 모드 종료', 'info');
         }
+
+        updateDebugControls(false);
     } catch (error) {
         console.error('Failed to stop debugging:', error);
+        showNotification('디버깅 중지 실패: ' + error.message, 'error');
     }
 }
 
@@ -2318,19 +2347,64 @@ async function deleteFile(filePath, fileName, isDirectory) {
 // Move file or folder
 async function moveFileOrFolder(sourcePath, targetFolderPath, fileName) {
     const dirHandle = clientFS.getDirectoryHandle();
-    
-    if (!dirHandle) {
-        showNotification('메모리 전용 모드에서는 이동이 지원되지 않습니다', 'error');
-        return;
-    }
-    
+
     // Check if source and target are the same
     const sourcePathParts = sourcePath.split('/');
     const sourceFileName = sourcePathParts.pop();
     const sourceParentPath = sourcePathParts.join('/');
-    
+
     if (sourceParentPath === targetFolderPath) {
         showNotification('같은 폴더에는 이동할 수 없습니다', 'info');
+        return;
+    }
+
+    // Memory mode - move in memory
+    if (!dirHandle) {
+        try {
+            const sourceFile = clientFS.getFile(sourcePath);
+            if (!sourceFile) {
+                showNotification('파일을 찾을 수 없습니다', 'error');
+                return;
+            }
+
+            if (sourceFile.type === 'directory') {
+                showNotification('폴더 이동은 현재 지원되지 않습니다', 'error');
+                return;
+            }
+
+            // Create new path
+            const newPath = targetFolderPath ? `${targetFolderPath}/${sourceFileName}` : sourceFileName;
+
+            // Move file in memory
+            const result = await clientFS.moveFile(sourcePath, newPath);
+
+            if (result.success) {
+                showNotification(`✅ ${sourceFileName} 이동 완료`, 'success');
+
+                // Update open tab if file is open
+                if (openFiles.has(sourcePath)) {
+                    const fileData = openFiles.get(sourcePath);
+                    openFiles.delete(sourcePath);
+                    openFiles.set(newPath, { ...fileData, path: newPath });
+
+                    // Update tab
+                    const tabs = document.querySelectorAll('.tab');
+                    tabs.forEach(tab => {
+                        if (tab.dataset.path === sourcePath) {
+                            tab.dataset.path = newPath;
+                        }
+                    });
+                }
+
+                // Reload file tree
+                renderClientFileTree();
+            } else {
+                showNotification(`이동 실패: ${result.error || '알 수 없는 오류'}`, 'error');
+            }
+        } catch (err) {
+            console.error('Memory mode move error:', err);
+            showNotification(`이동 실패: ${err.message}`, 'error');
+        }
         return;
     }
     
@@ -2402,29 +2476,62 @@ async function renameFile(filePath, fileName, isDirectory) {
     }
 
     showNotification(`${type} 이름 변경 중...`, 'info');
-    
+
     const dirHandle = clientFS.getDirectoryHandle();
-    
+
     // Try to rename on disk if directory handle exists
     if (dirHandle) {
         const result = await clientFS.renameEntry(filePath, newName);
-        
+
         if (result.success && result.renamed) {
             showNotification(`✅ 이름 변경됨: ${fileName} → ${newName}`, 'success');
-            
+
             // Close tab if file is open
             if (openFiles.has(filePath)) {
                 closeFile(filePath);
             }
-            
+
             // Reload file tree
             await loadDirectoryWithHandles(dirHandle);
         } else {
             showNotification(`이름 변경 실패: ${result.error || '알 수 없는 오류'}`, 'error');
         }
     } else {
-        // No directory handle - rename in memory only
-        showNotification('메모리 전용 모드에서는 이름 변경이 지원되지 않습니다', 'error');
+        // Memory mode - rename in memory
+        const result = await clientFS.renameEntry(filePath, newName);
+
+        if (result.success && result.renamed) {
+            showNotification(`✅ 이름 변경됨: ${fileName} → ${newName}`, 'success');
+
+            // Update open tab if file is open
+            const oldPath = filePath;
+            const pathParts = filePath.split('/');
+            pathParts[pathParts.length - 1] = newName;
+            const newPath = pathParts.join('/');
+
+            if (openFiles.has(oldPath)) {
+                const fileData = openFiles.get(oldPath);
+                openFiles.delete(oldPath);
+                openFiles.set(newPath, { ...fileData, path: newPath });
+
+                // Update tab
+                const tabs = document.querySelectorAll('.tab');
+                tabs.forEach(tab => {
+                    if (tab.dataset.path === oldPath) {
+                        tab.dataset.path = newPath;
+                        const tabTitle = tab.querySelector('.tab-title');
+                        if (tabTitle) {
+                            tabTitle.textContent = newName;
+                        }
+                    }
+                });
+            }
+
+            // Reload file tree
+            renderClientFileTree();
+        } else {
+            showNotification(`이름 변경 실패: ${result.error || '알 수 없는 오류'}`, 'error');
+        }
     }
 }
 
