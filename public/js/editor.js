@@ -68,16 +68,23 @@ export function initEditor(editorEl, tabsEl, openFilesMap) {
         smoothScrolling: true,
         // 고급 기능 활성화 (VS Code 스타일)
         quickSuggestions: {
-            other: 'on',
-            comments: 'on',
-            strings: 'on'
+            other: true,
+            comments: true,
+            strings: true
         },
-        quickSuggestionsDelay: 10,
+        quickSuggestionsDelay: 0,
         suggestOnTriggerCharacters: true,
         acceptSuggestionOnEnter: 'on',
         acceptSuggestionOnCommitCharacter: true,
         tabCompletion: 'on',
-        wordBasedSuggestions: 'allDocuments',
+        wordBasedSuggestions: true,
+        parameterHints: {
+            enabled: true,
+            cycle: true
+        },
+        autoClosingBrackets: 'languageDefined',
+        autoClosingQuotes: 'languageDefined',
+        autoSurround: 'languageDefined',
         snippetSuggestions: 'top',
         suggestSelection: 'first',
         suggest: {

@@ -1438,7 +1438,15 @@ function renderClientFileTree() {
         // Don't return - continue to add context menu listener
     }
     
-    tree.children.forEach(child => renderClientFileNode(child, fileExplorerEl, 0));
+    // Filter out .gitkeep placeholder files from display
+    const visibleChildren = tree.children.filter(child => {
+        if (child.type === 'file' && child.name === '.gitkeep') {
+            return false; // Hide .gitkeep files
+        }
+        return true;
+    });
+
+    visibleChildren.forEach(child => renderClientFileNode(child, fileExplorerEl, 0));
     
     // Add drop zone to file explorer root
     fileExplorerEl.addEventListener('dragover', (e) => {
@@ -1630,7 +1638,26 @@ function renderClientFileNode(node, parentEl, depth = 0) {
         itemContent.addEventListener('click', toggleFolder);
 
         if (node.children && node.children.length > 0) {
-            node.children.forEach(child => renderClientFileNode(child, childrenContainer, depth + 1));
+            // Filter out .gitkeep files
+            const visibleChildren = node.children.filter(child => {
+                if (child.type === 'file' && child.name === '.gitkeep') {
+                    return false;
+                }
+                return true;
+            });
+
+            if (visibleChildren.length > 0) {
+                visibleChildren.forEach(child => renderClientFileNode(child, childrenContainer, depth + 1));
+            } else {
+                // Empty folder - add placeholder (only .gitkeep files exist)
+                const emptyMsg = document.createElement('div');
+                emptyMsg.className = 'empty-folder-msg';
+                emptyMsg.style.padding = '5px 10px';
+                emptyMsg.style.color = 'var(--text-color-light)';
+                emptyMsg.style.fontSize = '11px';
+                emptyMsg.textContent = '빈 폴더';
+                childrenContainer.appendChild(emptyMsg);
+            }
         } else {
             // Empty folder - add placeholder
             const emptyMsg = document.createElement('div');

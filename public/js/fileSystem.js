@@ -251,7 +251,7 @@ class ClientFileSystem {
         for (const part of parts) {
             currentPath = currentPath ? `${currentPath}/${part}` : part;
             let child = current.children.find(c => c.name === part && c.type === 'directory');
-            
+
             if (!child) {
                 child = {
                     name: part,
@@ -260,6 +260,11 @@ class ClientFileSystem {
                     children: []
                 };
                 current.children.push(child);
+
+                // Create a placeholder file to persist the directory
+                const placeholderPath = `${currentPath}/.gitkeep`;
+                this.addFile(placeholderPath, '# This file keeps the directory in storage\n');
+                console.log(`📁 Created directory "${currentPath}" with placeholder`);
             }
             current = child;
         }
