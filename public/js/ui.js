@@ -256,32 +256,30 @@ export function initUI() {
     initEditor(document.getElementById('editor'), tabsContainer, openFiles); // Initialize editor
     initAIChat(); // Initialize AI Chat Panel
 
-    // Activity Bar Icons (효과적인 순서: 자주 사용하는 기능 우선)
+    // Activity Bar Icons (VSCode 표준 순서: 핵심 기능 우선)
     const activityIcons = [
-        // 1. GitHub (맨 위, 가장 중요)
-        { name: 'GitHub', icon: 'github', action: 'github', isGitHub: true },
-        
-        // 2. 파일 관리 (가장 자주 사용)
+        // 1. 파일 관리 (가장 자주 사용)
         { name: 'Explorer', icon: 'files', action: 'explorer' },
         { name: 'Search', icon: 'search', action: 'search' },
-        
-        // 3. Git 관련
+
+        // 2. Git/소스 관리
         { name: 'Source Control', icon: 'source-control', action: 'source-control' },
 
-        // 4. 개발 도구
+        // 3. 개발 도구
         { name: 'Run and Debug', icon: 'debug-alt', action: 'debug' },
 
-        // 5. AI 도구 (특별 기능)
+        // 4. 특별 기능
         { name: 'AI Assistant', icon: 'sparkle', action: 'ai', isAI: true },
-        
-        // 6. 기타 (맨 아래)
         { name: 'Upload Folder', icon: 'folder-opened', action: 'upload' },
+
+        // 5. 외부 서비스 (맨 아래)
+        { name: 'GitHub', icon: 'github', action: 'github', isGitHub: true },
         { name: '덕영고등학교', icon: 'home', action: 'school', isSchool: true }
     ];
 
     activityIcons.forEach(({name, icon, action, isSchool, isAI, isGitHub}, index) => {
-        // 그룹 구분선 추가
-        if (index === 1 || index === 3 || index === 6 || index === 7) {
+        // 그룹 구분선 추가 (논리적 그룹 구분)
+        if (index === 2 || index === 4 || index === 6) {
             const separator = document.createElement('div');
             separator.className = 'activity-separator';
             activityBar.appendChild(separator);
