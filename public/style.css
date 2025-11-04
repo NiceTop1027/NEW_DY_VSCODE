@@ -1717,8 +1717,9 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 20px;
-    height: 20px;
+    width: 24px;
+    height: 24px;
+    font-size: 18px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 6px;
     transition: all 0.25s ease;
@@ -1744,6 +1745,49 @@ body {
     letter-spacing: 0.2px;
     position: relative;
     z-index: 1;
+}
+
+/* Directory-specific styles */
+.tree-item[data-type="directory"] .tree-item-content {
+    background: rgba(102, 126, 234, 0.08);
+    border-left: 3px solid rgba(220, 182, 122, 0.6);
+}
+
+.tree-item[data-type="directory"] .tree-item-content:hover {
+    background: rgba(102, 126, 234, 0.15);
+    border-left-color: rgba(220, 182, 122, 0.9);
+}
+
+.tree-item[data-type="directory"] .tree-item-label {
+    font-weight: 600;
+    color: #dcb67a;
+}
+
+.tree-item[data-type="directory"].closed > .tree-item-content .tree-item-label::after {
+    content: ' ▸';
+    color: rgba(220, 182, 122, 0.8);
+    margin-left: 4px;
+}
+
+.tree-item[data-type="directory"]:not(.closed) > .tree-item-content .tree-item-label::after {
+    content: ' ▾';
+    color: rgba(220, 182, 122, 0.8);
+    margin-left: 4px;
+}
+
+/* File-specific styles */
+.tree-item[data-type="file"] .tree-item-content {
+    background: rgba(255, 255, 255, 0.02);
+    border-left: 3px solid transparent;
+}
+
+.tree-item[data-type="file"] .tree-item-content:hover {
+    border-left-color: rgba(102, 126, 234, 0.5);
+}
+
+.tree-item[data-type="file"] .tree-item-label {
+    font-weight: 400;
+    color: var(--text-color-light);
 }
 
 .tree-item.selected .tree-item-content {

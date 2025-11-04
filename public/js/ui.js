@@ -46,6 +46,7 @@ function renderFileTree(node, parentEl, depth = 0) {
     const item = document.createElement('div');
     item.className = `tree-item ${node.type}`;
     item.dataset.path = node.path || node.name;
+    item.dataset.type = node.type; // Add data-type attribute for styling
 
     // Create wrapper for the item content
     const itemContent = document.createElement('div');
@@ -1455,17 +1456,32 @@ function renderClientFileNode(node, parentEl, depth = 0) {
     item.className = `tree-item ${node.type}`;
     item.style.paddingLeft = `${depth * 15}px`;
     item.dataset.path = node.path;
+    item.dataset.type = node.type; // Add data-type attribute for styling
     item.draggable = true;
 
-    const labelContainer = document.createElement('div');
-    labelContainer.style.display = 'flex';
-    labelContainer.style.alignItems = 'center';
-    labelContainer.style.flex = '1';
-    
+    // Create item content wrapper
+    const itemContent = document.createElement('div');
+    itemContent.className = 'tree-item-content';
+    itemContent.style.paddingLeft = '0'; // Remove extra padding since item has it
+
+    // Add icon
+    const icon = document.createElement('span');
+    icon.className = 'tree-item-icon';
+    if (node.type === 'directory') {
+        icon.textContent = fileIcons.getFolderIcon(false);
+    } else {
+        icon.textContent = fileIcons.getFileIcon(node.name);
+    }
+    itemContent.appendChild(icon);
+
+    // Add label
     const label = document.createElement('span');
+    label.className = 'tree-item-label';
     label.textContent = node.name;
-    labelContainer.appendChild(label);
-    item.appendChild(labelContainer);
+    label.title = node.name;
+    itemContent.appendChild(label);
+
+    item.appendChild(itemContent);
     
     // Action buttons (shown on hover)
     const actionsDiv = document.createElement('div');
@@ -1585,9 +1601,13 @@ function renderClientFileNode(node, parentEl, depth = 0) {
         const toggleFolder = (e) => {
             e.stopPropagation();
             item.classList.toggle('closed');
+
+            // Update folder icon
+            const isOpen = !item.classList.contains('closed');
+            icon.textContent = fileIcons.getFolderIcon(isOpen);
         };
 
-        labelContainer.addEventListener('click', toggleFolder);
+        itemContent.addEventListener('click', toggleFolder);
 
         if (node.children && node.children.length > 0) {
             node.children.forEach(child => renderClientFileNode(child, childrenContainer, depth + 1));
@@ -1606,7 +1626,7 @@ function renderClientFileNode(node, parentEl, depth = 0) {
     } else {
         // File - click to open
         const openFile = () => openClientFile(node.path, node.name);
-        labelContainer.addEventListener('click', openFile);
+        itemContent.addEventListener('click', openFile);
     }
 
     parentEl.appendChild(item);
