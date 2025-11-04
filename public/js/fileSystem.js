@@ -167,13 +167,10 @@ class ClientFileSystem {
         return { success: false };
     }
 
-    // Delete file
+    // Delete file or folder
     deleteFile(path) {
-        const file = this.files.get(path);
-        if (!file) return false;
-
         const parts = path.split('/').filter(p => p);
-        const fileName = parts[parts.length - 1];
+        const itemName = parts[parts.length - 1];
         const dirPath = parts.slice(0, -1);
 
         // Find parent directory
@@ -183,22 +180,56 @@ class ClientFileSystem {
             if (!current) return false;
         }
 
+        // Find the item to delete
+        const itemIndex = current.children.findIndex(c => c.name === itemName);
+        if (itemIndex === -1) return false;
+
+        const item = current.children[itemIndex];
+
+        // If it's a directory, delete all children recursively
+        if (item.type === 'directory') {
+            this.deleteFolderRecursive(path);
+        } else {
+            // It's a file
+            this.files.delete(path);
+
+            // Delete from persistent storage
+            if (this.initialized) {
+                persistentStorage.deleteFile(path).catch(err => {
+                    console.error('Failed to delete from persistent storage:', err);
+                });
+            }
+        }
+
         // Remove from parent's children
-        const index = current.children.findIndex(c => c.name === fileName);
-        if (index !== -1) {
-            current.children.splice(index, 1);
-        }
-
-        this.files.delete(path);
-
-        // Delete from persistent storage
-        if (this.initialized) {
-            persistentStorage.deleteFile(path).catch(err => {
-                console.error('Failed to delete from persistent storage:', err);
-            });
-        }
+        current.children.splice(itemIndex, 1);
 
         return true;
+    }
+
+    // Delete folder and all its contents recursively
+    deleteFolderRecursive(folderPath) {
+        // Get all files that start with this folder path
+        const filesToDelete = [];
+        this.files.forEach((file, path) => {
+            if (path === folderPath || path.startsWith(folderPath + '/')) {
+                filesToDelete.push(path);
+            }
+        });
+
+        // Delete all files in the folder
+        filesToDelete.forEach(path => {
+            this.files.delete(path);
+
+            // Delete from persistent storage
+            if (this.initialized) {
+                persistentStorage.deleteFile(path).catch(err => {
+                    console.error('Failed to delete from persistent storage:', err);
+                });
+            }
+        });
+
+        console.log(`🗑️ Deleted folder "${folderPath}" with ${filesToDelete.length} files`);
     }
 
     // Get the file tree structure
