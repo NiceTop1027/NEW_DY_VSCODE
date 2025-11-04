@@ -54,16 +54,21 @@ function renderFileTree(node, parentEl, depth = 0) {
     itemContent.style.paddingLeft = `${depth * 15}px`;
 
     // Add icon
-    const icon = document.createElement('span');
-    icon.className = 'tree-item-icon';
+    const iconWrapper = document.createElement('span');
+    iconWrapper.className = 'tree-item-icon';
+
+    const icon = document.createElement('i');
+    icon.className = 'codicon';
     if (node.type === 'directory') {
-        // Use emoji folder icon
-        icon.textContent = fileIcons.getFolderIcon(false);
+        icon.classList.add(`codicon-${fileIcons.getFolderIcon(false)}`);
+        icon.style.color = '#dcb67a';
     } else {
-        // Use file-specific emoji icon
-        icon.textContent = fileIcons.getFileIcon(node.name);
+        const iconClass = fileIcons.getFileIcon(node.name);
+        icon.classList.add(`codicon-${iconClass}`);
+        icon.style.color = fileIcons.getFileColor(node.name);
     }
-    itemContent.appendChild(icon);
+    iconWrapper.appendChild(icon);
+    itemContent.appendChild(iconWrapper);
 
     // Add label
     const label = document.createElement('span');
@@ -89,7 +94,9 @@ function renderFileTree(node, parentEl, depth = 0) {
 
             // Update folder icon (closed/open)
             const isOpen = !item.classList.contains('closed');
-            icon.textContent = fileIcons.getFolderIcon(isOpen);
+            const newIconClass = fileIcons.getFolderIcon(isOpen);
+            icon.className = 'codicon';
+            icon.classList.add(`codicon-${newIconClass}`);
         });
 
         // Render children
@@ -1465,14 +1472,21 @@ function renderClientFileNode(node, parentEl, depth = 0) {
     itemContent.style.paddingLeft = '0'; // Remove extra padding since item has it
 
     // Add icon
-    const icon = document.createElement('span');
-    icon.className = 'tree-item-icon';
+    const iconWrapper = document.createElement('span');
+    iconWrapper.className = 'tree-item-icon';
+
+    const icon = document.createElement('i');
+    icon.className = 'codicon';
     if (node.type === 'directory') {
-        icon.textContent = fileIcons.getFolderIcon(false);
+        icon.classList.add(`codicon-${fileIcons.getFolderIcon(false)}`);
+        icon.style.color = '#dcb67a';
     } else {
-        icon.textContent = fileIcons.getFileIcon(node.name);
+        const iconClass = fileIcons.getFileIcon(node.name);
+        icon.classList.add(`codicon-${iconClass}`);
+        icon.style.color = fileIcons.getFileColor(node.name);
     }
-    itemContent.appendChild(icon);
+    iconWrapper.appendChild(icon);
+    itemContent.appendChild(iconWrapper);
 
     // Add label
     const label = document.createElement('span');
@@ -1604,7 +1618,9 @@ function renderClientFileNode(node, parentEl, depth = 0) {
 
             // Update folder icon
             const isOpen = !item.classList.contains('closed');
-            icon.textContent = fileIcons.getFolderIcon(isOpen);
+            const newIconClass = fileIcons.getFolderIcon(isOpen);
+            icon.className = 'codicon';
+            icon.classList.add(`codicon-${newIconClass}`);
         };
 
         itemContent.addEventListener('click', toggleFolder);
