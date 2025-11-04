@@ -416,7 +416,13 @@ export function initUI() {
     
     // Set explorer as active by default
     document.querySelector('.activity-icon[data-action="explorer"]')?.classList.add('active');
-    
+
+    // Show explorer view by default
+    const fileExplorerView = document.getElementById('file-explorer');
+    const searchBox = document.querySelector('.search-box');
+    if (fileExplorerView) fileExplorerView.style.display = 'block';
+    if (searchBox) searchBox.style.display = 'block';
+
     // 탭 변경 시 푸시 버튼 체크
     document.addEventListener('click', (e) => {
         if (e.target.closest('.tab')) {
@@ -1778,27 +1784,28 @@ console.error = (...args) => {
 document.addEventListener('DOMContentLoaded', async () => {
     initUI();
 
+    // Listen for file restoration events BEFORE initializing file system
+    window.addEventListener('files-restored', (event) => {
+        console.log(`📂 ${event.detail.count} files restored, refreshing UI...`);
+        // Always refresh file tree when files are restored
+        try {
+            renderClientFileTree();
+            showNotification(`${event.detail.count}개 파일 복원됨`, 'success');
+        } catch (err) {
+            console.error('Failed to refresh file tree:', err);
+        }
+    });
+
     // Initialize file system with persistent storage
     try {
         await clientFS.init();
         console.log('✅ File system initialized');
+
+        // Force refresh UI after initialization to show restored files
+        renderClientFileTree();
     } catch (err) {
         console.error('파일 시스템 초기화 실패:', err);
     }
-
-    // Listen for file restoration events
-    window.addEventListener('files-restored', (event) => {
-        console.log(`📂 ${event.detail.count} files restored, refreshing UI...`);
-        // Refresh file tree if in explorer view
-        if (currentView === 'files' || currentView === 'explorer') {
-            try {
-                renderClientFileTree();
-                showNotification(`${event.detail.count}개 파일 복원됨`, 'success');
-            } catch (err) {
-                console.error('Failed to refresh file tree:', err);
-            }
-        }
-    });
 
     // Initialize GitHub
     try {
