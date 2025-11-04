@@ -13,6 +13,7 @@ import { outputPanel } from './outputPanel.js';
 import { initTerminal } from './terminal.js';
 import { initLanguageClient } from './languageClient.js';
 import { fileIcons } from './fileIcons.js';
+import { tutorial } from './tutorial.js';
 
 // DOM Elements
 let fileExplorerEl;
@@ -1846,6 +1847,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (splashScreen) {
             splashScreen.classList.add('hidden');
         }
+
+        // Show tutorial for first-time users after splash screen
+        setTimeout(() => {
+            tutorial.showIfFirstTime();
+        }, 500);
     }, 3300); // 3.3 seconds (animation duration + fade out)
 });
 
