@@ -3437,6 +3437,41 @@ body {
     height: calc(100% - 40px);
 }
 
+/* Zen Mode Exit Button */
+.zen-exit-btn {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    color: var(--text-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    font-size: 16px;
+}
+
+.zen-exit-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+.zen-exit-btn:active {
+    transform: scale(0.95);
+}
+
+.zen-exit-btn .codicon {
+    font-size: 20px;
+}
+
 /* Live Preview Modal */
 .preview-modal {
     position: fixed;

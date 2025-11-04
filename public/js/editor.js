@@ -757,13 +757,13 @@ export function extractMethod() {
 let isZenMode = false;
 export function toggleZenMode() {
     isZenMode = !isZenMode;
-    
+
     const sidebar = document.getElementById('sidebar');
     const panel = document.getElementById('panel');
     const activityBar = document.getElementById('activity-bar');
     const editorActions = document.getElementById('editor-actions');
     const breadcrumb = document.getElementById('breadcrumb');
-    
+
     if (isZenMode) {
         // Hide all UI elements
         if (sidebar) sidebar.style.display = 'none';
@@ -771,6 +771,9 @@ export function toggleZenMode() {
         if (activityBar) activityBar.style.display = 'none';
         if (editorActions) editorActions.style.display = 'none';
         if (breadcrumb) breadcrumb.style.display = 'none';
+
+        // Create Zen mode exit button
+        createZenExitButton();
     } else {
         // Show all UI elements
         if (sidebar) sidebar.style.display = '';
@@ -778,14 +781,49 @@ export function toggleZenMode() {
         if (activityBar) activityBar.style.display = '';
         if (editorActions) editorActions.style.display = '';
         if (breadcrumb) breadcrumb.style.display = '';
+
+        // Remove Zen mode exit button
+        removeZenExitButton();
     }
-    
+
     // Relayout editor
     if (editor) {
         setTimeout(() => editor.layout(), 100);
     }
-    
+
     return isZenMode;
+}
+
+// Create Zen mode exit button
+function createZenExitButton() {
+    // Remove existing button if any
+    removeZenExitButton();
+
+    const exitBtn = document.createElement('button');
+    exitBtn.id = 'zen-exit-btn';
+    exitBtn.className = 'zen-exit-btn';
+    exitBtn.innerHTML = '<i class="codicon codicon-chrome-close"></i>';
+    exitBtn.title = 'Zen 모드 종료 (Esc 또는 Ctrl+K Z)';
+    exitBtn.onclick = () => toggleZenMode();
+
+    document.body.appendChild(exitBtn);
+
+    // Add ESC key listener
+    const escapeHandler = (e) => {
+        if (e.key === 'Escape' && isZenMode) {
+            toggleZenMode();
+        }
+    };
+    document.addEventListener('keydown', escapeHandler);
+    exitBtn.dataset.escapeHandler = 'attached';
+}
+
+// Remove Zen mode exit button
+function removeZenExitButton() {
+    const exitBtn = document.getElementById('zen-exit-btn');
+    if (exitBtn) {
+        exitBtn.remove();
+    }
 }
 
 // 에디터 설정 복원
