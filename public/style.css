@@ -1004,9 +1004,9 @@ body {
 }
 
 #sidebar {
-    width: 320px;
-    min-width: 280px;
-    max-width: 480px;
+    width: 260px;
+    min-width: 200px;
+    max-width: 400px;
     height: 100%;
     background: linear-gradient(180deg, var(--sidebar-background) 0%, rgba(22, 27, 34, 0.98) 100%);
     border-right: 1px solid var(--glass-border);
@@ -1355,9 +1355,9 @@ body {
 }
 
 #panel {
-    height: 30vh;
-    min-height: 120px;
-    max-height: 60vh;
+    height: 25vh;
+    min-height: 150px;
+    max-height: 50vh;
     background: var(--glass-bg);
     backdrop-filter: blur(12px);
     border-top: 1px solid var(--glass-border);
