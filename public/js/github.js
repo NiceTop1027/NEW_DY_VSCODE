@@ -25,14 +25,32 @@ export function initGitHub() {
         githubLoginBtn: !!githubLoginBtn
     });
 
-    // Load saved token from sessionStorage (more secure than localStorage)
-    // sessionStorage is cleared when the tab is closed
-    const savedToken = sessionStorage.getItem('githubToken');
-    const savedUser = sessionStorage.getItem('githubUser');
-    console.log('💾 sessionStorage 확인:', {
+    // Migrate from localStorage to sessionStorage (for backward compatibility)
+    // Check sessionStorage first, then localStorage
+    let savedToken = sessionStorage.getItem('githubToken');
+    let savedUser = sessionStorage.getItem('githubUser');
+
+    // If not in sessionStorage, check localStorage and migrate
+    if (!savedToken || !savedUser) {
+        const oldToken = localStorage.getItem('githubToken');
+        const oldUser = localStorage.getItem('githubUser');
+
+        if (oldToken && oldUser) {
+            console.log('🔄 localStorage에서 sessionStorage로 마이그레이션 중...');
+            sessionStorage.setItem('githubToken', oldToken);
+            sessionStorage.setItem('githubUser', oldUser);
+            savedToken = oldToken;
+            savedUser = oldUser;
+
+            // Keep in localStorage as backup (but prefer sessionStorage)
+            console.log('✅ 마이그레이션 완료 (localStorage는 백업으로 유지)');
+        }
+    }
+
+    console.log('💾 저장소 확인:', {
         hasToken: !!savedToken,
-        hasUser: !!savedUser
-        // Security: DO NOT log token length or prefix
+        hasUser: !!savedUser,
+        source: savedToken ? (sessionStorage.getItem('githubToken') ? 'sessionStorage' : 'localStorage') : 'none'
     });
 
     if (savedToken && savedUser) {
@@ -44,6 +62,8 @@ export function initGitHub() {
             console.error('GitHub 사용자 정보 파싱 실패');
             sessionStorage.removeItem('githubToken');
             sessionStorage.removeItem('githubUser');
+            localStorage.removeItem('githubToken');
+            localStorage.removeItem('githubUser');
             githubToken = null;
             githubUser = null;
         }
@@ -144,12 +164,14 @@ function handleGitHubLogin() {
             githubToken = event.data.token;
             githubUser = event.data.user;
 
-            // Save to sessionStorage (more secure, cleared on tab close)
+            // Save to both sessionStorage (primary) and localStorage (backup)
             sessionStorage.setItem('githubToken', githubToken);
             sessionStorage.setItem('githubUser', JSON.stringify(githubUser));
+            localStorage.setItem('githubToken', githubToken);
+            localStorage.setItem('githubUser', JSON.stringify(githubUser));
 
             console.log('✅ GitHub 인증 완료:', githubUser.login);
-            console.log('💾 sessionStorage 저장 완료 (보안 강화)');
+            console.log('💾 sessionStorage & localStorage 저장 완료');
             console.log('📊 현재 상태:', {
                 token: !!githubToken,
                 user: !!githubUser,
@@ -278,13 +300,19 @@ export function setupGitHubCloneButton() {
                 return;
             }
             
-            // Get token from sessionStorage (more secure)
-            const token = sessionStorage.getItem('githubToken');
+            // Get token from sessionStorage or localStorage (backward compatibility)
+            const token = sessionStorage.getItem('githubToken') || localStorage.getItem('githubToken');
 
             if (!token) {
                 alert('❌ GitHub 토큰이 없습니다.\n\n다시 로그인해주세요.');
                 return;
             }
+
+            console.log('🔑 토큰 확인:', {
+                hasToken: !!token,
+                fromSession: !!sessionStorage.getItem('githubToken'),
+                fromLocal: !!localStorage.getItem('githubToken')
+            });
 
             // Save original button state for recovery
             const originalButtonHTML = githubCloneBtn.innerHTML;
@@ -665,12 +693,21 @@ async function executePush() {
         return;
     }
     
-    // Check GitHub token (try both keys for compatibility)
-    const githubToken = localStorage.getItem('githubToken') || localStorage.getItem('github_token');
+    // Check GitHub token (try sessionStorage first, then localStorage for compatibility)
+    const githubToken = sessionStorage.getItem('githubToken') ||
+                       localStorage.getItem('githubToken') ||
+                       localStorage.getItem('github_token');
+
     if (!githubToken) {
         alert('❌ GitHub 토큰이 없습니다!\n\n먼저 GitHub에 로그인하세요.');
         return;
     }
+
+    console.log('🔑 Push 토큰 확인:', {
+        hasToken: !!githubToken,
+        fromSession: !!sessionStorage.getItem('githubToken'),
+        fromLocal: !!localStorage.getItem('githubToken')
+    });
     
     const pushMode = document.querySelector('input[name="push-mode"]:checked');
     if (!pushMode) {
