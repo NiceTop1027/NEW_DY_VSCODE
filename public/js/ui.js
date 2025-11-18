@@ -1104,6 +1104,15 @@ export function initUI() {
             await outputPanel.runCode(code, language, filename);
         });
     }
+
+    // Activate Explorer by default on startup
+    setTimeout(() => {
+        const explorerIcon = document.querySelector('.activity-icon[data-action="explorer"]');
+        if (explorerIcon) {
+            explorerIcon.click();
+            console.log('✅ Explorer 기본 활성화');
+        }
+    }, 100);
 }
 
 // Filter file tree based on search term

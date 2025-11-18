@@ -433,11 +433,17 @@ export function setupGitHubCloneButton() {
                 
                 // Update cloned repos list in sidebar
                 loadClonedRepos();
-                
+
+                // Refresh file tree to show cloned files
+                const { renderClientFileTree } = await import('./ui.js');
+                await renderClientFileTree();
+                console.log('✅ 파일 트리 업데이트 완료');
+
                 // Switch to Explorer view to show files
                 const explorerIcon = document.querySelector('.activity-icon[data-action="explorer"]');
                 if (explorerIcon) {
                     explorerIcon.click();
+                    console.log('✅ Explorer 뷰로 전환');
                 }
             } catch (error) {
                 console.error('❌ Clone error:', error);
@@ -485,16 +491,17 @@ export function setupGitHubCloneButton() {
         const files = [];
         let fileCount = 0;
         let dirCount = 0;
+        let errors = [];
 
         async function walkDir(dirPath = '') {
             try {
                 const items = await gitClient.listFiles(dirPath);
-                console.log(`📁 Reading directory: ${dirPath || '/'} (${items.length} items)`);
+                console.log(`📁 ${dirPath || '/'}: ${items.length} items`);
 
                 for (const item of items) {
-                    // Skip .git directory
-                    if (item === '.git') {
-                        console.log('  ⏭️  Skipping .git');
+                    // Skip .git and node_modules
+                    if (item === '.git' || item === 'node_modules') {
+                        console.log(`  ⏭️  Skip: ${item}`);
                         continue;
                     }
 
@@ -504,28 +511,36 @@ export function setupGitHubCloneButton() {
                         // Try to read as file
                         const content = await gitClient.readFile(fullPath);
 
-                        // Add to clientFS
-                        await clientFS.addFile(fullPath, content);
+                        // Add to clientFS (don't save to localStorage - GitHub files are temporary)
+                        await clientFS.addFile(fullPath, content, false, true);
                         files.push(fullPath);
                         fileCount++;
 
                         if (fileCount % 10 === 0) {
-                            console.log(`  📄 Loaded ${fileCount} files...`);
+                            console.log(`  📄 ${fileCount} files loaded...`);
                         }
                     } catch (err) {
                         // It's a directory, recurse
+                        if (err.message && !err.message.includes('is a directory')) {
+                            errors.push({ path: fullPath, error: err.message });
+                        }
                         dirCount++;
                         await walkDir(fullPath);
                     }
                 }
             } catch (err) {
-                console.error(`❌ Error reading directory ${dirPath}:`, err.message);
+                console.error(`❌ Error in ${dirPath}:`, err.message);
+                errors.push({ path: dirPath, error: err.message });
             }
         }
 
-        console.log('🚀 Starting file system walk...');
+        console.log('🚀 GitHub 파일 로드 시작...');
         await walkDir();
-        console.log(`✅ Completed! Files: ${fileCount}, Directories: ${dirCount}`);
+
+        console.log(`✅ 완료! 파일: ${fileCount}개, 폴더: ${dirCount}개`);
+        if (errors.length > 0) {
+            console.warn(`⚠️ ${errors.length}개 항목 스킵됨`);
+        }
 
         return files;
     }
