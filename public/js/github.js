@@ -1,10 +1,14 @@
 // GitHub Integration
 import { githubCloneRepo, githubPush, githubGetRepos } from './api.js';
 import { loadClonedRepos } from './ui.js';
+import { EventManager } from './utils.js';
 
 let githubToken = null;
 let githubUser = null;
 export let selectedRepo = null;
+
+// Event manager for cleanup
+const githubEventManager = new EventManager();
 
 // Setter for selectedRepo
 export function setSelectedRepo(repo) {
@@ -14,31 +18,32 @@ export function setSelectedRepo(repo) {
 
 export function initGitHub() {
     console.log('🔧 initGitHub() 호출됨');
-    
+
     const githubLoginBtn = document.getElementById('github-login-btn');
-    
+
     console.log('🔍 GitHub 버튼 요소 확인:', {
         githubLoginBtn: !!githubLoginBtn
     });
-    
-    // Load saved token
-    const savedToken = localStorage.getItem('githubToken');
-    const savedUser = localStorage.getItem('githubUser');
-    console.log('💾 localStorage 확인:', {
+
+    // Load saved token from sessionStorage (more secure than localStorage)
+    // sessionStorage is cleared when the tab is closed
+    const savedToken = sessionStorage.getItem('githubToken');
+    const savedUser = sessionStorage.getItem('githubUser');
+    console.log('💾 sessionStorage 확인:', {
         hasToken: !!savedToken,
-        hasUser: !!savedUser,
-        tokenLength: savedToken ? savedToken.length : 0
+        hasUser: !!savedUser
+        // Security: DO NOT log token length or prefix
     });
-    
+
     if (savedToken && savedUser) {
         githubToken = savedToken;
         try {
             githubUser = JSON.parse(savedUser);
             console.log('✅ GitHub 인증 정보 로드됨:', githubUser.login);
         } catch (e) {
-            console.error('GitHub 사용자 정보 파싱 실패:', e);
-            localStorage.removeItem('githubToken');
-            localStorage.removeItem('githubUser');
+            console.error('GitHub 사용자 정보 파싱 실패');
+            sessionStorage.removeItem('githubToken');
+            sessionStorage.removeItem('githubUser');
             githubToken = null;
             githubUser = null;
         }
@@ -101,32 +106,32 @@ function handleGitHubLogin() {
         return;
     }
     
-    // Check for popup errors
+    // Check for popup errors (with proper cleanup)
     let errorCheckCount = 0;
-    const errorCheck = setInterval(() => {
+    const errorCheck = githubEventManager.setInterval(() => {
         errorCheckCount++;
         try {
             if (popup.closed) {
-                clearInterval(errorCheck);
+                githubEventManager.clearInterval(errorCheck);
                 return;
             }
-            
+
             // Try to check popup URL (will fail if cross-origin)
             const popupUrl = popup.location.href;
             if (popupUrl.includes('error')) {
-                clearInterval(errorCheck);
+                githubEventManager.clearInterval(errorCheck);
                 console.error('❌ GitHub 인증 에러 감지:', popupUrl);
                 alert('GitHub 인증 중 오류가 발생했습니다.\n\nCallback URL이 올바르게 설정되었는지 확인하세요:\n' + redirectUri);
             }
         } catch (e) {
             // Cross-origin error is expected
         }
-        
+
         if (errorCheckCount > 60) {
-            clearInterval(errorCheck);
+            githubEventManager.clearInterval(errorCheck);
         }
     }, 1000);
-    
+
     // Listen for message from popup (use named function to avoid duplicates)
     const handleGitHubAuth = (event) => {
         console.log('📨 메시지 수신:', event);
@@ -138,13 +143,13 @@ function handleGitHubLogin() {
             
             githubToken = event.data.token;
             githubUser = event.data.user;
-            
-            // Save to localStorage
-            localStorage.setItem('githubToken', githubToken);
-            localStorage.setItem('githubUser', JSON.stringify(githubUser));
-            
+
+            // Save to sessionStorage (more secure, cleared on tab close)
+            sessionStorage.setItem('githubToken', githubToken);
+            sessionStorage.setItem('githubUser', JSON.stringify(githubUser));
+
             console.log('✅ GitHub 인증 완료:', githubUser.login);
-            console.log('💾 localStorage 저장 완료');
+            console.log('💾 sessionStorage 저장 완료 (보안 강화)');
             console.log('📊 현재 상태:', {
                 token: !!githubToken,
                 user: !!githubUser,
@@ -184,18 +189,40 @@ function handleGitHubLogin() {
                             console.log('   authSection.display:', authSection.style.display);
                             console.log('   reposSection.display:', reposSection.style.display);
                             
-                            // Update user info
+                            // Update user info (XSS safe)
                             const userInfo = reposSection.querySelector('.github-user-info');
                             if (userInfo) {
-                                userInfo.innerHTML = `
-                                    <div style="display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(34, 197, 94, 0.1); border-radius: 6px; margin-bottom: 15px;">
-                                        ${githubUser.avatar_url ? `<img src="${githubUser.avatar_url}" style="width: 32px; height: 32px; border-radius: 50%;" />` : ''}
-                                        <div>
-                                            <strong style="color: #22c55e;">${githubUser.login}</strong>
-                                            <div style="font-size: 11px; color: #888;">GitHub 연동됨</div>
-                                        </div>
-                                    </div>
-                                `;
+                                // Clear existing content
+                                userInfo.innerHTML = '';
+
+                                // Create container safely
+                                const container = document.createElement('div');
+                                container.style.cssText = 'display: flex; align-items: center; gap: 10px; padding: 10px; background: rgba(34, 197, 94, 0.1); border-radius: 6px; margin-bottom: 15px;';
+
+                                // Add avatar if exists
+                                if (githubUser.avatar_url) {
+                                    const img = document.createElement('img');
+                                    img.src = githubUser.avatar_url; // URL is validated by GitHub API
+                                    img.style.cssText = 'width: 32px; height: 32px; border-radius: 50%;';
+                                    container.appendChild(img);
+                                }
+
+                                // Add user info
+                                const infoDiv = document.createElement('div');
+
+                                const username = document.createElement('strong');
+                                username.style.color = '#22c55e';
+                                username.textContent = githubUser.login; // XSS safe: uses textContent
+
+                                const status = document.createElement('div');
+                                status.style.cssText = 'font-size: 11px; color: #888;';
+                                status.textContent = 'GitHub 연동됨';
+
+                                infoDiv.appendChild(username);
+                                infoDiv.appendChild(status);
+                                container.appendChild(infoDiv);
+
+                                userInfo.appendChild(container);
                                 console.log('✅ 사용자 정보 표시 완료');
                             }
                             
@@ -211,25 +238,29 @@ function handleGitHubLogin() {
                     if (popup && !popup.closed) {
                         popup.close();
                     }
-                    
-                    // Remove event listener after successful auth
-                    window.removeEventListener('message', handleGitHubAuth);
+
+                    // Clean up event listener and intervals
+                    githubEventManager.off(window, 'message', handleGitHubAuth);
+                    githubEventManager.clearInterval(errorCheck);
+                    githubEventManager.clearInterval(checkPopup);
                 }
             };
-            
+
             // Global callback function for direct call
             window.handleGitHubCallback = handleGitHubAuth;
-            
-            window.addEventListener('message', handleGitHubAuth);
-            
+
+            // Use event manager for automatic cleanup
+            githubEventManager.on(window, 'message', handleGitHubAuth);
+
     console.log('👂 메시지 리스너 등록 완료');
-    
-    // Check if popup was closed without auth
-    const checkPopup = setInterval(() => {
+
+    // Check if popup was closed without auth (with proper cleanup)
+    const checkPopup = githubEventManager.setInterval(() => {
         if (popup.closed) {
-            clearInterval(checkPopup);
+            githubEventManager.clearInterval(checkPopup);
+            githubEventManager.clearInterval(errorCheck);
             console.log('🔴 팝업이 닫혔습니다');
-            window.removeEventListener('message', handleGitHubAuth);
+            githubEventManager.off(window, 'message', handleGitHubAuth);
         }
     }, 1000);
 }
@@ -247,18 +278,22 @@ export function setupGitHubCloneButton() {
                 return;
             }
             
-            // Get token from localStorage
-            const token = localStorage.getItem('githubToken');
-            
+            // Get token from sessionStorage (more secure)
+            const token = sessionStorage.getItem('githubToken');
+
             if (!token) {
                 alert('❌ GitHub 토큰이 없습니다.\n\n다시 로그인해주세요.');
                 return;
             }
-            
+
+            // Save original button state for recovery
+            const originalButtonHTML = githubCloneBtn.innerHTML;
+            const originalButtonDisabled = githubCloneBtn.disabled;
+
             try {
                 githubCloneBtn.disabled = true;
                 githubCloneBtn.innerHTML = '<i class="codicon codicon-loading codicon-modifier-spin"></i> 토큰 확인 중...';
-                
+
                 // Test token validity first
                 console.log('🔍 토큰 유효성 검사 중...');
                 const testResponse = await fetch('https://api.github.com/user', {
@@ -267,14 +302,14 @@ export function setupGitHubCloneButton() {
                         'Accept': 'application/vnd.github.v3+json'
                     }
                 });
-                
+
                 if (!testResponse.ok) {
-                    const errorText = await testResponse.text();
-                    console.error('❌ 토큰 검증 실패:', testResponse.status, errorText);
-                    
+                    console.error('❌ 토큰 검증 실패:', testResponse.status);
+
                     if (testResponse.status === 401) {
-                        alert('❌ GitHub 토큰이 유효하지 않습니다.\n\n로그아웃 후 다시 로그인해주세요.\n\n토큰 상태: ' + testResponse.status + ' ' + testResponse.statusText);
-                        return;
+                        throw new Error('GitHub 토큰이 유효하지 않습니다. 로그아웃 후 다시 로그인해주세요.');
+                    } else {
+                        throw new Error(`토큰 검증 실패: ${testResponse.status} ${testResponse.statusText}`);
                     }
                 }
                 
@@ -296,15 +331,14 @@ export function setupGitHubCloneButton() {
                 });
                 
                 if (!repoResponse.ok) {
-                    const errorText = await repoResponse.text();
-                    console.error('❌ 레포 접근 실패:', repoResponse.status, errorText);
-                    
+                    console.error('❌ 레포 접근 실패:', repoResponse.status);
+
                     if (repoResponse.status === 404) {
-                        alert('❌ 레포지토리를 찾을 수 없거나 접근 권한이 없습니다.\n\n레포: ' + selectedRepo + '\n\nPrivate 레포의 경우 토큰에 "repo" 권한이 필요합니다.');
-                        return;
+                        throw new Error('레포지토리를 찾을 수 없거나 접근 권한이 없습니다.\n\n레포: ' + selectedRepo + '\n\nPrivate 레포의 경우 토큰에 "repo" 권한이 필요합니다.');
                     } else if (repoResponse.status === 401) {
-                        alert('❌ 레포지토리 접근 권한이 없습니다.\n\n토큰에 "repo" 권한이 있는지 확인하세요.');
-                        return;
+                        throw new Error('레포지토리 접근 권한이 없습니다.\n\n토큰에 "repo" 권한이 있는지 확인하세요.');
+                    } else {
+                        throw new Error(`레포지토리 접근 실패: ${repoResponse.status} ${repoResponse.statusText}`);
                     }
                 }
                 
@@ -319,9 +353,8 @@ export function setupGitHubCloneButton() {
                     repo: repo,
                     user: userData.login,
                     isPrivate: repoData.private,
-                    hasToken: !!token,
-                    tokenLength: token.length,
-                    tokenPrefix: token.substring(0, 7) + '...'
+                    hasToken: !!token
+                    // Security: DO NOT log tokenLength or tokenPrefix
                 });
 
                 // Import gitClient and fileSystem
@@ -380,28 +413,41 @@ export function setupGitHubCloneButton() {
                 }
             } catch (error) {
                 console.error('❌ Clone error:', error);
-                
-                let errorMsg = '알 수 없는 오류';
-                let helpText = '';
-                
-                if (error.message.includes('401')) {
-                    errorMsg = 'GitHub 인증 실패 (401)';
-                    helpText = '\n\n💡 해결 방법:\n1. 로그아웃 후 다시 로그인\n2. GitHub에서 새 Personal Access Token 발급\n   - Settings → Developer settings → Personal access tokens\n   - "repo" 권한 필수 체크\n3. 토큰으로 다시 로그인\n\n현재 토큰 길이: ' + token.length + '자';
-                } else if (error.message.includes('404')) {
-                    errorMsg = '레포지토리를 찾을 수 없음 (404)';
-                    helpText = '\n\n레포지토리: ' + selectedRepo + '\n레포지토리가 존재하는지 확인하세요.';
-                } else if (error.message.includes('403')) {
-                    errorMsg = '접근 권한 없음 (403)';
-                    helpText = '\n\n레포지토리가 Private인 경우 토큰에 repo 권한이 필요합니다.';
-                } else {
-                    errorMsg = error.message;
-                    helpText = '\n\n토큰 정보:\n- 길이: ' + token.length + '자\n- 시작: ' + token.substring(0, 7) + '...';
-                }
-                
-                alert(`❌ 클론 실패\n\n에러: ${errorMsg}${helpText}`);
+
+                // Show user-friendly error message
+                let errorMsg = error.message || '알 수 없는 오류가 발생했습니다.';
+
+                // Create error notification
+                const notification = document.createElement('div');
+                notification.style.cssText = 'position: fixed; top: 20px; right: 20px; background: #ef4444; color: white; padding: 16px 24px; border-radius: 8px; z-index: 10000; box-shadow: 0 4px 12px rgba(0,0,0,0.3); font-size: 14px; max-width: 400px;';
+
+                const errorDiv = document.createElement('div');
+                errorDiv.style.cssText = 'display: flex; align-items: start; gap: 12px;';
+
+                const icon = document.createElement('i');
+                icon.className = 'codicon codicon-error';
+                icon.style.fontSize = '20px';
+
+                const messageDiv = document.createElement('div');
+                const title = document.createElement('strong');
+                title.textContent = '클론 실패';
+
+                const message = document.createElement('div');
+                message.style.marginTop = '4px';
+                message.textContent = errorMsg;
+
+                messageDiv.appendChild(title);
+                messageDiv.appendChild(message);
+                errorDiv.appendChild(icon);
+                errorDiv.appendChild(messageDiv);
+                notification.appendChild(errorDiv);
+
+                document.body.appendChild(notification);
+                setTimeout(() => notification.remove(), 6000);
             } finally {
-                githubCloneBtn.disabled = false;
-                githubCloneBtn.innerHTML = '<i class="codicon codicon-cloud-download"></i> Clone Selected Repository';
+                // Always restore button state
+                githubCloneBtn.disabled = originalButtonDisabled;
+                githubCloneBtn.innerHTML = originalButtonHTML;
             }
         });
     }
@@ -619,8 +665,8 @@ async function executePush() {
         return;
     }
     
-    // Check GitHub token
-    const githubToken = localStorage.getItem('github_token');
+    // Check GitHub token (try both keys for compatibility)
+    const githubToken = localStorage.getItem('githubToken') || localStorage.getItem('github_token');
     if (!githubToken) {
         alert('❌ GitHub 토큰이 없습니다!\n\n먼저 GitHub에 로그인하세요.');
         return;
@@ -700,60 +746,44 @@ async function executePush() {
             [repoOwner, repoName] = selectedPushRepo.fullName.split('/');
         }
         
-        // Use GitHub API directly
-        confirmBtn.textContent = '파일 업로드 중...';
+        // Use improved GitHub API (batch push with tree API)
+        confirmBtn.textContent = '파일 준비 중...';
         const filesToWrite = filesToPush || getAllFiles(clientFS);
-        
-        let successCount = 0;
-        let errorCount = 0;
-        
+
+        // Prepare files for push
+        const filesData = [];
         for (const filePath of filesToWrite) {
             const file = clientFS.getFile(filePath);
             if (file && file.content) {
-                try {
-                    // Use GitHub Contents API
-                    const response = await fetch(`https://api.github.com/repos/${repoOwner}/${repoName}/contents/${filePath}`, {
-                        method: 'PUT',
-                        headers: {
-                            'Authorization': `Bearer ${githubToken}`,
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({
-                            message: commitMessage,
-                            content: btoa(unescape(encodeURIComponent(file.content))),
-                            branch: 'main'
-                        })
-                    });
-                    
-                    if (response.ok) {
-                        successCount++;
-                        console.log(`✓ Pushed: ${filePath}`);
-                    } else {
-                        errorCount++;
-                        const errorData = await response.json().catch(() => ({}));
-                        console.error(`✗ Failed: ${filePath}`, errorData);
-                        
-                        // Handle specific errors
-                        if (response.status === 401) {
-                            throw new Error('GitHub 토큰이 유효하지 않습니다. 다시 로그인하세요.');
-                        } else if (response.status === 404) {
-                            throw new Error(`레포지토리 "${repoOwner}/${repoName}"를 찾을 수 없습니다.`);
-                        } else if (response.status === 403) {
-                            throw new Error('레포지토리에 쓰기 권한이 없습니다.');
-                        }
-                    }
-                } catch (err) {
-                    errorCount++;
-                    console.error(`✗ Error: ${filePath}`, err);
-                }
+                filesData.push({
+                    path: filePath,
+                    content: file.content
+                });
             }
         }
-        
-        if (errorCount === 0) {
-            alert(`✅ 푸시 성공!\n\n레포지토리: ${repoOwner}/${repoName}\n메시지: ${commitMessage}\n파일: ${successCount}개`);
-        } else {
-            alert(`⚠️ 푸시 완료\n\n성공: ${successCount}개\n실패: ${errorCount}개\n\n레포지토리: ${repoOwner}/${repoName}`);
+
+        if (filesData.length === 0) {
+            throw new Error('푸시할 파일이 없습니다.');
         }
+
+        confirmBtn.textContent = `GitHub에 업로드 중... (${filesData.length}개 파일)`;
+
+        // Import GitHub API module
+        const { pushFiles } = await import('./githubAPI.js');
+
+        // Push files using batch API
+        const result = await pushFiles(
+            repoOwner,
+            repoName,
+            filesData,
+            commitMessage,
+            'main', // default branch
+            githubToken
+        );
+
+        console.log('✅ Push result:', result);
+
+        alert(`✅ 푸시 성공!\n\n레포지토리: ${repoOwner}/${repoName}\n메시지: ${commitMessage}\n파일: ${result.filesCount}개\n\n커밋: ${result.commit.sha.substring(0, 7)}`);
         
         // Close modal
         document.getElementById('github-push-modal').style.display = 'none';

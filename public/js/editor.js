@@ -12,9 +12,7 @@ import { configureMonacoLanguages } from './monacoConfig.js';
 let editor = null;
 let diffEditor = null;
 let tabsContainer = null;
-const breakpoints = new Map(); // filePath -> Set of line numbers
 let currentEditorMode = 'normal'; // 'normal' or 'diff'
-let breakpointDecorations = []; // Store decoration IDs to update them
 
 // 에디터 설정 복원 (초기화 전에 정의)
 function restoreEditorSettingsInternal() {
@@ -336,16 +334,36 @@ export function initEditor(editorEl, tabsEl, openFilesMap) {
                     document.dispatchEvent(event);
                 });
             } else {
-                // Save to server
+                // Save to server (with feedback)
                 saveFile(activeFilePath, content)
                     .then(data => {
                         if (data.success) {
                             if (activeTab) activeTab.classList.remove('dirty');
+
+                            // Show success notification
+                            const event = new CustomEvent('showNotification', {
+                                detail: { message: `파일 저장됨: ${activeFilePath}`, type: 'success' }
+                            });
+                            document.dispatchEvent(event);
                         } else {
                             console.error('Save failed:', data.error);
+
+                            // Show error notification
+                            const event = new CustomEvent('showNotification', {
+                                detail: { message: `파일 저장 실패: ${data.error || '알 수 없는 오류'}`, type: 'error' }
+                            });
+                            document.dispatchEvent(event);
                         }
                     })
-                    .catch(err => console.error('Error saving file:', err));
+                    .catch(err => {
+                        console.error('Error saving file:', err);
+
+                        // Show error notification
+                        const event = new CustomEvent('showNotification', {
+                            detail: { message: `파일 저장 중 오류 발생: ${err.message}`, type: 'error' }
+                        });
+                        document.dispatchEvent(event);
+                    });
             }
         }
     });
@@ -423,8 +441,7 @@ export function setEditorContent(content, filePath) {
         monaco.editor.setModelLanguage(editor.getModel(), language);
         editor.layout();
         
-        // Update breakpoint decorations for the new file
-        updateBreakpointDecorations();
+        // Breakpoint decorations removed
     }
 }
 
@@ -454,28 +471,55 @@ function showAIResultModal(title, content) {
     const modal = document.createElement('div');
     modal.className = 'modal';
     modal.style.display = 'flex';
-    modal.innerHTML = `
-        <div class="modal-content" style="max-width: 700px; max-height: 80vh;">
-            <div class="modal-header">
-                <h2>${title}</h2>
-                <button class="modal-close" onclick="this.closest('.modal').remove()">&times;</button>
-            </div>
-            <div class="modal-body" style="overflow-y: auto; max-height: 60vh;">
-                <div style="background: var(--editor-background); padding: 15px; border-radius: 4px; border: 1px solid var(--border-color); white-space: pre-wrap; font-family: 'Courier New', monospace; line-height: 1.6;">
-                    ${content}
-                </div>
-            </div>
-            <div style="padding: 15px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end;">
-                <button class="btn btn-secondary" onclick="this.closest('.modal').remove()">
-                    닫기
-                </button>
-                <button class="btn btn-primary" onclick="navigator.clipboard.writeText(\`${content.replace(/`/g, '\\`')}\`); showNotification('클립보드에 복사되었습니다', 'success');">
-                    📋 복사
-                </button>
-            </div>
-        </div>
-    `;
-    
+
+    // Create modal structure safely
+    const modalContent = document.createElement('div');
+    modalContent.className = 'modal-content';
+    modalContent.style.cssText = 'max-width: 700px; max-height: 80vh;';
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'modal-header';
+    const h2 = document.createElement('h2');
+    h2.textContent = title;
+    const closeBtn = document.createElement('button');
+    closeBtn.className = 'modal-close';
+    closeBtn.textContent = '×';
+    closeBtn.onclick = () => modal.remove();
+    header.appendChild(h2);
+    header.appendChild(closeBtn);
+
+    // Body with safe content
+    const body = document.createElement('div');
+    body.className = 'modal-body';
+    body.style.cssText = 'overflow-y: auto; max-height: 60vh;';
+    const contentDiv = document.createElement('div');
+    contentDiv.style.cssText = 'background: var(--editor-background); padding: 15px; border-radius: 4px; border: 1px solid var(--border-color); white-space: pre-wrap; font-family: "Courier New", monospace; line-height: 1.6;';
+    contentDiv.textContent = content; // Safe: uses textContent instead of innerHTML
+    body.appendChild(contentDiv);
+
+    // Footer
+    const footer = document.createElement('div');
+    footer.style.cssText = 'padding: 15px; border-top: 1px solid var(--border-color); display: flex; gap: 10px; justify-content: flex-end;';
+    const cancelBtn = document.createElement('button');
+    cancelBtn.className = 'btn btn-secondary';
+    cancelBtn.textContent = '닫기';
+    cancelBtn.onclick = () => modal.remove();
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'btn btn-primary';
+    copyBtn.textContent = '📋 복사';
+    copyBtn.onclick = () => {
+        navigator.clipboard.writeText(content);
+        showNotification('클립보드에 복사되었습니다', 'success');
+    };
+    footer.appendChild(cancelBtn);
+    footer.appendChild(copyBtn);
+
+    modalContent.appendChild(header);
+    modalContent.appendChild(body);
+    modalContent.appendChild(footer);
+    modal.appendChild(modalContent);
+
     document.body.appendChild(modal);
     
     // Close on background click
@@ -525,88 +569,7 @@ function showWelcomeScreen(editorEl) {
     editorEl.insertBefore(welcomeDiv, editorEl.firstChild);
 }
 
-// Breakpoint management
-function toggleBreakpoint(lineNumber) {
-    const activeTab = tabsContainer?.querySelector('.tab.active');
-    const filePath = activeTab?.dataset.filePath;
-    if (!filePath || !editor) return;
-
-    if (!breakpoints.has(filePath)) {
-        breakpoints.set(filePath, new Set());
-    }
-
-    const fileBreakpoints = breakpoints.get(filePath);
-    
-    if (fileBreakpoints.has(lineNumber)) {
-        // Remove breakpoint
-        fileBreakpoints.delete(lineNumber);
-    } else {
-        // Add breakpoint
-        fileBreakpoints.add(lineNumber);
-    }
-
-    updateBreakpointDecorations();
-    updateDebugView();
-}
-
-function updateBreakpointDecorations() {
-    if (!editor) return;
-
-    const activeTab = tabsContainer?.querySelector('.tab.active');
-    const filePath = activeTab?.dataset.filePath;
-    if (!filePath) return;
-
-    const fileBreakpoints = breakpoints.get(filePath) || new Set();
-    const decorations = Array.from(fileBreakpoints).map(lineNumber => ({
-        range: new monaco.Range(lineNumber, 1, lineNumber, 1),
-        options: {
-            isWholeLine: false,
-            glyphMarginClassName: 'breakpoint-glyph',
-            glyphMarginHoverMessage: { value: 'Breakpoint - Click to remove' }
-        }
-    }));
-
-    // Remove old decorations and add new ones
-    breakpointDecorations = editor.deltaDecorations(breakpointDecorations, decorations);
-}
-
-function updateDebugView() {
-    const debugView = document.getElementById('debug-view');
-    if (!debugView) return;
-
-    // Find breakpoints section
-    let breakpointsSection = debugView.querySelector('.debug-section:last-child .debug-content');
-    if (!breakpointsSection) return;
-
-    // Clear and rebuild breakpoints list
-    breakpointsSection.innerHTML = '';
-    
-    let hasBreakpoints = false;
-    breakpoints.forEach((lines, filePath) => {
-        if (lines.size > 0) {
-            hasBreakpoints = true;
-            const fileName = filePath.split('/').pop();
-            lines.forEach(lineNumber => {
-                const item = document.createElement('div');
-                item.style.padding = '4px 0';
-                item.style.cursor = 'pointer';
-                item.innerHTML = `${fileName}:${lineNumber}`;
-                item.addEventListener('click', () => {
-                    // TODO: Jump to breakpoint location
-                });
-                breakpointsSection.appendChild(item);
-            });
-        }
-    });
-
-    if (!hasBreakpoints) {
-        breakpointsSection.innerHTML = '<em style="color: var(--text-color-light);">No breakpoints set.</em>';
-    }
-}
-
-export function getBreakpoints() {
-    return breakpoints;
-}
+// Breakpoint management removed
 
 // Show diff editor for comparing original and modified content
 export function showDiffEditor(originalContent, modifiedContent, filePath) {
@@ -794,6 +757,9 @@ export function toggleZenMode() {
     return isZenMode;
 }
 
+// Global reference to escape handler for cleanup
+let zenEscapeHandler = null;
+
 // Create Zen mode exit button
 function createZenExitButton() {
     // Remove existing button if any
@@ -808,14 +774,13 @@ function createZenExitButton() {
 
     document.body.appendChild(exitBtn);
 
-    // Add ESC key listener
-    const escapeHandler = (e) => {
+    // Add ESC key listener with cleanup reference
+    zenEscapeHandler = (e) => {
         if (e.key === 'Escape' && isZenMode) {
             toggleZenMode();
         }
     };
-    document.addEventListener('keydown', escapeHandler);
-    exitBtn.dataset.escapeHandler = 'attached';
+    document.addEventListener('keydown', zenEscapeHandler);
 }
 
 // Remove Zen mode exit button
@@ -823,6 +788,12 @@ function removeZenExitButton() {
     const exitBtn = document.getElementById('zen-exit-btn');
     if (exitBtn) {
         exitBtn.remove();
+    }
+
+    // Remove event listener to prevent memory leak
+    if (zenEscapeHandler) {
+        document.removeEventListener('keydown', zenEscapeHandler);
+        zenEscapeHandler = null;
     }
 }
 

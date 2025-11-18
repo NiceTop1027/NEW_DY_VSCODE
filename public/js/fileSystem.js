@@ -67,7 +67,7 @@ class ClientFileSystem {
     }
 
     // Add a file to the file system
-    addFile(path, content, saveToStorage = true) {
+    addFile(path, content, saveToStorage = true, hasFileHandle = false) {
         const parts = path.split('/').filter(p => p);
         const fileName = parts[parts.length - 1];
         const dirPath = parts.slice(0, -1);
@@ -79,7 +79,7 @@ class ClientFileSystem {
         for (const part of dirPath) {
             currentPath = currentPath ? `${currentPath}/${part}` : part;
             let child = current.children.find(c => c.name === part && c.type === 'directory');
-            
+
             if (!child) {
                 child = {
                     name: part,
@@ -100,9 +100,9 @@ class ClientFileSystem {
             path: filePath,
             content: content
         };
-        
-        // Save to persistent storage
-        if (saveToStorage && this.initialized) {
+
+        // Only save to persistent storage if it's NOT from real disk (no fileHandle)
+        if (saveToStorage && this.initialized && !hasFileHandle) {
             persistentStorage.saveFile(filePath, content).catch(err => {
                 console.error('Failed to save to storage:', err);
             });
@@ -142,13 +142,6 @@ class ClientFileSystem {
         if (file) {
             file.content = content;
 
-            // Save to persistent storage
-            if (this.initialized) {
-                persistentStorage.saveFile(path, content).catch(err => {
-                    console.error('Failed to save to persistent storage:', err);
-                });
-            }
-
             // Try to write to actual file system if handle exists
             const fileHandle = this.fileHandles.get(path);
             if (fileHandle) {
@@ -156,12 +149,21 @@ class ClientFileSystem {
                     const writable = await fileHandle.createWritable();
                     await writable.write(content);
                     await writable.close();
+                    // Don't save to persistent storage - real disk files disappear on refresh
                     return { success: true, savedToDisk: true };
                 } catch (err) {
                     console.error(`Failed to save to disk: ${path}`, err);
                     return { success: true, savedToDisk: false, error: err.message };
                 }
             }
+
+            // Only save to persistent storage if it's NOT a real disk file
+            if (this.initialized) {
+                persistentStorage.saveFile(path, content).catch(err => {
+                    console.error('Failed to save to persistent storage:', err);
+                });
+            }
+
             return { success: true, savedToDisk: false };
         }
         return { success: false };

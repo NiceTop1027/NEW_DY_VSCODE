@@ -266,21 +266,18 @@ export function initUI() {
         // 2. Git/소스 관리
         { name: 'Source Control', icon: 'source-control', action: 'source-control' },
 
-        // 3. 개발 도구
-        { name: 'Run and Debug', icon: 'debug-alt', action: 'debug' },
-
-        // 4. 특별 기능
+        // 3. 특별 기능
         { name: 'AI Assistant', icon: 'sparkle', action: 'ai', isAI: true },
         { name: 'Upload Folder', icon: 'folder-opened', action: 'upload' },
 
-        // 5. 외부 서비스 (맨 아래)
+        // 4. 외부 서비스 (맨 아래)
         { name: 'GitHub', icon: 'github', action: 'github', isGitHub: true },
         { name: '덕영고등학교', icon: 'home', action: 'school', isSchool: true }
     ];
 
     activityIcons.forEach(({name, icon, action, isSchool, isAI, isGitHub}, index) => {
         // 그룹 구분선 추가 (논리적 그룹 구분)
-        if (index === 2 || index === 4 || index === 6) {
+        if (index === 2 || index === 3 || index === 5) {
             const separator = document.createElement('div');
             separator.className = 'activity-separator';
             activityBar.appendChild(separator);
@@ -317,14 +314,12 @@ export function initUI() {
                 const fileExplorerView = document.getElementById('file-explorer');
                 const sourceControlView = document.getElementById('source-control-view');
                 const githubView = document.getElementById('github-view');
-                const debugView = document.getElementById('debug-view');
                 const searchBox = document.querySelector('.search-box');
 
                 // Hide all sidebar views
                 fileExplorerView.style.display = 'none';
                 sourceControlView.style.display = 'none';
                 githubView.style.display = 'none';
-                debugView.style.display = 'none';
                 searchBox.style.display = 'none';
 
             switch (action) {
@@ -384,11 +379,6 @@ export function initUI() {
                     searchBox.style.display = 'block';
                     if (fileSearchInput) fileSearchInput.focus();
                     currentView = 'explorer';
-                    break;
-                case 'debug':
-                    debugView.style.display = 'block';
-                    currentView = 'debug';
-                    renderDebugView(); // Render the debug UI
                     break;
                 case 'upload':
                     if ('showDirectoryPicker' in window) {
@@ -734,8 +724,13 @@ export function initUI() {
         isResizingSidebar = true;
         document.body.style.cursor = 'col-resize';
         document.body.style.userSelect = 'none';
-        document.addEventListener('mousemove', handleSidebarMouseMove);
-        document.addEventListener('mouseup', stopSidebarResize);
+
+        // Create handler references for proper cleanup
+        const handleMove = (e) => handleSidebarMouseMove(e);
+        const handleUp = () => stopSidebarResize(handleMove, handleUp);
+
+        document.addEventListener('mousemove', handleMove);
+        document.addEventListener('mouseup', handleUp);
     });
 
     function handleSidebarMouseMove(e) {
@@ -745,12 +740,12 @@ export function initUI() {
         sidebar.style.width = `${newWidth}px`;
     }
 
-    function stopSidebarResize() {
+    function stopSidebarResize(moveHandler, upHandler) {
         isResizingSidebar = false;
         document.body.style.cursor = '';
         document.body.style.userSelect = '';
-        document.removeEventListener('mousemove', handleSidebarMouseMove);
-        document.removeEventListener('mouseup', stopSidebarResize);
+        document.removeEventListener('mousemove', moveHandler);
+        document.removeEventListener('mouseup', upHandler);
     }
 
     // Panel Resize
@@ -1161,15 +1156,15 @@ async function loadDirectoryWithHandles(dirHandle) {
                     const file = await entry.getFile();
                     let content = '[Binary File]';
                     // Only read text files
-                    if (file.size < 5000000 && (file.type.startsWith('text/') || !file.type || 
+                    if (file.size < 5000000 && (file.type.startsWith('text/') || !file.type ||
                         entry.name.match(/\.(js|ts|jsx|tsx|html|css|json|md|txt|py|java|c|cpp|h|go|rs)$/i))) {
                         content = await file.text();
                     }
-                    clientFS.addFile(entryPath, content);
+                    clientFS.addFile(entryPath, content, true, true); // hasFileHandle = true
                     clientFS.setFileHandle(entryPath, entry);
                 } catch (e) {
                     console.error(`Could not read file: ${entryPath}`, e);
-                    clientFS.addFile(entryPath, '[Error Reading File]');
+                    clientFS.addFile(entryPath, '[Error Reading File]', true, true); // hasFileHandle = true
                 }
             } else if (entry.kind === 'directory') {
                 clientFS.createDirectory(entryPath);
@@ -1778,9 +1773,8 @@ if (panelElement) {
 }
 
 // Suppress ResizeObserver errors
-const resizeObserverLoopErrRe = /^[^(ResizeObserver loop limit exceeded)]/;
 window.addEventListener('error', (e) => {
-    if (resizeObserverLoopErrRe.test(e.message)) {
+    if (e.message && e.message.includes('ResizeObserver')) {
         const resizeObserverErrDiv = document.getElementById('webpack-dev-server-client-overlay-div');
         const resizeObserverErr = document.getElementById('webpack-dev-server-client-overlay');
         if (resizeObserverErr) {
@@ -1789,8 +1783,6 @@ window.addEventListener('error', (e) => {
         if (resizeObserverErrDiv) {
             resizeObserverErrDiv.setAttribute('style', 'display: none');
         }
-    }
-    if (e.message.includes('ResizeObserver')) {
         e.stopImmediatePropagation();
         e.preventDefault();
         return false;
@@ -1855,6 +1847,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, 3300); // 3.3 seconds (animation duration + fade out)
 });
 
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // --- Quick Git Push ---
 async function quickGitPush() {
     const activeTab = document.querySelector('.tab.active');
@@ -1888,7 +1887,12 @@ async function quickGitPush() {
     }
     
     // 커밋 메시지 입력
-    const message = prompt('커밋 메시지를 입력하세요:', 'Update from web IDE');
+    const message = await showInputModal(
+        'GitHub에 푸시',
+        '커밋 메시지를 입력하세요',
+        'Update from web IDE',
+        'git-commit'
+    );
     if (!message) return;
     
     try {
@@ -2167,170 +2171,6 @@ function displayOutput(result, fileName) {
     outputView.appendChild(pre);
 }
 
-// --- Debugging --- 
-function renderDebugView() {
-    const debugView = document.getElementById('debug-view');
-    if (!debugView) return;
-
-    debugView.innerHTML = `
-        <div class="debug-controls">
-            <button class="debug-btn" id="debug-start-btn" title="Start Debugging (F5)">
-                <i class="codicon codicon-debug-start"></i>
-            </button>
-            <button class="debug-btn" id="debug-stop-btn" title="Stop" disabled>
-                <i class="codicon codicon-debug-stop"></i>
-            </button>
-            <button class="debug-btn" id="debug-continue-btn" title="Continue (F5)" disabled>
-                <i class="codicon codicon-debug-continue"></i>
-            </button>
-            <button class="debug-btn" id="debug-step-over-btn" title="Step Over (F10)" disabled>
-                <i class="codicon codicon-debug-step-over"></i>
-            </button>
-            <button class="debug-btn" id="debug-step-into-btn" title="Step Into (F11)" disabled>
-                <i class="codicon codicon-debug-step-into"></i>
-            </button>
-            <button class="debug-btn" id="debug-step-out-btn" title="Step Out (Shift+F11)" disabled>
-                <i class="codicon codicon-debug-step-out"></i>
-            </button>
-        </div>
-        <div class="debug-section">
-            <div class="debug-section-header">VARIABLES</div>
-            <div class="debug-content" id="debug-variables">No active debug session</div>
-        </div>
-        <div class="debug-section">
-            <div class="debug-section-header">WATCH</div>
-            <div class="debug-content" id="debug-watch">No expressions</div>
-        </div>
-        <div class="debug-section">
-            <div class="debug-section-header">CALL STACK</div>
-            <div class="debug-content" id="debug-callstack">No active debug session</div>
-        </div>
-        <div class="debug-section">
-            <div class="debug-section-header">BREAKPOINTS</div>
-            <div class="debug-content" id="debug-breakpoints">No breakpoints set</div>
-        </div>
-    `;
-
-    // Attach event listeners
-    document.getElementById('debug-start-btn')?.addEventListener('click', startDebugging);
-    document.getElementById('debug-stop-btn')?.addEventListener('click', stopDebugging);
-    document.getElementById('debug-continue-btn')?.addEventListener('click', () => sendDebugCommand('continue'));
-    document.getElementById('debug-step-over-btn')?.addEventListener('click', () => sendDebugCommand('stepOver'));
-    document.getElementById('debug-step-into-btn')?.addEventListener('click', () => sendDebugCommand('stepInto'));
-    document.getElementById('debug-step-out-btn')?.addEventListener('click', () => sendDebugCommand('stepOut'));
-}
-
-async function startDebugging() {
-    const activeTab = document.querySelector('.tab.active');
-    if (!activeTab) {
-        showNotification('디버깅할 파일을 먼저 열어주세요', 'error');
-        return;
-    }
-
-    const filePath = activeTab.dataset.filePath || activeTab.dataset.path;
-    const fileName = filePath.split('/').pop();
-
-    try {
-        // Get code and breakpoints
-        const { getEditorContent, getBreakpoints } = await import('./editor.js');
-        const code = getEditorContent();
-        const breakpoints = getBreakpoints().get(filePath);
-
-        if (!breakpoints || breakpoints.size === 0) {
-            showNotification('브레이크포인트를 먼저 설정하세요 (왼쪽 여백 클릭)', 'warning');
-            return;
-        }
-
-        // Import debugger
-        const { simpleDebugger } = await import('./debugger.js');
-
-        // Start debugging (inserts debug statements)
-        const result = await simpleDebugger.startDebugging(filePath, code, breakpoints);
-
-        if (result.success) {
-            showNotification(`🔍 디버그 모드로 실행 중... (${breakpoints.size}개 브레이크포인트)`, 'info');
-
-            // Switch to OUTPUT tab
-            const outputTab = document.querySelector('.panel-tab[data-panel-id="output"]');
-            if (outputTab) {
-                outputTab.click();
-            }
-
-            // Get language extension
-            const fileExtension = filePath.split('.').pop();
-
-            // Execute the debug code using codeRunner
-            const { runCode: executeCode } = await import('./codeRunner.js');
-            const debugResult = await executeCode(result.debugCode, fileExtension);
-            displayOutput(debugResult, fileName + ' (Debug)');
-
-            // Update UI
-            updateDebugControls(true);
-        }
-    } catch (error) {
-        console.error('Failed to start debugging:', error);
-        showNotification('디버깅 시작 실패: ' + error.message, 'error');
-    }
-}
-
-async function stopDebugging() {
-    try {
-        // Stop code execution first
-        const { stopExecution } = await import('./codeRunner.js');
-        const wasStopped = stopExecution();
-
-        // Then update debugger state
-        const { simpleDebugger } = await import('./debugger.js');
-        simpleDebugger.stopDebugging();
-
-        if (wasStopped) {
-            showNotification('⛔ 디버깅 중지됨', 'info');
-        } else {
-            showNotification('디버깅 모드 종료', 'info');
-        }
-
-        updateDebugControls(false);
-    } catch (error) {
-        console.error('Failed to stop debugging:', error);
-        showNotification('디버깅 중지 실패: ' + error.message, 'error');
-    }
-}
-
-function updateDebugControls(isDebugging) {
-    document.getElementById('debug-start-btn').disabled = isDebugging;
-    document.getElementById('debug-stop-btn').disabled = !isDebugging;
-    document.getElementById('debug-continue-btn').disabled = !isDebugging;
-    document.getElementById('debug-step-over-btn').disabled = !isDebugging;
-    document.getElementById('debug-step-into-btn').disabled = !isDebugging;
-    document.getElementById('debug-step-out-btn').disabled = !isDebugging;
-}
-
-let debugWebSocket = null;
-
-function connectDebugWebSocket() {
-    const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    debugWebSocket = new WebSocket(`${wsProtocol}//${window.location.host}/debug`);
-    
-    debugWebSocket.onopen = () => {
-        // Debug WebSocket connected
-    };
-
-    debugWebSocket.onmessage = (event) => {
-        const data = JSON.parse(event.data);
-        // Handle debug events (breakpoint hit, variable updates, etc.)
-    };
-
-    debugWebSocket.onclose = () => {
-        debugWebSocket = null;
-    };
-}
-
-function sendDebugCommand(command) {
-    if (debugWebSocket && debugWebSocket.readyState === WebSocket.OPEN) {
-        debugWebSocket.send(JSON.stringify({ command }));
-    }
-}
-
 // --- Context Menu for Files ---
 function showFileContextMenu(event, filePath, fileName, isDirectory) {
     event.preventDefault();
@@ -2602,9 +2442,88 @@ async function moveFileOrFolder(sourcePath, targetFolderPath, fileName) {
     }
 }
 
+// Premium Input Modal
+function showInputModal(title, placeholder = '', defaultValue = '', icon = 'edit') {
+    return new Promise((resolve) => {
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'input-modal-overlay';
+
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'input-modal';
+
+        modal.innerHTML = `
+            <div class="input-modal-title">
+                <i class="codicon codicon-${icon}"></i>
+                ${title}
+            </div>
+            <input
+                type="text"
+                class="input-modal-input"
+                placeholder="${placeholder}"
+                value="${defaultValue}"
+                autofocus
+            />
+            <div class="input-modal-buttons">
+                <button class="input-modal-button input-modal-button-cancel">취소</button>
+                <button class="input-modal-button input-modal-button-confirm">확인</button>
+            </div>
+        `;
+
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+
+        const input = modal.querySelector('.input-modal-input');
+        const cancelBtn = modal.querySelector('.input-modal-button-cancel');
+        const confirmBtn = modal.querySelector('.input-modal-button-confirm');
+
+        // Focus input and select text
+        setTimeout(() => {
+            input.focus();
+            input.select();
+        }, 100);
+
+        // Handle confirm
+        const confirm = () => {
+            const value = input.value.trim();
+            overlay.remove();
+            resolve(value || null);
+        };
+
+        // Handle cancel
+        const cancel = () => {
+            overlay.remove();
+            resolve(null);
+        };
+
+        // Event listeners
+        confirmBtn.addEventListener('click', confirm);
+        cancelBtn.addEventListener('click', cancel);
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) cancel();
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                confirm();
+            } else if (e.key === 'Escape') {
+                e.preventDefault();
+                cancel();
+            }
+        });
+    });
+}
+
 async function renameFile(filePath, fileName, isDirectory) {
     const type = isDirectory ? '폴더' : '파일';
-    const newName = prompt(`${type} 이름 변경:`, fileName);
+    const newName = await showInputModal(
+        `${type} 이름 변경`,
+        `새로운 ${type} 이름을 입력하세요`,
+        fileName,
+        'symbol-file'
+    );
     if (!newName || newName === fileName) {
         return;
     }
@@ -2670,7 +2589,12 @@ async function renameFile(filePath, fileName, isDirectory) {
 }
 
 async function createNewFile(parentPath, isDirectory) {
-    const fileName = prompt('새 파일 이름:');
+    const fileName = await showInputModal(
+        '새 파일 만들기',
+        '파일 이름을 입력하세요 (예: index.js)',
+        '',
+        'file-add'
+    );
     if (!fileName) return;
 
     const basePath = isDirectory ? parentPath : parentPath.split('/').slice(0, -1).join('/');
@@ -2698,7 +2622,12 @@ async function createNewFile(parentPath, isDirectory) {
 }
 
 async function createNewFolder(parentPath, isDirectory) {
-    const folderName = prompt('새 폴더 이름:');
+    const folderName = await showInputModal(
+        '새 폴더 만들기',
+        '폴더 이름을 입력하세요',
+        '',
+        'folder'
+    );
     if (!folderName) return;
 
     const basePath = isDirectory ? parentPath : parentPath.split('/').slice(0, -1).join('/');
@@ -2744,21 +2673,16 @@ function renderSourceControlView() {
     if (!sourceControlView) return;
 
     const changesCount = fileChanges.size;
-    
+
     sourceControlView.innerHTML = `
-        <h3>소스 제어</h3>
-        <div class="source-control-header">
-            <div class="source-control-message">
-                <input type="text" id="commit-message" placeholder="메시지 (Ctrl+Enter로 커밋)" />
-                <button id="commit-btn" class="commit-btn" ${changesCount === 0 ? 'disabled' : ''}>
-                    <i class="codicon codicon-check"></i> 커밋
-                </button>
-            </div>
-        </div>
+        <h3>변경사항</h3>
         <div class="source-control-changes">
-            <div class="changes-header">변경사항 (${changesCount})</div>
+            <div class="changes-header">
+                <i class="codicon codicon-list-unordered"></i>
+                수정된 파일 (${changesCount})
+            </div>
             <div class="changes-list" id="changes-list">
-                ${changesCount === 0 ? '<div class="no-changes">변경사항이 없습니다</div>' : ''}
+                ${changesCount === 0 ? '<div class="no-changes"><i class="codicon codicon-check" style="font-size: 48px; opacity: 0.3; margin-bottom: 12px;"></i><p>변경사항이 없습니다</p></div>' : ''}
             </div>
         </div>
     `;
@@ -2769,35 +2693,22 @@ function renderSourceControlView() {
         fileChanges.forEach((change, filePath) => {
             const changeItem = document.createElement('div');
             changeItem.className = 'change-item';
-            
+
             const fileName = filePath.split('/').pop();
             const statusIcon = change.status === 'modified' ? 'codicon-edit' : 'codicon-add';
             const statusLabel = change.status === 'modified' ? 'M' : 'A';
-            
+
             changeItem.innerHTML = `
                 <i class="codicon ${statusIcon}"></i>
                 <span class="change-file-name">${fileName}</span>
                 <span class="change-status ${change.status}">${statusLabel}</span>
             `;
-            
+
             changeItem.addEventListener('click', () => {
                 showFileDiff(filePath, fileName, change);
             });
-            
-            changesList.appendChild(changeItem);
-        });
-    }
 
-    // Commit button event
-    const commitBtn = document.getElementById('commit-btn');
-    const commitMessage = document.getElementById('commit-message');
-    
-    if (commitBtn && commitMessage) {
-        commitBtn.addEventListener('click', () => commitChanges());
-        commitMessage.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'Enter') {
-                commitChanges();
-            }
+            changesList.appendChild(changeItem);
         });
     }
 }
@@ -2829,7 +2740,7 @@ function showFileDiff(filePath, fileName, change) {
     const breadcrumb = document.getElementById('breadcrumb');
     if (breadcrumb) {
         breadcrumb.innerHTML = `
-            <span class="breadcrumb-item">${fileName}</span>
+            <span class="breadcrumb-item">${escapeHtml(fileName)}</span>
             <span class="breadcrumb-separator">›</span>
             <span class="breadcrumb-item">변경사항 비교</span>
         `;
@@ -2875,52 +2786,6 @@ function showFileDiff(filePath, fileName, change) {
         
         tabsContainer.appendChild(newTab);
     }
-}
-
-async function commitChanges() {
-    const commitMessage = document.getElementById('commit-message');
-    if (!commitMessage || !commitMessage.value.trim()) {
-        showNotification('커밋 메시지를 입력하세요', 'error');
-        return;
-    }
-
-    const message = commitMessage.value.trim();
-    const changesArray = Array.from(fileChanges.entries());
-    
-    showNotification(`${changesArray.length}개 파일 커밋 중...`, 'info');
-    
-    // Save all changes to disk
-    for (const [filePath, change] of changesArray) {
-        if (change.status === 'modified' || change.status === 'added') {
-            const content = openFiles.get(filePath)?.content || clientFS.getFile(filePath)?.content || '';
-            const fileHandle = clientFS.fileHandles.get(filePath);
-            
-            if (fileHandle) {
-                try {
-                    const writable = await fileHandle.createWritable();
-                    await writable.write(content);
-                    await writable.close();
-                    
-                    // Update original content
-                    clientFS.files.set(filePath, { content, type: 'file' });
-                } catch (err) {
-                    console.error('Failed to save file:', filePath, err);
-                }
-            }
-        }
-    }
-    
-    // Clear changes
-    fileChanges.clear();
-    commitMessage.value = '';
-    
-    // Close all diff tabs
-    document.querySelectorAll('.tab[data-is-diff="true"]').forEach(tab => tab.remove());
-    hideDiffEditor();
-    
-    showNotification(`커밋 완료: "${message}"`, 'success');
-    updateSourceControlView();
-    updateSourceControlBadge();
 }
 
 // Toggle mobile sidebar
