@@ -3362,3 +3362,6 @@ async function loadFilesFromIndexedDB() {
     renderClientFileTree();
   }
 }
+
+// Export for use in other modules
+export { renderClientFileTree };
