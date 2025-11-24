@@ -1,199 +1,199 @@
 // AI Assistant with Groq (Free & Fast!)
 class AIAssistant {
-    constructor() {
-        this.apiKey = localStorage.getItem('groq_api_key') || '';
-        this.model = localStorage.getItem('groq_model') || 'llama-3.3-70b-versatile';
-        this.enabled = !!this.apiKey;
-        // Groq 공식 API 엔드포인트
-        this.baseUrl = 'https://api.groq.com/openai/v1/chat/completions';
+  constructor() {
+    this.apiKey = localStorage.getItem('groq_api_key') || '';
+    this.model = localStorage.getItem('groq_model') || 'llama-3.3-70b-versatile';
+    this.enabled = !!this.apiKey;
+    // Groq 공식 API 엔드포인트
+    this.baseUrl = 'https://api.groq.com/openai/v1/chat/completions';
         
-        // Available models
-        this.models = {
-            'llama-3.3-70b-versatile': { name: 'Llama 3.3 70B', speed: '⚡⚡⚡', quality: '★★★★★' },
-            'llama-3.1-70b-versatile': { name: 'Llama 3.1 70B', speed: '⚡⚡⚡', quality: '★★★★☆' },
-            'llama-3.1-8b-instant': { name: 'Llama 3.1 8B', speed: '⚡⚡⚡⚡', quality: '★★★☆☆' },
-            'mixtral-8x7b-32768': { name: 'Mixtral 8x7B', speed: '⚡⚡', quality: '★★★★☆' }
-        };
+    // Available models
+    this.models = {
+      'llama-3.3-70b-versatile': { name: 'Llama 3.3 70B', speed: '⚡⚡⚡', quality: '★★★★★' },
+      'llama-3.1-70b-versatile': { name: 'Llama 3.1 70B', speed: '⚡⚡⚡', quality: '★★★★☆' },
+      'llama-3.1-8b-instant': { name: 'Llama 3.1 8B', speed: '⚡⚡⚡⚡', quality: '★★★☆☆' },
+      'mixtral-8x7b-32768': { name: 'Mixtral 8x7B', speed: '⚡⚡', quality: '★★★★☆' }
+    };
+  }
+
+  // Call Groq API (OpenAI compatible)
+  async callAI(prompt, conversationHistory = null) {
+    if (!this.apiKey) {
+      return '⚠️ Groq API 키가 필요합니다.\n\n1. https://console.groq.com/keys 접속\n2. "Create API Key" 클릭 (무료!)\n3. Activity Bar의 ✨ AI 아이콘을 클릭하여 API 키 입력\n\n✅ 완전 무료\n✅ 한국에서 사용 가능\n✅ 매우 빠른 속도';
     }
 
-    // Call Groq API (OpenAI compatible)
-    async callAI(prompt, conversationHistory = null) {
-        if (!this.apiKey) {
-            return '⚠️ Groq API 키가 필요합니다.\n\n1. https://console.groq.com/keys 접속\n2. "Create API Key" 클릭 (무료!)\n3. Activity Bar의 ✨ AI 아이콘을 클릭하여 API 키 입력\n\n✅ 완전 무료\n✅ 한국에서 사용 가능\n✅ 매우 빠른 속도';
-        }
+    // API 키 형식 검증
+    if (!this.apiKey.startsWith('gsk_')) {
+      return '❌ API 키 형식이 올바르지 않습니다.\n\nGroq API 키는 "gsk_"로 시작해야 합니다.\n\n새로운 API 키를 발급받아주세요:\nhttps://console.groq.com/keys';
+    }
 
-        // API 키 형식 검증
-        if (!this.apiKey.startsWith('gsk_')) {
-            return '❌ API 키 형식이 올바르지 않습니다.\n\nGroq API 키는 "gsk_"로 시작해야 합니다.\n\n새로운 API 키를 발급받아주세요:\nhttps://console.groq.com/keys';
-        }
+    try {
+      // Build messages array with conversation history
+      let messages = [];
+            
+      if (conversationHistory && conversationHistory.length > 0) {
+        // Use conversation history
+        messages = conversationHistory;
+      } else {
+        // Single message
+        messages = [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ];
+      }
+            
+      const requestBody = {
+        model: this.model,
+        messages: messages,
+        temperature: 0.7,
+        max_tokens: 2048
+      };
 
+      console.log('🚀 Groq API Request:', {
+        url: this.baseUrl,
+        model: requestBody.model,
+        modelInfo: this.models[this.model],
+        promptLength: prompt.length,
+        apiKeyPrefix: this.apiKey.substring(0, 7) + '...'
+      });
+
+      const response = await fetch(this.baseUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestBody)
+      });
+
+      const responseText = await response.text();
+      console.log('📥 Groq API Raw Response:', responseText);
+
+      if (!response.ok) {
+        let errorData;
         try {
-            // Build messages array with conversation history
-            let messages = [];
-            
-            if (conversationHistory && conversationHistory.length > 0) {
-                // Use conversation history
-                messages = conversationHistory;
-            } else {
-                // Single message
-                messages = [
-                    {
-                        role: 'user',
-                        content: prompt
-                    }
-                ];
-            }
-            
-            const requestBody = {
-                model: this.model,
-                messages: messages,
-                temperature: 0.7,
-                max_tokens: 2048
-            };
-
-            console.log('🚀 Groq API Request:', {
-                url: this.baseUrl,
-                model: requestBody.model,
-                modelInfo: this.models[this.model],
-                promptLength: prompt.length,
-                apiKeyPrefix: this.apiKey.substring(0, 7) + '...'
-            });
-
-            const response = await fetch(this.baseUrl, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${this.apiKey}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(requestBody)
-            });
-
-            const responseText = await response.text();
-            console.log('📥 Groq API Raw Response:', responseText);
-
-            if (!response.ok) {
-                let errorData;
-                try {
-                    errorData = JSON.parse(responseText);
-                } catch (e) {
-                    errorData = { error: { message: responseText } };
-                }
+          errorData = JSON.parse(responseText);
+        } catch (e) {
+          errorData = { error: { message: responseText } };
+        }
                 
-                console.error('❌ Groq API Error Details:', {
-                    status: response.status,
-                    statusText: response.statusText,
-                    error: errorData
-                });
+        console.error('❌ Groq API Error Details:', {
+          status: response.status,
+          statusText: response.statusText,
+          error: errorData
+        });
                 
-                if (response.status === 401) {
-                    return '❌ API 키가 유효하지 않습니다.\n\n새로운 API 키를 발급받아주세요:\nhttps://console.groq.com/keys';
-                } else if (response.status === 400) {
-                    const errorMsg = errorData.error?.message || '요청 형식 오류';
-                    return `❌ Groq API 오류:\n${errorMsg}\n\nAPI 키를 다시 확인하거나 새로 발급받아주세요.`;
-                } else if (response.status === 429) {
-                    return '⚠️ 요청 한도를 초과했습니다.\n\n잠시 후 다시 시도해주세요.';
-                }
-                throw new Error(`API error ${response.status}: ${errorData.error?.message || responseText}`);
-            }
+        if (response.status === 401) {
+          return '❌ API 키가 유효하지 않습니다.\n\n새로운 API 키를 발급받아주세요:\nhttps://console.groq.com/keys';
+        } else if (response.status === 400) {
+          const errorMsg = errorData.error?.message || '요청 형식 오류';
+          return `❌ Groq API 오류:\n${errorMsg}\n\nAPI 키를 다시 확인하거나 새로 발급받아주세요.`;
+        } else if (response.status === 429) {
+          return '⚠️ 요청 한도를 초과했습니다.\n\n잠시 후 다시 시도해주세요.';
+        }
+        throw new Error(`API error ${response.status}: ${errorData.error?.message || responseText}`);
+      }
 
-            const data = JSON.parse(responseText);
-            console.log('✅ Groq API Success:', {
-                model: data.model,
-                usage: data.usage,
-                hasContent: !!data.choices?.[0]?.message?.content
-            });
+      const data = JSON.parse(responseText);
+      console.log('✅ Groq API Success:', {
+        model: data.model,
+        usage: data.usage,
+        hasContent: !!data.choices?.[0]?.message?.content
+      });
             
-            const text = data.choices?.[0]?.message?.content;
-            return text || 'No response from AI.';
-        } catch (error) {
-            console.error('💥 Groq API Fatal Error:', error);
-            return `Error: ${error.message}`;
-        }
+      const text = data.choices?.[0]?.message?.content;
+      return text || 'No response from AI.';
+    } catch (error) {
+      console.error('💥 Groq API Fatal Error:', error);
+      return `Error: ${error.message}`;
     }
+  }
 
-    // Save API key
-    saveApiKey(key) {
-        this.apiKey = key;
-        localStorage.setItem('groq_api_key', key);
-        this.enabled = true;
+  // Save API key
+  saveApiKey(key) {
+    this.apiKey = key;
+    localStorage.setItem('groq_api_key', key);
+    this.enabled = true;
+  }
+
+  // Save model
+  saveModel(model) {
+    this.model = model;
+    localStorage.setItem('groq_model', model);
+  }
+
+  // Remove API key
+  removeApiKey() {
+    this.apiKey = '';
+    localStorage.removeItem('groq_api_key');
+    this.enabled = false;
+  }
+
+
+  // Get code completion suggestion
+  async getCodeCompletion(code, language, cursorPosition) {
+    try {
+      const prompt = `Complete this ${language} code. Return only the next line:\n\n${code}`;
+      const result = await this.callAI(prompt);
+      return result.trim();
+    } catch (error) {
+      console.error('AI completion error:', error);
+      return null;
     }
+  }
 
-    // Save model
-    saveModel(model) {
-        this.model = model;
-        localStorage.setItem('groq_model', model);
+  // Explain code
+  async explainCode(code, language) {
+    try {
+      const prompt = `다음 ${language} 코드를 한국어로 설명해주세요:\n\n${code}`;
+      const result = await this.callAI(prompt);
+      return result || 'No explanation available.';
+    } catch (error) {
+      console.error('AI explain error:', error);
+      return `Error: ${error.message}`;
     }
+  }
 
-    // Remove API key
-    removeApiKey() {
-        this.apiKey = '';
-        localStorage.removeItem('groq_api_key');
-        this.enabled = false;
+  // Fix code errors
+  async fixCode(code, language, error) {
+    try {
+      const prompt = `다음 ${language} 코드를 수정해주세요. 수정된 코드만 반환하세요:\n\n${code}\n\n오류: ${error || '문법 오류'}`;
+      const result = await this.callAI(prompt);
+      return result ? result.trim().replace(/```[\w]*\n?/g, '').trim() : code;
+    } catch (error) {
+      console.error('AI fix error:', error);
+      return code;
     }
+  }
 
-
-    // Get code completion suggestion
-    async getCodeCompletion(code, language, cursorPosition) {
-        try {
-            const prompt = `Complete this ${language} code. Return only the next line:\n\n${code}`;
-            const result = await this.callAI(prompt);
-            return result.trim();
-        } catch (error) {
-            console.error('AI completion error:', error);
-            return null;
-        }
+  // Generate code from description
+  async generateCode(description, language) {
+    try {
+      const prompt = `${language}로 다음 기능을 구현하는 코드를 작성해주세요: ${description}`;
+      const result = await this.callAI(prompt);
+      return result ? result.trim().replace(/```[\w]*\n?/g, '').trim() : '';
+    } catch (error) {
+      console.error('AI generate error:', error);
+      return `Error: ${error.message}`;
     }
+  }
 
-    // Explain code
-    async explainCode(code, language) {
-        try {
-            const prompt = `다음 ${language} 코드를 한국어로 설명해주세요:\n\n${code}`;
-            const result = await this.callAI(prompt);
-            return result || 'No explanation available.';
-        } catch (error) {
-            console.error('AI explain error:', error);
-            return `Error: ${error.message}`;
-        }
+  // Chat with AI
+  async chat(message, context = '') {
+    try {
+      let prompt = message;
+      if (context) {
+        prompt = `코드:\n${context}\n\n질문: ${message}\n\n한국어로 답변해주세요.`;
+      }
+      const result = await this.callAI(prompt);
+      return result || 'No response available.';
+    } catch (error) {
+      console.error('AI chat error:', error);
+      return `Error: ${error.message}`;
     }
-
-    // Fix code errors
-    async fixCode(code, language, error) {
-        try {
-            const prompt = `다음 ${language} 코드를 수정해주세요. 수정된 코드만 반환하세요:\n\n${code}\n\n오류: ${error || '문법 오류'}`;
-            const result = await this.callAI(prompt);
-            return result ? result.trim().replace(/```[\w]*\n?/g, '').trim() : code;
-        } catch (error) {
-            console.error('AI fix error:', error);
-            return code;
-        }
-    }
-
-    // Generate code from description
-    async generateCode(description, language) {
-        try {
-            const prompt = `${language}로 다음 기능을 구현하는 코드를 작성해주세요: ${description}`;
-            const result = await this.callAI(prompt);
-            return result ? result.trim().replace(/```[\w]*\n?/g, '').trim() : '';
-        } catch (error) {
-            console.error('AI generate error:', error);
-            return `Error: ${error.message}`;
-        }
-    }
-
-    // Chat with AI
-    async chat(message, context = '') {
-        try {
-            let prompt = message;
-            if (context) {
-                prompt = `코드:\n${context}\n\n질문: ${message}\n\n한국어로 답변해주세요.`;
-            }
-            const result = await this.callAI(prompt);
-            return result || 'No response available.';
-        } catch (error) {
-            console.error('AI chat error:', error);
-            return `Error: ${error.message}`;
-        }
-    }
+  }
 }
 
 // Create global instance
@@ -201,12 +201,12 @@ export const aiAssistant = new AIAssistant();
 
 // Show AI settings modal
 export function showAISettings() {
-    const hasKey = !!aiAssistant.apiKey;
+  const hasKey = !!aiAssistant.apiKey;
     
-    const modal = document.createElement('div');
-    modal.className = 'modal';
-    modal.style.display = 'flex';
-    modal.innerHTML = `
+  const modal = document.createElement('div');
+  modal.className = 'modal';
+  modal.style.display = 'flex';
+  modal.innerHTML = `
         <div class="modal-content" style="max-width: 550px;">
             <div class="modal-header">
                 <h2>⚡ AI Assistant - Groq</h2>
@@ -281,50 +281,50 @@ export function showAISettings() {
         </div>
     `;
 
-    document.body.appendChild(modal);
+  document.body.appendChild(modal);
 
-    // Save button
-    document.getElementById('save-groq-key').addEventListener('click', () => {
-        const key = document.getElementById('groq-api-key').value.trim();
-        const model = document.getElementById('groq-model').value;
+  // Save button
+  document.getElementById('save-groq-key').addEventListener('click', () => {
+    const key = document.getElementById('groq-api-key').value.trim();
+    const model = document.getElementById('groq-model').value;
         
-        if (key) {
-            aiAssistant.saveApiKey(key);
-            aiAssistant.saveModel(model);
-            showNotification(`✅ 설정이 저장되었습니다! (모델: ${aiAssistant.models[model].name})`, 'success');
-            modal.remove();
-        } else {
-            showNotification('❌ API 키를 입력해주세요', 'error');
-        }
-    });
-
-    // Remove button
-    const removeBtn = document.getElementById('remove-groq-key');
-    if (removeBtn) {
-        removeBtn.addEventListener('click', () => {
-            aiAssistant.removeApiKey();
-            showNotification('🗑️ API 키가 제거되었습니다', 'info');
-            modal.remove();
-        });
+    if (key) {
+      aiAssistant.saveApiKey(key);
+      aiAssistant.saveModel(model);
+      showNotification(`✅ 설정이 저장되었습니다! (모델: ${aiAssistant.models[model].name})`, 'success');
+      modal.remove();
+    } else {
+      showNotification('❌ API 키를 입력해주세요', 'error');
     }
+  });
 
-    // Close button
-    document.getElementById('close-ai-modal').addEventListener('click', () => {
-        modal.remove();
+  // Remove button
+  const removeBtn = document.getElementById('remove-groq-key');
+  if (removeBtn) {
+    removeBtn.addEventListener('click', () => {
+      aiAssistant.removeApiKey();
+      showNotification('🗑️ API 키가 제거되었습니다', 'info');
+      modal.remove();
     });
+  }
 
-    // Close on background click
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.remove();
-        }
-    });
+  // Close button
+  document.getElementById('close-ai-modal').addEventListener('click', () => {
+    modal.remove();
+  });
+
+  // Close on background click
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
 }
 
 // Show notification helper
 function showNotification(message, type) {
-    const event = new CustomEvent('showNotification', { 
-        detail: { message, type } 
-    });
-    document.dispatchEvent(event);
+  const event = new CustomEvent('showNotification', { 
+    detail: { message, type } 
+  });
+  document.dispatchEvent(event);
 }

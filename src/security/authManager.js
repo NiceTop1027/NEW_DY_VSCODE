@@ -18,12 +18,12 @@ class AuthManager {
    * @returns {boolean}
    */
   authenticate(username, password) {
-    console.log("Authenticating user:", username);
+    console.log('Authenticating user:', username);
 
     // TODO: Replace this with real credential validation logic
     // e.g., bcrypt.compare(password, storedHash)
-    if (username === "user" && password === "pass") {
-      this.currentUser = { username, roles: ["developer"] };
+    if (username === 'user' && password === 'pass') {
+      this.currentUser = { username, roles: ['developer'] };
       return true;
     }
 
@@ -41,7 +41,7 @@ class AuthManager {
     console.log(`Authorizing user ${user.username} for ${action} on ${resource}`);
 
     // TODO: Replace with role-based or policy-based access control
-    return user.roles.includes("developer");
+    return user.roles.includes('developer');
   }
 
   /**
@@ -51,7 +51,7 @@ class AuthManager {
    * @returns {string}
    */
   encryptData(data) {
-    console.log("Encrypting data...");
+    console.log('Encrypting data...');
     // Simulated encryption logic
     return `encrypted(${data})`;
   }
@@ -62,9 +62,9 @@ class AuthManager {
    * @returns {string}
    */
   decryptData(encryptedData) {
-    console.log("Decrypting data...");
+    console.log('Decrypting data...');
     // Simulated decryption logic
-    return encryptedData.replace(/^encrypted\((.*)\)$/, "$1");
+    return encryptedData.replace(/^encrypted\((.*)\)$/, '$1');
   }
 
   /**
@@ -81,7 +81,7 @@ class AuthManager {
    * Logout the current user.
    */
   logout() {
-    console.log("Logging out user:", this.currentUser?.username);
+    console.log('Logging out user:', this.currentUser?.username);
     this.currentUser = null;
   }
 

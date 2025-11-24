@@ -1,0 +1,1979 @@
+
+/Users/nicetop/Documents/DY_VScode/languageServer.js
+    8:3   warning  'InitializeParams' is assigned a value but never used                           no-unused-vars
+   10:3   warning  'CompletionItem' is assigned a value but never used                             no-unused-vars
+   12:3   warning  'TextDocumentPositionParams' is assigned a value but never used                 no-unused-vars
+   14:3   warning  'InitializeResult' is assigned a value but never used                           no-unused-vars
+   27:5   warning  'hasDiagnosticRelatedInformationCapability' is assigned a value but never used  no-unused-vars
+   89:54  warning  '_event' is defined but never used                                              no-unused-vars
+  145:11  warning  'text' is assigned a value but never used                                       no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/app.js
+    8:9   warning  'statusLeft' is assigned a value but never used   no-unused-vars
+    9:9   warning  'statusRight' is assigned a value but never used  no-unused-vars
+  242:12  warning  'showNotification' is defined but never used      no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/dist/1118.bundle.js
+  2:7955  error  Unnecessary escape character: \/  no-useless-escape
+  2:8029  error  Unnecessary escape character: \/  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/1282.bundle.js
+  2:1652  error  Unnecessary escape character: \[  no-useless-escape
+  2:2032  error  Unnecessary escape character: \/  no-useless-escape
+  2:2068  error  Unnecessary escape character: \/  no-useless-escape
+  2:2100  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/1420.bundle.js
+  2:13121  error  Unnecessary escape character: \/  no-useless-escape
+  2:13123  error  Unnecessary escape character: \^  no-useless-escape
+  2:13156  error  Unnecessary escape character: \/  no-useless-escape
+  2:13166  error  Unnecessary escape character: \/  no-useless-escape
+  2:13486  error  Unnecessary escape character: \[  no-useless-escape
+  2:13801  error  Unnecessary escape character: \|  no-useless-escape
+  2:14115  error  Unnecessary escape character: \"  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/1438.bundle.js
+  2:1102  error  Unnecessary escape character: \.  no-useless-escape
+  2:1104  error  Unnecessary escape character: \-  no-useless-escape
+  2:1114  error  Unnecessary escape character: \.  no-useless-escape
+  2:1116  error  Unnecessary escape character: \-  no-useless-escape
+  2:1424  error  Unnecessary escape character: \!  no-useless-escape
+  2:1501  error  Unnecessary escape character: \!  no-useless-escape
+  2:1806  error  Unnecessary escape character: \/  no-useless-escape
+  2:1817  error  Unnecessary escape character: \/  no-useless-escape
+  2:1826  error  Unnecessary escape character: \?  no-useless-escape
+  2:1828  error  Unnecessary escape character: \/  no-useless-escape
+  2:1831  error  Unnecessary escape character: \>  no-useless-escape
+  2:2227  error  Unnecessary escape character: \-  no-useless-escape
+  2:2329  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/1446.bundle.js
+  2:293  error  Unnecessary escape character: \/  no-useless-escape
+  2:295  error  Unnecessary escape character: \^  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/1546.bundle.js
+  2:207    error    'i' is a function                                                no-func-assign
+  2:846    error    Unsafe usage of ReturnStatement                                  no-unsafe-finally
+  2:867    error    Unsafe usage of ThrowStatement                                   no-unsafe-finally
+  2:1535   error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:1578   error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:2154   error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:2831   error    'c' is a function                                                no-func-assign
+  2:2937   warning  'r' is defined but never used                                    no-unused-vars
+  2:2945   error    'u' is a function                                                no-func-assign
+  2:3794   error    Unsafe usage of ThrowStatement                                   no-unsafe-finally
+  2:5470   error    Expected a 'break' statement before 'case'                       no-fallthrough
+  2:5848   error    Expected a 'break' statement before 'case'                       no-fallthrough
+  2:5917   error    Expected a 'break' statement before 'case'                       no-fallthrough
+  2:6221   error    Expected a 'break' statement before 'case'                       no-fallthrough
+  2:6541   error    Expected a 'break' statement before 'case'                       no-fallthrough
+  2:6871   error    Expected a 'break' statement before 'case'                       no-fallthrough
+  2:7015   warning  'r' is defined but never used                                    no-unused-vars
+  2:8875   warning  'r' is defined but never used                                    no-unused-vars
+  2:9830   warning  'r' is defined but never used                                    no-unused-vars
+  2:10563  warning  'r' is defined but never used                                    no-unused-vars
+  2:11159  warning  'r' is defined but never used                                    no-unused-vars
+  2:12761  warning  'r' is defined but never used                                    no-unused-vars
+  2:13211  warning  'r' is defined but never used                                    no-unused-vars
+  2:13213  warning  'e' is defined but never used                                    no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/dist/1560.bundle.js
+  2:1962  error  Unnecessary escape character: \/  no-useless-escape
+  2:1964  error  Unnecessary escape character: \^  no-useless-escape
+  2:1967  error  Unnecessary escape character: \.  no-useless-escape
+  2:2066  error  Unnecessary escape character: \-  no-useless-escape
+  2:2231  error  Unnecessary escape character: \[  no-useless-escape
+  2:2235  error  Unnecessary escape character: \$  no-useless-escape
+  2:2237  error  Unnecessary escape character: \^  no-useless-escape
+  2:2245  error  Unnecessary escape character: \.  no-useless-escape
+  2:2286  error  Unnecessary escape character: \/  no-useless-escape
+  2:3709  error  Unnecessary escape character: \/  no-useless-escape
+  2:3767  error  Unnecessary escape character: \[  no-useless-escape
+  2:4080  error  Unnecessary escape character: \-  no-useless-escape
+  2:5710  error  Unnecessary escape character: \(  no-useless-escape
+  2:5712  error  Unnecessary escape character: \{  no-useless-escape
+  2:5714  error  Unnecessary escape character: \[  no-useless-escape
+  2:5993  error  Unnecessary escape character: \/  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/1672.bundle.js
+  1:5773  warning  'e' is defined but never used  no-unused-vars
+  1:5775  error    Empty block statement          no-empty
+
+/Users/nicetop/Documents/DY_VScode/public/dist/1710.bundle.js
+  2:697   error  Unnecessary escape character: \-  no-useless-escape
+  2:700   error  Unnecessary escape character: \-  no-useless-escape
+  2:710   error  Unnecessary escape character: \=  no-useless-escape
+  2:5976  error  Unnecessary escape character: \<  no-useless-escape
+  2:8106  error  Unnecessary escape character: \@  no-useless-escape
+  2:8217  error  Unnecessary escape character: \@  no-useless-escape
+  2:8328  error  Unnecessary escape character: \@  no-useless-escape
+  2:8436  error  Unnecessary escape character: \@  no-useless-escape
+  2:8544  error  Unnecessary escape character: \@  no-useless-escape
+  2:8604  error  Unnecessary escape character: \@  no-useless-escape
+  2:9201  error  Unnecessary escape character: \[  no-useless-escape
+  2:9205  error  Unnecessary escape character: \{  no-useless-escape
+  2:9207  error  Unnecessary escape character: \}  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/1740.bundle.js
+  2:4653  error  Unnecessary escape character: \.  no-useless-escape
+  2:4663  error  Unnecessary escape character: \/  no-useless-escape
+  2:4665  error  Unnecessary escape character: \^  no-useless-escape
+  2:5216  error  Unnecessary escape character: \-  no-useless-escape
+  2:5271  error  Unnecessary escape character: \-  no-useless-escape
+  2:5460  error  Unnecessary escape character: \[  no-useless-escape
+  2:5597  error  Unnecessary escape character: \'  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/1914.bundle.js
+  2:9337  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/198.bundle.js
+  2:3643  error  Unnecessary escape character: \/  no-useless-escape
+  2:3645  error  Unnecessary escape character: \^  no-useless-escape
+  2:4015  error  Unnecessary escape character: \@  no-useless-escape
+  2:4023  error  Unnecessary escape character: \@  no-useless-escape
+  2:4030  error  Unnecessary escape character: \@  no-useless-escape
+  2:4036  error  Unnecessary escape character: \@  no-useless-escape
+  2:4043  error  Unnecessary escape character: \@  no-useless-escape
+  2:4051  error  Unnecessary escape character: \@  no-useless-escape
+  2:4195  error  Unnecessary escape character: \?  no-useless-escape
+  2:4199  error  Unnecessary escape character: \(  no-useless-escape
+  2:4201  error  Unnecessary escape character: \[  no-useless-escape
+  2:4203  error  Unnecessary escape character: \{  no-useless-escape
+  2:5178  error  Unnecessary escape character: \#  no-useless-escape
+  2:5949  error  Unnecessary escape character: \[  no-useless-escape
+  2:6844  error  Unnecessary escape character: \(  no-useless-escape
+  2:6846  error  Unnecessary escape character: \*  no-useless-escape
+  2:6989  error  Unnecessary escape character: \/  no-useless-escape
+  2:7036  error  Unnecessary escape character: \/  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/205.bundle.js
+  2:1937  error  Unnecessary escape character: \[  no-useless-escape
+  2:2519  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/2077.bundle.js
+  2:3351   warning  't' is defined but never used  no-unused-vars
+  2:3422   warning  'e' is defined but never used  no-unused-vars
+  2:22325  warning  'e' is defined but never used  no-unused-vars
+  2:23575  warning  'n' is defined but never used  no-unused-vars
+  2:23577  warning  'r' is defined but never used  no-unused-vars
+  2:25653  warning  'n' is defined but never used  no-unused-vars
+  2:26186  warning  'n' is defined but never used  no-unused-vars
+  2:26673  warning  'n' is defined but never used  no-unused-vars
+  2:26924  warning  'n' is defined but never used  no-unused-vars
+  2:26926  warning  'r' is defined but never used  no-unused-vars
+  2:27114  warning  'r' is defined but never used  no-unused-vars
+  2:27496  warning  't' is defined but never used  no-unused-vars
+  2:28681  warning  't' is defined but never used  no-unused-vars
+  2:28918  warning  'n' is defined but never used  no-unused-vars
+  2:29166  warning  'r' is defined but never used  no-unused-vars
+  2:29439  warning  't' is defined but never used  no-unused-vars
+  2:29624  warning  'n' is defined but never used  no-unused-vars
+  2:29984  warning  'n' is defined but never used  no-unused-vars
+  2:30464  warning  'n' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/dist/2094.bundle.js
+  2:4917   error  Unnecessary escape character: \{  no-useless-escape
+  2:5006   error  Unnecessary escape character: \$  no-useless-escape
+  2:6513   error  Unnecessary escape character: \-  no-useless-escape
+  2:6515   error  Unnecessary escape character: \.  no-useless-escape
+  2:11382  error  Unnecessary escape character: \$  no-useless-escape
+  2:11386  error  Unnecessary escape character: \[  no-useless-escape
+  2:11388  error  Unnecessary escape character: \{  no-useless-escape
+  2:11406  error  Unnecessary escape character: \$  no-useless-escape
+  2:11410  error  Unnecessary escape character: \[  no-useless-escape
+  2:11412  error  Unnecessary escape character: \{  no-useless-escape
+  2:12751  error  Unnecessary escape character: \[  no-useless-escape
+  2:12755  error  Unnecessary escape character: \(  no-useless-escape
+  2:12757  error  Unnecessary escape character: \)  no-useless-escape
+  2:12759  error  Unnecessary escape character: \{  no-useless-escape
+  2:12761  error  Unnecessary escape character: \}  no-useless-escape
+  2:13813  error  Unnecessary escape character: \[  no-useless-escape
+  2:15076  error  Unnecessary escape character: \[  no-useless-escape
+  2:15078  error  Unnecessary escape character: \-  no-useless-escape
+  2:15085  error  Unnecessary escape character: \[  no-useless-escape
+  2:15087  error  Unnecessary escape character: \-  no-useless-escape
+  2:15262  error  Unnecessary escape character: \-  no-useless-escape
+  2:15385  error  Unnecessary escape character: \[  no-useless-escape
+  2:15387  error  Unnecessary escape character: \-  no-useless-escape
+  2:15394  error  Unnecessary escape character: \[  no-useless-escape
+  2:15396  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/2244.bundle.js
+  2:1528  error  Unnecessary escape character: \^  no-useless-escape
+  2:1532  error  Unnecessary escape character: \.  no-useless-escape
+  2:1535  error  Unnecessary escape character: \/  no-useless-escape
+  2:1864  error  Unnecessary escape character: \[  no-useless-escape
+  2:1956  error  Unnecessary escape character: \-  no-useless-escape
+  2:2014  error  Unnecessary escape character: \-  no-useless-escape
+  2:2334  error  Unnecessary escape character: \@  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/2278.bundle.js
+  2:4283  error  Unnecessary escape character: \/  no-useless-escape
+  2:4285  error  Unnecessary escape character: \^  no-useless-escape
+  2:4599  error  Unnecessary escape character: \[  no-useless-escape
+  2:4738  error  Unnecessary escape character: \-  no-useless-escape
+  2:5138  error  Unnecessary escape character: \/  no-useless-escape
+  2:5185  error  Unnecessary escape character: \/  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/2398.bundle.js
+  2:4749  error  Unnecessary escape character: \/  no-useless-escape
+  2:4751  error  Unnecessary escape character: \^  no-useless-escape
+  2:4855  error  Unnecessary escape character: \.  no-useless-escape
+  2:5403  error  Unnecessary escape character: \[  no-useless-escape
+  2:5729  error  Unnecessary escape character: \-  no-useless-escape
+  2:6336  error  Unnecessary escape character: \[  no-useless-escape
+  2:6392  error  Unnecessary escape character: \[  no-useless-escape
+  2:6818  error  Unnecessary escape character: \/  no-useless-escape
+  2:6865  error  Unnecessary escape character: \/  no-useless-escape
+  2:7092  error  Unnecessary escape character: \/  no-useless-escape
+  2:7262  error  Unnecessary escape character: \/  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/2586.bundle.js
+  2:184   error  Unnecessary escape character: \`  no-useless-escape
+  2:186   error  Unnecessary escape character: \~  no-useless-escape
+  2:188   error  Unnecessary escape character: \!  no-useless-escape
+  2:190   error  Unnecessary escape character: \@  no-useless-escape
+  2:192   error  Unnecessary escape character: \$  no-useless-escape
+  2:194   error  Unnecessary escape character: \^  no-useless-escape
+  2:196   error  Unnecessary escape character: \&  no-useless-escape
+  2:198   error  Unnecessary escape character: \*  no-useless-escape
+  2:200   error  Unnecessary escape character: \(  no-useless-escape
+  2:202   error  Unnecessary escape character: \)  no-useless-escape
+  2:204   error  Unnecessary escape character: \=  no-useless-escape
+  2:206   error  Unnecessary escape character: \+  no-useless-escape
+  2:208   error  Unnecessary escape character: \[  no-useless-escape
+  2:210   error  Unnecessary escape character: \{  no-useless-escape
+  2:214   error  Unnecessary escape character: \}  no-useless-escape
+  2:218   error  Unnecessary escape character: \|  no-useless-escape
+  2:220   error  Unnecessary escape character: \;  no-useless-escape
+  2:222   error  Unnecessary escape character: \:  no-useless-escape
+  2:224   error  Unnecessary escape character: \'  no-useless-escape
+  2:226   error  Unnecessary escape character: \"  no-useless-escape
+  2:228   error  Unnecessary escape character: \,  no-useless-escape
+  2:230   error  Unnecessary escape character: \.  no-useless-escape
+  2:232   error  Unnecessary escape character: \<  no-useless-escape
+  2:234   error  Unnecessary escape character: \>  no-useless-escape
+  2:236   error  Unnecessary escape character: \/  no-useless-escape
+  2:1226  error  Unnecessary escape character: \-  no-useless-escape
+  2:1236  error  Unnecessary escape character: \-  no-useless-escape
+  2:1452  error  Unnecessary escape character: \-  no-useless-escape
+  2:1462  error  Unnecessary escape character: \-  no-useless-escape
+  2:1539  error  Unnecessary escape character: \-  no-useless-escape
+  2:1549  error  Unnecessary escape character: \-  no-useless-escape
+  2:2858  error  Unnecessary escape character: \'  no-useless-escape
+  2:2863  error  Unnecessary escape character: \'  no-useless-escape
+  2:2877  error  Unnecessary escape character: \'  no-useless-escape
+  2:2886  error  Unnecessary escape character: \'  no-useless-escape
+  2:3283  error  Unnecessary escape character: \-  no-useless-escape
+  2:3488  error  Unnecessary escape character: \-  no-useless-escape
+  2:4460  error  Unnecessary escape character: \-  no-useless-escape
+  2:4807  error  Unnecessary escape character: \-  no-useless-escape
+  2:5745  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/2658.bundle.js
+  2:632   error  Unnecessary escape character: \`  no-useless-escape
+  2:634   error  Unnecessary escape character: \~  no-useless-escape
+  2:636   error  Unnecessary escape character: \!  no-useless-escape
+  2:638   error  Unnecessary escape character: \@  no-useless-escape
+  2:640   error  Unnecessary escape character: \$  no-useless-escape
+  2:642   error  Unnecessary escape character: \^  no-useless-escape
+  2:644   error  Unnecessary escape character: \&  no-useless-escape
+  2:646   error  Unnecessary escape character: \*  no-useless-escape
+  2:648   error  Unnecessary escape character: \(  no-useless-escape
+  2:650   error  Unnecessary escape character: \)  no-useless-escape
+  2:652   error  Unnecessary escape character: \=  no-useless-escape
+  2:654   error  Unnecessary escape character: \+  no-useless-escape
+  2:656   error  Unnecessary escape character: \[  no-useless-escape
+  2:658   error  Unnecessary escape character: \{  no-useless-escape
+  2:662   error  Unnecessary escape character: \}  no-useless-escape
+  2:666   error  Unnecessary escape character: \|  no-useless-escape
+  2:668   error  Unnecessary escape character: \;  no-useless-escape
+  2:670   error  Unnecessary escape character: \:  no-useless-escape
+  2:672   error  Unnecessary escape character: \'  no-useless-escape
+  2:674   error  Unnecessary escape character: \"  no-useless-escape
+  2:676   error  Unnecessary escape character: \,  no-useless-escape
+  2:678   error  Unnecessary escape character: \.  no-useless-escape
+  2:680   error  Unnecessary escape character: \<  no-useless-escape
+  2:682   error  Unnecessary escape character: \>  no-useless-escape
+  2:684   error  Unnecessary escape character: \/  no-useless-escape
+  2:1712  error  Unnecessary escape character: \-  no-useless-escape
+  2:1722  error  Unnecessary escape character: \-  no-useless-escape
+  2:1903  error  Unnecessary escape character: \-  no-useless-escape
+  2:1913  error  Unnecessary escape character: \-  no-useless-escape
+  2:1980  error  Unnecessary escape character: \-  no-useless-escape
+  2:1990  error  Unnecessary escape character: \-  no-useless-escape
+  2:2327  error  Unnecessary escape character: \-  no-useless-escape
+  2:2507  error  Unnecessary escape character: \-  no-useless-escape
+  2:3585  error  Unnecessary escape character: \-  no-useless-escape
+  2:3907  error  Unnecessary escape character: \-  no-useless-escape
+  2:4775  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/2686.bundle.js
+  2:1485  error  Unnecessary escape character: \[  no-useless-escape
+  2:1888  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/2692.bundle.js
+  2:1387  error  Unnecessary escape character: \$  no-useless-escape
+  2:1626  error  Unnecessary escape character: \$  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/2745.bundle.js
+  2:3322   warning  't' is defined but never used  no-unused-vars
+  2:3393   warning  'e' is defined but never used  no-unused-vars
+  2:22296  warning  'e' is defined but never used  no-unused-vars
+  2:23546  warning  'n' is defined but never used  no-unused-vars
+  2:23548  warning  'r' is defined but never used  no-unused-vars
+  2:25624  warning  'n' is defined but never used  no-unused-vars
+  2:26157  warning  'n' is defined but never used  no-unused-vars
+  2:26644  warning  'n' is defined but never used  no-unused-vars
+  2:26895  warning  'n' is defined but never used  no-unused-vars
+  2:26897  warning  'r' is defined but never used  no-unused-vars
+  2:27085  warning  'r' is defined but never used  no-unused-vars
+  2:27467  warning  't' is defined but never used  no-unused-vars
+  2:28652  warning  't' is defined but never used  no-unused-vars
+  2:28889  warning  'n' is defined but never used  no-unused-vars
+  2:29137  warning  'r' is defined but never used  no-unused-vars
+  2:29410  warning  't' is defined but never used  no-unused-vars
+  2:29595  warning  'n' is defined but never used  no-unused-vars
+  2:29955  warning  'n' is defined but never used  no-unused-vars
+  2:30435  warning  'n' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/dist/2962.bundle.js
+  2:3083  error  Unnecessary escape character: \[  no-useless-escape
+  2:3744  error  Unnecessary escape character: \-  no-useless-escape
+  2:4822  error  Unnecessary escape character: \[  no-useless-escape
+  2:5069  error  Unnecessary escape character: \-  no-useless-escape
+  2:5095  error  Unnecessary escape character: \-  no-useless-escape
+  2:5905  error  Unnecessary escape character: \[  no-useless-escape
+  2:5929  error  Unnecessary escape character: \[  no-useless-escape
+  2:6029  error  Unnecessary escape character: \[  no-useless-escape
+  2:6053  error  Unnecessary escape character: \[  no-useless-escape
+  2:6400  error  Unnecessary escape character: \$  no-useless-escape
+  2:6548  error  Unnecessary escape character: \$  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/3042.bundle.js
+  2:17138  error  Unnecessary escape character: \/  no-useless-escape
+  2:17140  error  Unnecessary escape character: \^  no-useless-escape
+  2:17502  error  Unnecessary escape character: \[  no-useless-escape
+  2:17631  error  Unnecessary escape character: \-  no-useless-escape
+  2:17689  error  Unnecessary escape character: \-  no-useless-escape
+  2:18297  error  Unnecessary escape character: \/  no-useless-escape
+  2:18344  error  Unnecessary escape character: \/  no-useless-escape
+  2:18378  error  Unnecessary escape character: \/  no-useless-escape
+  2:18433  error  Unnecessary escape character: \/  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/3062.bundle.js
+  2:1589  error  Unnecessary escape character: \/  no-useless-escape
+  2:1591  error  Unnecessary escape character: \^  no-useless-escape
+  2:1823  error  Unnecessary escape character: \[  no-useless-escape
+  2:1827  error  Unnecessary escape character: \$  no-useless-escape
+  2:1829  error  Unnecessary escape character: \^  no-useless-escape
+  2:1837  error  Unnecessary escape character: \.  no-useless-escape
+  2:1875  error  Unnecessary escape character: \/  no-useless-escape
+  2:2125  error  Unnecessary escape character: \$  no-useless-escape
+  2:2186  error  Unnecessary escape character: \/  no-useless-escape
+  2:2317  error  Unnecessary escape character: \[  no-useless-escape
+  2:2479  error  Unnecessary escape character: \-  no-useless-escape
+  2:2541  error  Unnecessary escape character: \-  no-useless-escape
+  2:3047  error  Unnecessary escape character: \/  no-useless-escape
+  2:3094  error  Unnecessary escape character: \/  no-useless-escape
+  2:3123  error  Unnecessary escape character: \/  no-useless-escape
+  2:3178  error  Unnecessary escape character: \/  no-useless-escape
+  2:3332  error  Unnecessary escape character: \/  no-useless-escape
+  2:3572  error  Unnecessary escape character: \/  no-useless-escape
+  2:3936  error  Unnecessary escape character: \$  no-useless-escape
+  2:4102  error  Unnecessary escape character: \$  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/3096.bundle.js
+  2:632   error  Unnecessary escape character: \`  no-useless-escape
+  2:634   error  Unnecessary escape character: \~  no-useless-escape
+  2:636   error  Unnecessary escape character: \!  no-useless-escape
+  2:638   error  Unnecessary escape character: \@  no-useless-escape
+  2:640   error  Unnecessary escape character: \$  no-useless-escape
+  2:642   error  Unnecessary escape character: \^  no-useless-escape
+  2:644   error  Unnecessary escape character: \&  no-useless-escape
+  2:646   error  Unnecessary escape character: \*  no-useless-escape
+  2:648   error  Unnecessary escape character: \(  no-useless-escape
+  2:650   error  Unnecessary escape character: \)  no-useless-escape
+  2:652   error  Unnecessary escape character: \=  no-useless-escape
+  2:654   error  Unnecessary escape character: \+  no-useless-escape
+  2:656   error  Unnecessary escape character: \[  no-useless-escape
+  2:658   error  Unnecessary escape character: \{  no-useless-escape
+  2:662   error  Unnecessary escape character: \}  no-useless-escape
+  2:666   error  Unnecessary escape character: \|  no-useless-escape
+  2:668   error  Unnecessary escape character: \;  no-useless-escape
+  2:670   error  Unnecessary escape character: \:  no-useless-escape
+  2:672   error  Unnecessary escape character: \'  no-useless-escape
+  2:674   error  Unnecessary escape character: \"  no-useless-escape
+  2:676   error  Unnecessary escape character: \,  no-useless-escape
+  2:678   error  Unnecessary escape character: \.  no-useless-escape
+  2:680   error  Unnecessary escape character: \<  no-useless-escape
+  2:682   error  Unnecessary escape character: \>  no-useless-escape
+  2:684   error  Unnecessary escape character: \/  no-useless-escape
+  2:2276  error  Unnecessary escape character: \%  no-useless-escape
+  2:2291  error  Unnecessary escape character: \%  no-useless-escape
+  2:2393  error  Unnecessary escape character: \%  no-useless-escape
+  2:2455  error  Unnecessary escape character: \-  no-useless-escape
+  2:2597  error  Unnecessary escape character: \-  no-useless-escape
+  2:2732  error  Unnecessary escape character: \%  no-useless-escape
+  2:2750  error  Unnecessary escape character: \%  no-useless-escape
+  2:2892  error  Unnecessary escape character: \%  no-useless-escape
+  2:3051  error  Unnecessary escape character: \-  no-useless-escape
+  2:3224  error  Unnecessary escape character: \%  no-useless-escape
+  2:3260  error  Unnecessary escape character: \%  no-useless-escape
+  2:3305  error  Unnecessary escape character: \%  no-useless-escape
+  2:3406  error  Unnecessary escape character: \%  no-useless-escape
+  2:3420  error  Unnecessary escape character: \%  no-useless-escape
+  2:3434  error  Unnecessary escape character: \%  no-useless-escape
+  2:3480  error  Unnecessary escape character: \%  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/3182.bundle.js
+  2:13093  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/3726.bundle.js
+  2:997   error  Unnecessary escape character: \/  no-useless-escape
+  2:999   error  Unnecessary escape character: \^  no-useless-escape
+  2:1223  error  Unnecessary escape character: \[  no-useless-escape
+  2:1607  error  Unnecessary escape character: \/  no-useless-escape
+  2:1654  error  Unnecessary escape character: \/  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/398.bundle.js
+  2:183   error  Unnecessary escape character: \`  no-useless-escape
+  2:185   error  Unnecessary escape character: \~  no-useless-escape
+  2:187   error  Unnecessary escape character: \!  no-useless-escape
+  2:189   error  Unnecessary escape character: \@  no-useless-escape
+  2:191   error  Unnecessary escape character: \#  no-useless-escape
+  2:194   error  Unnecessary escape character: \^  no-useless-escape
+  2:196   error  Unnecessary escape character: \&  no-useless-escape
+  2:198   error  Unnecessary escape character: \*  no-useless-escape
+  2:200   error  Unnecessary escape character: \(  no-useless-escape
+  2:202   error  Unnecessary escape character: \)  no-useless-escape
+  2:204   error  Unnecessary escape character: \=  no-useless-escape
+  2:206   error  Unnecessary escape character: \$  no-useless-escape
+  2:210   error  Unnecessary escape character: \+  no-useless-escape
+  2:212   error  Unnecessary escape character: \[  no-useless-escape
+  2:214   error  Unnecessary escape character: \{  no-useless-escape
+  2:218   error  Unnecessary escape character: \}  no-useless-escape
+  2:222   error  Unnecessary escape character: \|  no-useless-escape
+  2:224   error  Unnecessary escape character: \;  no-useless-escape
+  2:226   error  Unnecessary escape character: \:  no-useless-escape
+  2:228   error  Unnecessary escape character: \'  no-useless-escape
+  2:230   error  Unnecessary escape character: \"  no-useless-escape
+  2:232   error  Unnecessary escape character: \,  no-useless-escape
+  2:234   error  Unnecessary escape character: \.  no-useless-escape
+  2:236   error  Unnecessary escape character: \<  no-useless-escape
+  2:238   error  Unnecessary escape character: \>  no-useless-escape
+  2:240   error  Unnecessary escape character: \/  no-useless-escape
+  2:242   error  Unnecessary escape character: \?  no-useless-escape
+  2:476   error  Unnecessary escape character: \/  no-useless-escape
+  2:888   error  Unnecessary escape character: \.  no-useless-escape
+  2:891   error  Unnecessary escape character: \:  no-useless-escape
+  2:1255  error  Unnecessary escape character: \,  no-useless-escape
+  2:1303  error  Unnecessary escape character: \:  no-useless-escape
+  2:1384  error  Unnecessary escape character: \-  no-useless-escape
+  2:1428  error  Unnecessary escape character: \-  no-useless-escape
+  2:1805  error  Unnecessary escape character: \#  no-useless-escape
+  2:2440  error  Unnecessary escape character: \/  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/4114.bundle.js
+  2:984   error  Unnecessary escape character: \/  no-useless-escape
+  2:986   error  Unnecessary escape character: \^  no-useless-escape
+  2:1361  error  Unnecessary escape character: \[  no-useless-escape
+  2:1459  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/4120.bundle.js
+  2:1995  error  Unnecessary escape character: \[  no-useless-escape
+  2:2043  error  Unnecessary escape character: \+  no-useless-escape
+  2:2045  error  Unnecessary escape character: \-  no-useless-escape
+  2:2086  error  Unnecessary escape character: \_  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/4320.bundle.js
+  2:124    error    'e' is a function                                                no-func-assign
+  2:1768   error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:1811   error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:2387   error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:3064   error    'i' is a function                                                no-func-assign
+  2:3170   warning  't' is defined but never used                                    no-unused-vars
+  2:3178   error    'u' is a function                                                no-func-assign
+  2:3721   warning  't' is defined but never used                                    no-unused-vars
+  2:3776   error    'h' is a function                                                no-func-assign
+  2:4182   warning  't' is defined but never used                                    no-unused-vars
+  2:4237   error    'v' is a function                                                no-func-assign
+  2:4675   warning  't' is defined but never used                                    no-unused-vars
+  2:4677   warning  'n' is defined but never used                                    no-unused-vars
+  2:4732   error    'y' is a function                                                no-func-assign
+  2:5329   warning  't' is defined but never used                                    no-unused-vars
+  2:5331   warning  'n' is defined but never used                                    no-unused-vars
+  2:5333   warning  'r' is defined but never used                                    no-unused-vars
+  2:5335   warning  'e' is defined but never used                                    no-unused-vars
+  2:5390   error    'g' is a function                                                no-func-assign
+  2:5947   warning  't' is defined but never used                                    no-unused-vars
+  2:5949   warning  'n' is defined but never used                                    no-unused-vars
+  2:5951   warning  'r' is defined but never used                                    no-unused-vars
+  2:5953   warning  'e' is defined but never used                                    no-unused-vars
+  2:5955   warning  'o' is defined but never used                                    no-unused-vars
+  2:5957   warning  'c' is defined but never used                                    no-unused-vars
+  2:6012   error    'w' is a function                                                no-func-assign
+  2:6730   warning  't' is defined but never used                                    no-unused-vars
+  2:6732   warning  'n' is defined but never used                                    no-unused-vars
+  2:6734   warning  'r' is defined but never used                                    no-unused-vars
+  2:6736   warning  'e' is defined but never used                                    no-unused-vars
+  2:6738   warning  'o' is defined but never used                                    no-unused-vars
+  2:6740   warning  'c' is defined but never used                                    no-unused-vars
+  2:6795   error    'O' is a function                                                no-func-assign
+  2:7409   warning  't' is defined but never used                                    no-unused-vars
+  2:7411   warning  'n' is defined but never used                                    no-unused-vars
+  2:7413   warning  'r' is defined but never used                                    no-unused-vars
+  2:7415   warning  'e' is defined but never used                                    no-unused-vars
+  2:7470   error    'P' is a function                                                no-func-assign
+  2:7960   warning  't' is defined but never used                                    no-unused-vars
+  2:7962   warning  'n' is defined but never used                                    no-unused-vars
+  2:7964   warning  'r' is defined but never used                                    no-unused-vars
+  2:7966   warning  'e' is defined but never used                                    no-unused-vars
+  2:7968   warning  'o' is defined but never used                                    no-unused-vars
+  2:8023   error    'E' is a function                                                no-func-assign
+  2:8715   warning  't' is defined but never used                                    no-unused-vars
+  2:8717   warning  'n' is defined but never used                                    no-unused-vars
+  2:8719   warning  'r' is defined but never used                                    no-unused-vars
+  2:8721   warning  'e' is defined but never used                                    no-unused-vars
+  2:8723   warning  'o' is defined but never used                                    no-unused-vars
+  2:8725   warning  'c' is defined but never used                                    no-unused-vars
+  2:8780   error    'T' is a function                                                no-func-assign
+  2:9397   warning  't' is defined but never used                                    no-unused-vars
+  2:9399   warning  'n' is defined but never used                                    no-unused-vars
+  2:9401   warning  'r' is defined but never used                                    no-unused-vars
+  2:9403   warning  'e' is defined but never used                                    no-unused-vars
+  2:9405   warning  'o' is defined but never used                                    no-unused-vars
+  2:9460   error    'C' is a function                                                no-func-assign
+  2:10076  warning  't' is defined but never used                                    no-unused-vars
+  2:10078  warning  'n' is defined but never used                                    no-unused-vars
+  2:10080  warning  'r' is defined but never used                                    no-unused-vars
+  2:10082  warning  'e' is defined but never used                                    no-unused-vars
+  2:10137  error    'I' is a function                                                no-func-assign
+
+/Users/nicetop/Documents/DY_VScode/public/dist/4334.bundle.js
+  2:1361  error  Unnecessary escape character: \^  no-useless-escape
+  2:1369  error  Unnecessary escape character: \/  no-useless-escape
+  2:1371  error  Unnecessary escape character: \^  no-useless-escape
+  2:1512  error  Unnecessary escape character: \[  no-useless-escape
+  2:1643  error  Unnecessary escape character: \-  no-useless-escape
+  2:1856  error  Unnecessary escape character: \#  no-useless-escape
+  2:1887  error  Unnecessary escape character: \(  no-useless-escape
+  2:1889  error  Unnecessary escape character: \*  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/4583.bundle.js
+  2:1634   error    'c' is a function                                                no-func-assign
+  2:2301   error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:2344   error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:2920   error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:3597   error    'u' is a function                                                no-func-assign
+  2:3703   warning  'n' is defined but never used                                    no-unused-vars
+  2:3711   error    's' is a function                                                no-func-assign
+  2:5172   error    Expected a 'break' statement before 'case'                       no-fallthrough
+  2:6204   error    Expected a 'break' statement before 'case'                       no-fallthrough
+  2:7580   warning  'n' is defined but never used                                    no-unused-vars
+  2:7582   warning  'e' is defined but never used                                    no-unused-vars
+  2:7584   warning  't' is defined but never used                                    no-unused-vars
+  2:8963   warning  'n' is defined but never used                                    no-unused-vars
+  2:8965   warning  'e' is defined but never used                                    no-unused-vars
+  2:8967   warning  't' is defined but never used                                    no-unused-vars
+  2:9625   warning  'e' is defined but never used                                    no-unused-vars
+  2:9627   warning  't' is defined but never used                                    no-unused-vars
+  2:9629   warning  'r' is defined but never used                                    no-unused-vars
+  2:9631   warning  'o' is defined but never used                                    no-unused-vars
+  2:10384  warning  'n' is defined but never used                                    no-unused-vars
+  2:10386  warning  'e' is defined but never used                                    no-unused-vars
+  2:11011  error    Expected a 'break' statement before 'case'                       no-fallthrough
+  2:11660  error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:11703  error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:12279  error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:12956  error    'g' is a function                                                no-func-assign
+  2:13062  warning  'n' is defined but never used                                    no-unused-vars
+  2:13070  error    'v' is a function                                                no-func-assign
+  2:14459  warning  'n' is defined but never used                                    no-unused-vars
+  2:14461  warning  'e' is defined but never used                                    no-unused-vars
+  2:14463  warning  't' is defined but never used                                    no-unused-vars
+  2:15370  error    Expected a 'break' statement before 'case'                       no-fallthrough
+  2:15542  error    Expected a 'break' statement before 'case'                       no-fallthrough
+  2:16873  error    'j' is a function                                                no-func-assign
+
+/Users/nicetop/Documents/DY_VScode/public/dist/4630.bundle.js
+  2:2459  error  Unnecessary escape character: \[                  no-useless-escape
+  2:2469  error  Unnecessary escape character: \_                  no-useless-escape
+  2:2483  error  Unnecessary escape character: \/                  no-useless-escape
+  2:2504  error  Unnecessary escape character: \/                  no-useless-escape
+  2:2793  error  Unexpected combined character in character class  no-misleading-character-class
+  2:3349  error  Unnecessary escape character: \[                  no-useless-escape
+  2:3692  error  Unnecessary escape character: \:                  no-useless-escape
+  2:3703  error  Unnecessary escape character: \:                  no-useless-escape
+  2:4077  error  Unnecessary escape character: \-                  no-useless-escape
+  2:4130  error  Unnecessary escape character: \-                  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/4680.bundle.js
+  2:2434  error  Unnecessary escape character: \"  no-useless-escape
+  2:2443  error  Unnecessary escape character: \h  no-useless-escape
+  2:2452  error  Unnecessary escape character: \h  no-useless-escape
+  2:2491  error  Unnecessary escape character: \#  no-useless-escape
+  2:2493  error  Unnecessary escape character: \!  no-useless-escape
+  2:2495  error  Unnecessary escape character: \%  no-useless-escape
+  2:2497  error  Unnecessary escape character: \&  no-useless-escape
+  2:2499  error  Unnecessary escape character: \*  no-useless-escape
+  2:2501  error  Unnecessary escape character: \+  no-useless-escape
+  2:2505  error  Unnecessary escape character: \.  no-useless-escape
+  2:2507  error  Unnecessary escape character: \/  no-useless-escape
+  2:2509  error  Unnecessary escape character: \:  no-useless-escape
+  2:2511  error  Unnecessary escape character: \;  no-useless-escape
+  2:2513  error  Unnecessary escape character: \<  no-useless-escape
+  2:2515  error  Unnecessary escape character: \=  no-useless-escape
+  2:2517  error  Unnecessary escape character: \>  no-useless-escape
+  2:2519  error  Unnecessary escape character: \@  no-useless-escape
+  2:2521  error  Unnecessary escape character: \^  no-useless-escape
+  2:2523  error  Unnecessary escape character: \|  no-useless-escape
+  2:2526  error  Unnecessary escape character: \?  no-useless-escape
+  2:2945  error  Unnecessary escape character: \'  no-useless-escape
+  2:3189  error  Unnecessary escape character: \[  no-useless-escape
+  2:3374  error  Unnecessary escape character: \/  no-useless-escape
+  2:3448  error  Unnecessary escape character: \/  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/4698.bundle.js
+  2:184   error  Unnecessary escape character: \`  no-useless-escape
+  2:186   error  Unnecessary escape character: \~  no-useless-escape
+  2:188   error  Unnecessary escape character: \!  no-useless-escape
+  2:190   error  Unnecessary escape character: \@  no-useless-escape
+  2:192   error  Unnecessary escape character: \#  no-useless-escape
+  2:195   error  Unnecessary escape character: \^  no-useless-escape
+  2:197   error  Unnecessary escape character: \&  no-useless-escape
+  2:199   error  Unnecessary escape character: \*  no-useless-escape
+  2:201   error  Unnecessary escape character: \(  no-useless-escape
+  2:203   error  Unnecessary escape character: \)  no-useless-escape
+  2:205   error  Unnecessary escape character: \=  no-useless-escape
+  2:207   error  Unnecessary escape character: \+  no-useless-escape
+  2:209   error  Unnecessary escape character: \[  no-useless-escape
+  2:211   error  Unnecessary escape character: \{  no-useless-escape
+  2:215   error  Unnecessary escape character: \}  no-useless-escape
+  2:219   error  Unnecessary escape character: \|  no-useless-escape
+  2:221   error  Unnecessary escape character: \;  no-useless-escape
+  2:223   error  Unnecessary escape character: \:  no-useless-escape
+  2:225   error  Unnecessary escape character: \'  no-useless-escape
+  2:227   error  Unnecessary escape character: \"  no-useless-escape
+  2:229   error  Unnecessary escape character: \,  no-useless-escape
+  2:231   error  Unnecessary escape character: \.  no-useless-escape
+  2:233   error  Unnecessary escape character: \<  no-useless-escape
+  2:235   error  Unnecessary escape character: \>  no-useless-escape
+  2:237   error  Unnecessary escape character: \/  no-useless-escape
+  2:239   error  Unnecessary escape character: \?  no-useless-escape
+  2:1477  error  Unnecessary escape character: \/  no-useless-escape
+  2:1479  error  Unnecessary escape character: \^  no-useless-escape
+  2:1482  error  Unnecessary escape character: \.  no-useless-escape
+  2:1868  error  Unnecessary escape character: \[  no-useless-escape
+  2:1929  error  Unnecessary escape character: \-  no-useless-escape
+  2:2046  error  Unnecessary escape character: \@  no-useless-escape
+  2:2079  error  Unnecessary escape character: \@  no-useless-escape
+  2:2281  error  Unnecessary escape character: \$  no-useless-escape
+  2:2971  error  Unnecessary escape character: \$  no-useless-escape
+  2:3125  error  Unnecessary escape character: \.  no-useless-escape
+  2:3228  error  Unnecessary escape character: \.  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/4839.bundle.js
+  2:3435   warning  't' is defined but never used                 no-unused-vars
+  2:3506   warning  'e' is defined but never used                 no-unused-vars
+  2:22409  warning  'e' is defined but never used                 no-unused-vars
+  2:23659  warning  'n' is defined but never used                 no-unused-vars
+  2:23661  warning  'r' is defined but never used                 no-unused-vars
+  2:25737  warning  'n' is defined but never used                 no-unused-vars
+  2:26270  warning  'n' is defined but never used                 no-unused-vars
+  2:26757  warning  'n' is defined but never used                 no-unused-vars
+  2:27008  warning  'n' is defined but never used                 no-unused-vars
+  2:27010  warning  'r' is defined but never used                 no-unused-vars
+  2:27198  warning  'r' is defined but never used                 no-unused-vars
+  2:27580  warning  't' is defined but never used                 no-unused-vars
+  2:28765  warning  't' is defined but never used                 no-unused-vars
+  2:29002  warning  'n' is defined but never used                 no-unused-vars
+  2:29250  warning  'r' is defined but never used                 no-unused-vars
+  2:29529  warning  't' is defined but never used                 no-unused-vars
+  2:29714  warning  'n' is defined but never used                 no-unused-vars
+  2:30074  warning  'n' is defined but never used                 no-unused-vars
+  2:30554  warning  'n' is defined but never used                 no-unused-vars
+  2:34099  error    Unexpected lexical declaration in case block  no-case-declarations
+  2:34201  error    Unexpected lexical declaration in case block  no-case-declarations
+  2:34676  error    Expected a 'break' statement before 'case'    no-fallthrough
+  2:40408  error    Unexpected lexical declaration in case block  no-case-declarations
+  2:41289  error    Unnecessary escape character: \[              no-useless-escape
+  2:41291  error    Unnecessary escape character: \{              no-useless-escape
+  2:41295  error    Unnecessary escape character: \}              no-useless-escape
+  2:41297  error    Unnecessary escape character: \:              no-useless-escape
+  2:41299  error    Unnecessary escape character: \"              no-useless-escape
+  2:41301  error    Unnecessary escape character: \,              no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/4962.bundle.js
+  2:1079  error  Unnecessary escape character: \/  no-useless-escape
+  2:1082  error  Unnecessary escape character: \.  no-useless-escape
+  2:1480  error  Unnecessary escape character: \[  no-useless-escape
+  2:1666  error  Unnecessary escape character: \'  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/5130.bundle.js
+  2:1021  error  Unnecessary escape character: \/  no-useless-escape
+  2:1023  error  Unnecessary escape character: \^  no-useless-escape
+  2:1537  error  Unnecessary escape character: \[  no-useless-escape
+  2:1665  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/5196.bundle.js
+  2:2606  error  Unnecessary escape character: \[  no-useless-escape
+  2:3116  error  Unnecessary escape character: \-  no-useless-escape
+  2:3408  error  Unnecessary escape character: \{  no-useless-escape
+  2:3410  error  Unnecessary escape character: \}  no-useless-escape
+  2:3444  error  Unnecessary escape character: \{  no-useless-escape
+  2:3446  error  Unnecessary escape character: \}  no-useless-escape
+  2:3468  error  Unnecessary escape character: \}  no-useless-escape
+  2:3731  error  Unnecessary escape character: \{  no-useless-escape
+  2:3733  error  Unnecessary escape character: \}  no-useless-escape
+  2:3767  error  Unnecessary escape character: \{  no-useless-escape
+  2:3769  error  Unnecessary escape character: \}  no-useless-escape
+  2:3791  error  Unnecessary escape character: \}  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/5226.bundle.js
+  1:4623  warning  'e' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/dist/5364.bundle.js
+  2:1292  error  Unnecessary escape character: \/  no-useless-escape
+  2:1294  error  Unnecessary escape character: \^  no-useless-escape
+  2:1564  error  Unnecessary escape character: \[  no-useless-escape
+  2:1693  error  Unnecessary escape character: \-  no-useless-escape
+  2:1737  error  Unnecessary escape character: \-  no-useless-escape
+  2:2277  error  Unnecessary escape character: \/  no-useless-escape
+  2:2324  error  Unnecessary escape character: \/  no-useless-escape
+  2:2358  error  Unnecessary escape character: \/  no-useless-escape
+  2:2444  error  Unnecessary escape character: \/  no-useless-escape
+  2:2594  error  Unnecessary escape character: \`  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/5365.bundle.js
+  2:4325   warning  'System' is not defined                                                    no-undef
+  2:4677   warning  'System' is not defined                                                    no-undef
+  2:5142   warning  't' is defined but never used                                              no-unused-vars
+  2:8598   warning  'importScripts' is not defined                                             no-undef
+  2:8673   error    Do not access Object.prototype method 'hasOwnProperty' from target object  no-prototype-builtins
+  2:9249   warning  'e' is defined but never used                                              no-unused-vars
+  2:11388  warning  'n' is defined but never used                                              no-unused-vars
+  2:12500  error    'a' is a function                                                          no-func-assign
+  2:14609  error    Expected a conditional expression and instead saw an assignment            no-cond-assign
+  2:14652  error    Expected a conditional expression and instead saw an assignment            no-cond-assign
+  2:15228  error    Expected a conditional expression and instead saw an assignment            no-cond-assign
+  2:15905  error    'd' is a function                                                          no-func-assign
+  2:16011  warning  'e' is defined but never used                                              no-unused-vars
+  2:16019  error    'p' is a function                                                          no-func-assign
+  2:17724  warning  't' is defined but never used                                              no-unused-vars
+  2:17812  error    Expected a 'break' statement before 'case'                                 no-fallthrough
+  2:17852  warning  'e' is defined but never used                                              no-unused-vars
+  2:18121  warning  't' is defined but never used                                              no-unused-vars
+  2:18207  error    Expected a 'break' statement before 'case'                                 no-fallthrough
+  2:18247  warning  'e' is defined but never used                                              no-unused-vars
+  2:18463  warning  't' is defined but never used                                              no-unused-vars
+  2:18554  error    Expected a 'break' statement before 'case'                                 no-fallthrough
+  2:18594  warning  'e' is defined but never used                                              no-unused-vars
+  2:18904  error    Expected a 'break' statement before 'case'                                 no-fallthrough
+  2:18944  warning  'e' is defined but never used                                              no-unused-vars
+  2:19169  warning  't' is defined but never used                                              no-unused-vars
+  2:19261  error    Expected a 'break' statement before 'case'                                 no-fallthrough
+  2:19301  warning  'e' is defined but never used                                              no-unused-vars
+  2:19532  warning  't' is defined but never used                                              no-unused-vars
+  2:19627  error    Expected a 'break' statement before 'case'                                 no-fallthrough
+  2:19667  warning  'e' is defined but never used                                              no-unused-vars
+  2:19902  warning  't' is defined but never used                                              no-unused-vars
+  2:19999  error    Expected a 'break' statement before 'case'                                 no-fallthrough
+  2:20039  warning  'e' is defined but never used                                              no-unused-vars
+  2:20258  warning  't' is defined but never used                                              no-unused-vars
+  2:20352  error    Expected a 'break' statement before 'case'                                 no-fallthrough
+  2:20392  warning  'e' is defined but never used                                              no-unused-vars
+  2:20609  warning  't' is defined but never used                                              no-unused-vars
+  2:20797  warning  't' is defined but never used                                              no-unused-vars
+  2:20875  warning  'e' is defined but never used                                              no-unused-vars
+  2:20944  warning  't' is defined but never used                                              no-unused-vars
+  2:20946  warning  'n' is defined but never used                                              no-unused-vars
+  2:21024  warning  't' is defined but never used                                              no-unused-vars
+  2:21026  warning  'n' is defined but never used                                              no-unused-vars
+  2:24279  warning  't' is defined but never used                                              no-unused-vars
+  2:24372  error    Expected a 'break' statement before 'case'                                 no-fallthrough
+  2:24412  warning  'e' is defined but never used                                              no-unused-vars
+  2:26051  error    Expected a 'break' statement before 'case'                                 no-fallthrough
+  2:26472  warning  'e' is defined but never used                                              no-unused-vars
+  2:27276  error    Expected a 'break' statement before 'case'                                 no-fallthrough
+  2:27425  warning  'e' is defined but never used                                              no-unused-vars
+  2:28025  warning  'e' is defined but never used                                              no-unused-vars
+  2:28765  warning  'e' is defined but never used                                              no-unused-vars
+  2:29983  error    Expected a 'break' statement before 'case'                                 no-fallthrough
+  2:35865  error    Expected a 'break' statement before 'case'                                 no-fallthrough
+  2:35912  warning  'e' is defined but never used                                              no-unused-vars
+  2:36232  error    Expected a 'break' statement before 'case'                                 no-fallthrough
+  2:36279  warning  'e' is defined but never used                                              no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/dist/5550.bundle.js
+  2:1359  error  Unnecessary escape character: \`   no-useless-escape
+  2:1361  error  Unnecessary escape character: \~   no-useless-escape
+  2:1363  error  Unnecessary escape character: \!   no-useless-escape
+  2:1365  error  Unnecessary escape character: \@   no-useless-escape
+  2:1367  error  Unnecessary escape character: \#   no-useless-escape
+  2:1369  error  Unnecessary escape character: \%   no-useless-escape
+  2:1371  error  Unnecessary escape character: \^   no-useless-escape
+  2:1373  error  Unnecessary escape character: \&   no-useless-escape
+  2:1375  error  Unnecessary escape character: \*   no-useless-escape
+  2:1377  error  Unnecessary escape character: \(   no-useless-escape
+  2:1379  error  Unnecessary escape character: \)   no-useless-escape
+  2:1383  error  Unnecessary escape character: \=   no-useless-escape
+  2:1385  error  Unnecessary escape character: \+   no-useless-escape
+  2:1387  error  Unnecessary escape character: \[   no-useless-escape
+  2:1389  error  Unnecessary escape character: \{   no-useless-escape
+  2:1393  error  Unnecessary escape character: \}   no-useless-escape
+  2:1397  error  Unnecessary escape character: \|   no-useless-escape
+  2:1399  error  Unnecessary escape character: \;   no-useless-escape
+  2:1401  error  Unnecessary escape character: \:   no-useless-escape
+  2:1403  error  Unnecessary escape character: \'   no-useless-escape
+  2:1405  error  Unnecessary escape character: \"   no-useless-escape
+  2:1407  error  Unnecessary escape character: \,   no-useless-escape
+  2:1409  error  Unnecessary escape character: \.   no-useless-escape
+  2:1411  error  Unnecessary escape character: \<   no-useless-escape
+  2:1413  error  Unnecessary escape character: \>   no-useless-escape
+  2:1415  error  Unnecessary escape character: \/   no-useless-escape
+  2:1417  error  Unnecessary escape character: \?   no-useless-escape
+  2:1567  error  Unnecessary escape character: \*   no-useless-escape
+  2:1717  error  Unnecessary escape character: \*   no-useless-escape
+  2:1823  error  Unnecessary escape character: \ .  no-useless-escape
+  2:1825  error  Unnecessary escape character: \ .  no-useless-escape
+  2:1830  error  Unnecessary escape character: \ .  no-useless-escape
+  2:1835  error  Unnecessary escape character: \ .  no-useless-escape
+  2:1840  error  Unnecessary escape character: \*   no-useless-escape
+  2:1947  error  Unnecessary escape character: \ .  no-useless-escape
+  2:1949  error  Unnecessary escape character: \ .  no-useless-escape
+  2:1954  error  Unnecessary escape character: \ .  no-useless-escape
+  2:3377  error  Unnecessary escape character: \/   no-useless-escape
+  2:3379  error  Unnecessary escape character: \^   no-useless-escape
+  2:3611  error  Unnecessary escape character: \[   no-useless-escape
+  2:3615  error  Unnecessary escape character: \$   no-useless-escape
+  2:3617  error  Unnecessary escape character: \^   no-useless-escape
+  2:3625  error  Unnecessary escape character: \.   no-useless-escape
+  2:3663  error  Unnecessary escape character: \/   no-useless-escape
+  2:3879  error  Unnecessary escape character: \$   no-useless-escape
+  2:3940  error  Unnecessary escape character: \/   no-useless-escape
+  2:4044  error  Unnecessary escape character: \[   no-useless-escape
+  2:4206  error  Unnecessary escape character: \-   no-useless-escape
+  2:4268  error  Unnecessary escape character: \-   no-useless-escape
+  2:4780  error  Unnecessary escape character: \/   no-useless-escape
+  2:4827  error  Unnecessary escape character: \/   no-useless-escape
+  2:4856  error  Unnecessary escape character: \/   no-useless-escape
+  2:4911  error  Unnecessary escape character: \/   no-useless-escape
+  2:5065  error  Unnecessary escape character: \/   no-useless-escape
+  2:5305  error  Unnecessary escape character: \/   no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/558.bundle.js
+  2:11428  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/5618.bundle.js
+  2:2140  error  Unnecessary escape character: \/  no-useless-escape
+  2:2142  error  Unnecessary escape character: \^  no-useless-escape
+  2:2507  error  Unnecessary escape character: \[  no-useless-escape
+  2:2604  error  Unnecessary escape character: \-  no-useless-escape
+  2:2915  error  Unnecessary escape character: \.  no-useless-escape
+  2:3066  error  Unnecessary escape character: \.  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/5786.bundle.js
+  2:4337  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/5966.bundle.js
+  2:1598  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/6018.bundle.js
+  2:3007  error  Unnecessary escape character: \/  no-useless-escape
+  2:3009  error  Unnecessary escape character: \^  no-useless-escape
+  2:3221  error  Unnecessary escape character: \"  no-useless-escape
+  2:3564  error  Unnecessary escape character: \[  no-useless-escape
+  2:3660  error  Unnecessary escape character: \-  no-useless-escape
+  2:3718  error  Unnecessary escape character: \-  no-useless-escape
+  2:4365  error  Unnecessary escape character: \/  no-useless-escape
+  2:4412  error  Unnecessary escape character: \/  no-useless-escape
+  2:4509  error  Unnecessary escape character: \/  no-useless-escape
+  2:4564  error  Unnecessary escape character: \/  no-useless-escape
+  2:4734  error  Unnecessary escape character: \"  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/6134.bundle.js
+  2:6960  error  Unnecessary escape character: \.  no-useless-escape
+  2:6962  error  Unnecessary escape character: \/  no-useless-escape
+  2:7335  error  Unnecessary escape character: \[  no-useless-escape
+  2:7582  error  Unnecessary escape character: \/  no-useless-escape
+  2:7656  error  Unnecessary escape character: \/  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/6185.bundle.js
+  2:859   error  Unnecessary escape character: \/  no-useless-escape
+  2:861   error  Unnecessary escape character: \^  no-useless-escape
+  2:864   error  Unnecessary escape character: \.  no-useless-escape
+  2:1012  error  Unnecessary escape character: \@  no-useless-escape
+  2:1277  error  Unnecessary escape character: \[  no-useless-escape
+  2:1338  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/6210.bundle.js
+  2:971    error    Unsafe usage of ThrowStatement                                   no-unsafe-finally
+  2:1439   error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:1482   error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:2058   error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:2735   error    'c' is a function                                                no-func-assign
+  2:2839   warning  'e' is defined but never used                                    no-unused-vars
+  2:2847   error    'l' is a function                                                no-func-assign
+  2:3484   error    Unsafe usage of ReturnStatement                                  no-unsafe-finally
+  2:3505   error    Unsafe usage of ThrowStatement                                   no-unsafe-finally
+  2:5255   warning  'e' is defined but never used                                    no-unused-vars
+  2:6694   warning  'e' is defined but never used                                    no-unused-vars
+  2:6696   error    Empty block statement                                            no-empty
+  2:9549   warning  'e' is defined but never used                                    no-unused-vars
+  2:9551   warning  'n' is defined but never used                                    no-unused-vars
+  2:9606   error    'o' is a function                                                no-func-assign
+  2:10007  error    Expected a 'break' statement before 'case'                       no-fallthrough
+  2:10565  error    Expected a 'break' statement before 'case'                       no-fallthrough
+  2:10729  error    Expected a 'break' statement before 'case'                       no-fallthrough
+  2:11436  error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:16209  error    Expected a 'break' statement before 'case'                       no-fallthrough
+  2:18885  warning  'e' is defined but never used                                    no-unused-vars
+  2:18940  error    'H' is a function                                                no-func-assign
+  2:18961  warning  'n' is defined but never used                                    no-unused-vars
+  2:20162  error    Expected a 'break' statement before 'case'                       no-fallthrough
+  2:20296  error    'L' is a function                                                no-func-assign
+  2:20498  error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:20967  error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:21705  error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:21891  error    Expected a 'break' statement before 'case'                       no-fallthrough
+  2:22366  error    Expected a 'break' statement before 'case'                       no-fallthrough
+  2:23583  error    Expected a 'break' statement before 'case'                       no-fallthrough
+  2:23833  error    'B' is a function                                                no-func-assign
+  2:24830  error    Expected a 'break' statement before 'case'                       no-fallthrough
+
+/Users/nicetop/Documents/DY_VScode/public/dist/6302.bundle.js
+  2:184   error  Unnecessary escape character: \`  no-useless-escape
+  2:186   error  Unnecessary escape character: \~  no-useless-escape
+  2:188   error  Unnecessary escape character: \!  no-useless-escape
+  2:190   error  Unnecessary escape character: \@  no-useless-escape
+  2:192   error  Unnecessary escape character: \#  no-useless-escape
+  2:194   error  Unnecessary escape character: \%  no-useless-escape
+  2:196   error  Unnecessary escape character: \^  no-useless-escape
+  2:198   error  Unnecessary escape character: \&  no-useless-escape
+  2:200   error  Unnecessary escape character: \*  no-useless-escape
+  2:202   error  Unnecessary escape character: \(  no-useless-escape
+  2:204   error  Unnecessary escape character: \)  no-useless-escape
+  2:208   error  Unnecessary escape character: \=  no-useless-escape
+  2:210   error  Unnecessary escape character: \+  no-useless-escape
+  2:212   error  Unnecessary escape character: \[  no-useless-escape
+  2:214   error  Unnecessary escape character: \{  no-useless-escape
+  2:218   error  Unnecessary escape character: \}  no-useless-escape
+  2:222   error  Unnecessary escape character: \|  no-useless-escape
+  2:224   error  Unnecessary escape character: \;  no-useless-escape
+  2:226   error  Unnecessary escape character: \:  no-useless-escape
+  2:228   error  Unnecessary escape character: \'  no-useless-escape
+  2:230   error  Unnecessary escape character: \"  no-useless-escape
+  2:232   error  Unnecessary escape character: \,  no-useless-escape
+  2:234   error  Unnecessary escape character: \.  no-useless-escape
+  2:236   error  Unnecessary escape character: \<  no-useless-escape
+  2:238   error  Unnecessary escape character: \>  no-useless-escape
+  2:240   error  Unnecessary escape character: \/  no-useless-escape
+  2:242   error  Unnecessary escape character: \?  no-useless-escape
+  2:1753  error  Unnecessary escape character: \-  no-useless-escape
+  2:2006  error  Unnecessary escape character: \-  no-useless-escape
+  2:3252  error  Unnecessary escape character: \-  no-useless-escape
+  2:3740  error  Unnecessary escape character: \-  no-useless-escape
+  2:4928  error  Unnecessary escape character: \-  no-useless-escape
+  2:5784  error  Unnecessary escape character: \[  no-useless-escape
+  2:6065  error  Unnecessary escape character: \+  no-useless-escape
+  2:6069  error  Unnecessary escape character: \*  no-useless-escape
+  2:6071  error  Unnecessary escape character: \%  no-useless-escape
+  2:6073  error  Unnecessary escape character: \&  no-useless-escape
+  2:6075  error  Unnecessary escape character: \|  no-useless-escape
+  2:6077  error  Unnecessary escape character: \^  no-useless-escape
+  2:6079  error  Unnecessary escape character: \~  no-useless-escape
+  2:6081  error  Unnecessary escape character: \!  no-useless-escape
+  2:6083  error  Unnecessary escape character: \=  no-useless-escape
+  2:6085  error  Unnecessary escape character: \<  no-useless-escape
+  2:6087  error  Unnecessary escape character: \>  no-useless-escape
+  2:6089  error  Unnecessary escape character: \/  no-useless-escape
+  2:6091  error  Unnecessary escape character: \?  no-useless-escape
+  2:6093  error  Unnecessary escape character: \;  no-useless-escape
+  2:6095  error  Unnecessary escape character: \:  no-useless-escape
+  2:6097  error  Unnecessary escape character: \.  no-useless-escape
+  2:6099  error  Unnecessary escape character: \,  no-useless-escape
+  2:6101  error  Unnecessary escape character: \@  no-useless-escape
+  2:6137  error  Unnecessary escape character: \-  no-useless-escape
+  2:6185  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/6414.bundle.js
+  2:1568  error  Unnecessary escape character: \/  no-useless-escape
+  2:1570  error  Unnecessary escape character: \^  no-useless-escape
+  2:1756  error  Unnecessary escape character: \[  no-useless-escape
+  2:1760  error  Unnecessary escape character: \{  no-useless-escape
+  2:1762  error  Unnecessary escape character: \}  no-useless-escape
+  2:1765  error  Unnecessary escape character: \$  no-useless-escape
+  2:1844  error  Unnecessary escape character: \:  no-useless-escape
+  2:1846  error  Unnecessary escape character: \:  no-useless-escape
+  2:2065  error  Unnecessary escape character: \-  no-useless-escape
+  2:2129  error  Unnecessary escape character: \[  no-useless-escape
+  2:2181  error  Unnecessary escape character: \:  no-useless-escape
+  2:2183  error  Unnecessary escape character: \:  no-useless-escape
+  2:2285  error  Unnecessary escape character: \-  no-useless-escape
+  2:2553  error  Unnecessary escape character: \:  no-useless-escape
+  2:2555  error  Unnecessary escape character: \:  no-useless-escape
+  2:2648  error  Unnecessary escape character: \[  no-useless-escape
+  2:2818  error  Unnecessary escape character: \:  no-useless-escape
+  2:2820  error  Unnecessary escape character: \:  no-useless-escape
+  2:2913  error  Unnecessary escape character: \[  no-useless-escape
+  2:3234  error  Unnecessary escape character: \{  no-useless-escape
+  2:3236  error  Unnecessary escape character: \}  no-useless-escape
+  2:3238  error  Unnecessary escape character: \$  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/6446.bundle.js
+  2:194   error  Unnecessary escape character: \/  no-useless-escape
+  2:1421  error  Unnecessary escape character: \/  no-useless-escape
+  2:2220  error  Unnecessary escape character: \-  no-useless-escape
+  2:2304  error  Unnecessary escape character: \-  no-useless-escape
+  2:3569  error  Unnecessary escape character: \.  no-useless-escape
+  2:3618  error  Unnecessary escape character: \.  no-useless-escape
+  2:4029  error  Unnecessary escape character: \.  no-useless-escape
+  2:4426  error  Unnecessary escape character: \/  no-useless-escape
+  2:4500  error  Unnecessary escape character: \/  no-useless-escape
+  2:5560  error  Unnecessary escape character: \-  no-useless-escape
+  2:5739  error  Unnecessary escape character: \-  no-useless-escape
+  2:6119  error  Unnecessary escape character: \-  no-useless-escape
+  2:6298  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/6590.bundle.js
+  2:15866  error  Unnecessary escape character: \.  no-useless-escape
+  2:15909  error  Unnecessary escape character: \-  no-useless-escape
+  2:15983  error  Unnecessary escape character: \-  no-useless-escape
+  2:16446  error  Unnecessary escape character: \.  no-useless-escape
+  2:16543  error  Unnecessary escape character: \[  no-useless-escape
+  2:16568  error  Unnecessary escape character: \+  no-useless-escape
+  2:16574  error  Unnecessary escape character: \*  no-useless-escape
+  2:16578  error  Unnecessary escape character: \?  no-useless-escape
+  2:16580  error  Unnecessary escape character: \/  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/676.bundle.js
+  2:1555    warning  't' is defined but never used                                      no-unused-vars
+  2:1557    error    Empty block statement                                              no-empty
+  2:2481    warning  'e' is defined but never used                                      no-unused-vars
+  2:2596    warning  'e' is defined but never used                                      no-unused-vars
+  2:2700    warning  'e' is defined but never used                                      no-unused-vars
+  2:2792    warning  'e' is defined but never used                                      no-unused-vars
+  2:2831    warning  'e' is defined but never used                                      no-unused-vars
+  2:2874    warning  'e' is defined but never used                                      no-unused-vars
+  2:3808    warning  't' is defined but never used                                      no-unused-vars
+  2:7363    warning  't' is defined but never used                                      no-unused-vars
+  2:11178   warning  't' is defined but never used                                      no-unused-vars
+  2:11180   error    Empty block statement                                              no-empty
+  2:11836   warning  't' is defined but never used                                      no-unused-vars
+  2:11838   error    Empty block statement                                              no-empty
+  2:26638   warning  't' is defined but never used                                      no-unused-vars
+  2:26640   error    Empty block statement                                              no-empty
+  2:26750   warning  't' is defined but never used                                      no-unused-vars
+  2:26752   error    Empty block statement                                              no-empty
+  2:28847   warning  'r' is defined but never used                                      no-unused-vars
+  2:31010   warning  't' is defined but never used                                      no-unused-vars
+  2:31130   warning  't' is defined but never used                                      no-unused-vars
+  2:35366   warning  't' is defined but never used                                      no-unused-vars
+  2:40858   warning  't' is defined but never used                                      no-unused-vars
+  2:40928   warning  't' is defined but never used                                      no-unused-vars
+  2:49293   warning  't' is defined but never used                                      no-unused-vars
+  2:49295   error    Empty block statement                                              no-empty
+  2:56705   warning  't' is defined but never used                                      no-unused-vars
+  2:65852   warning  't' is defined but never used                                      no-unused-vars
+  2:66988   warning  't' is defined but never used                                      no-unused-vars
+  2:72887   error    Unexpected constant condition                                      no-constant-condition
+  2:72938   warning  't' is defined but never used                                      no-unused-vars
+  2:72940   error    Empty block statement                                              no-empty
+  2:74920   warning  't' is defined but never used                                      no-unused-vars
+  2:74939   warning  'a' is defined but never used                                      no-unused-vars
+  2:75856   warning  't' is defined but never used                                      no-unused-vars
+  2:78740   warning  'i' is defined but never used                                      no-unused-vars
+  2:78756   warning  'n' is defined but never used                                      no-unused-vars
+  2:79245   warning  'n' is assigned a value but never used                             no-unused-vars
+  2:92706   warning  't' is defined but never used                                      no-unused-vars
+  2:97966   warning  'e' is assigned a value but never used                             no-unused-vars
+  2:98365   warning  't' is defined but never used                                      no-unused-vars
+  2:98367   error    Empty block statement                                              no-empty
+  2:98418   warning  't' is defined but never used                                      no-unused-vars
+  2:98509   warning  'i' is defined but never used                                      no-unused-vars
+  2:100858  warning  't' is defined but never used                                      no-unused-vars
+  2:107361  warning  't' is defined but never used                                      no-unused-vars
+  2:110439  warning  't' is defined but never used                                      no-unused-vars
+  2:110522  warning  't' is defined but never used                                      no-unused-vars
+  2:111432  warning  'e' is defined but never used                                      no-unused-vars
+  2:114794  warning  't' is defined but never used                                      no-unused-vars
+  2:117621  warning  't' is defined but never used                                      no-unused-vars
+  2:118632  warning  'r' is defined but never used                                      no-unused-vars
+  2:120259  warning  'n' is assigned a value but never used                             no-unused-vars
+  2:124246  warning  't' is defined but never used                                      no-unused-vars
+  2:124248  error    Empty block statement                                              no-empty
+  2:126100  warning  't' is defined but never used                                      no-unused-vars
+  2:128659  warning  't' is defined but never used                                      no-unused-vars
+  2:128661  error    Empty block statement                                              no-empty
+  2:139263  warning  't' is defined but never used                                      no-unused-vars
+  2:152363  warning  't' is defined but never used                                      no-unused-vars
+  2:152365  error    Empty block statement                                              no-empty
+  2:172392  warning  't' is defined but never used                                      no-unused-vars
+  2:172394  error    Empty block statement                                              no-empty
+  2:173083  warning  't' is defined but never used                                      no-unused-vars
+  2:173085  error    Empty block statement                                              no-empty
+  2:174927  warning  't' is defined but never used                                      no-unused-vars
+  2:179898  warning  't' is defined but never used                                      no-unused-vars
+  2:184403  error    Unreachable code                                                   no-unreachable
+  2:195886  error    Empty block statement                                              no-empty
+  2:206397  error    Empty block statement                                              no-empty
+  2:214744  warning  't' is defined but never used                                      no-unused-vars
+  2:214812  warning  't' is defined but never used                                      no-unused-vars
+  2:214914  error    Unexpected comma in middle of array                                no-sparse-arrays
+  2:215260  warning  't' is defined but never used                                      no-unused-vars
+  2:215262  error    Empty block statement                                              no-empty
+  2:215778  error    Unexpected control character(s) in regular expression: \x00        no-control-regex
+  2:216324  warning  't' is defined but never used                                      no-unused-vars
+  2:216326  error    Empty block statement                                              no-empty
+  2:216414  warning  't' is defined but never used                                      no-unused-vars
+  2:216461  warning  't' is defined but never used                                      no-unused-vars
+  2:217517  warning  'Float16Array' is not defined                                      no-undef
+  2:226566  error    Expected a conditional expression and instead saw an assignment    no-cond-assign
+  2:228077  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:228275  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:228462  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:228695  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:228975  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:229230  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:229480  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:229814  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:229946  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:229977  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:230492  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:230510  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:230521  error    Expected a conditional expression and instead saw an assignment    no-cond-assign
+  2:230902  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:231239  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:232401  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:232419  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:233123  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:233296  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:233708  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:233940  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:234610  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:234785  error    Expected a 'break' statement before 'case'                         no-fallthrough
+  2:236403  warning  't' is defined but never used                                      no-unused-vars
+  2:240229  error    Unexpected control character(s) in regular expression: \x00, \x1f  no-control-regex
+  2:241263  error    Unnecessary escape character: \-                                   no-useless-escape
+  2:241312  error    Unnecessary escape character: \-                                   no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/6830.bundle.js
+  2:511   error  Unnecessary escape character: \`   no-useless-escape
+  2:513   error  Unnecessary escape character: \~   no-useless-escape
+  2:515   error  Unnecessary escape character: \!   no-useless-escape
+  2:517   error  Unnecessary escape character: \@   no-useless-escape
+  2:519   error  Unnecessary escape character: \#   no-useless-escape
+  2:521   error  Unnecessary escape character: \%   no-useless-escape
+  2:523   error  Unnecessary escape character: \^   no-useless-escape
+  2:525   error  Unnecessary escape character: \&   no-useless-escape
+  2:527   error  Unnecessary escape character: \*   no-useless-escape
+  2:529   error  Unnecessary escape character: \(   no-useless-escape
+  2:531   error  Unnecessary escape character: \)   no-useless-escape
+  2:535   error  Unnecessary escape character: \=   no-useless-escape
+  2:537   error  Unnecessary escape character: \+   no-useless-escape
+  2:539   error  Unnecessary escape character: \[   no-useless-escape
+  2:541   error  Unnecessary escape character: \{   no-useless-escape
+  2:545   error  Unnecessary escape character: \}   no-useless-escape
+  2:549   error  Unnecessary escape character: \|   no-useless-escape
+  2:551   error  Unnecessary escape character: \;   no-useless-escape
+  2:553   error  Unnecessary escape character: \:   no-useless-escape
+  2:555   error  Unnecessary escape character: \'   no-useless-escape
+  2:557   error  Unnecessary escape character: \"   no-useless-escape
+  2:559   error  Unnecessary escape character: \,   no-useless-escape
+  2:561   error  Unnecessary escape character: \.   no-useless-escape
+  2:563   error  Unnecessary escape character: \<   no-useless-escape
+  2:565   error  Unnecessary escape character: \>   no-useless-escape
+  2:567   error  Unnecessary escape character: \/   no-useless-escape
+  2:569   error  Unnecessary escape character: \?   no-useless-escape
+  2:719   error  Unnecessary escape character: \*   no-useless-escape
+  2:869   error  Unnecessary escape character: \*   no-useless-escape
+  2:975   error  Unnecessary escape character: \ .  no-useless-escape
+  2:977   error  Unnecessary escape character: \ .  no-useless-escape
+  2:982   error  Unnecessary escape character: \ .  no-useless-escape
+  2:987   error  Unnecessary escape character: \ .  no-useless-escape
+  2:992   error  Unnecessary escape character: \*   no-useless-escape
+  2:1099  error  Unnecessary escape character: \ .  no-useless-escape
+  2:1101  error  Unnecessary escape character: \ .  no-useless-escape
+  2:1106  error  Unnecessary escape character: \ .  no-useless-escape
+  2:2529  error  Unnecessary escape character: \/   no-useless-escape
+  2:2531  error  Unnecessary escape character: \^   no-useless-escape
+  2:2763  error  Unnecessary escape character: \[   no-useless-escape
+  2:2767  error  Unnecessary escape character: \$   no-useless-escape
+  2:2769  error  Unnecessary escape character: \^   no-useless-escape
+  2:2777  error  Unnecessary escape character: \.   no-useless-escape
+  2:2815  error  Unnecessary escape character: \/   no-useless-escape
+  2:3031  error  Unnecessary escape character: \$   no-useless-escape
+  2:3092  error  Unnecessary escape character: \/   no-useless-escape
+  2:3196  error  Unnecessary escape character: \[   no-useless-escape
+  2:3358  error  Unnecessary escape character: \-   no-useless-escape
+  2:3420  error  Unnecessary escape character: \-   no-useless-escape
+  2:3932  error  Unnecessary escape character: \/   no-useless-escape
+  2:3979  error  Unnecessary escape character: \/   no-useless-escape
+  2:4008  error  Unnecessary escape character: \/   no-useless-escape
+  2:4063  error  Unnecessary escape character: \/   no-useless-escape
+  2:4217  error  Unnecessary escape character: \/   no-useless-escape
+  2:4457  error  Unnecessary escape character: \/   no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/6940.bundle.js
+  2:184   error  Unnecessary escape character: \`  no-useless-escape
+  2:186   error  Unnecessary escape character: \~  no-useless-escape
+  2:188   error  Unnecessary escape character: \!  no-useless-escape
+  2:190   error  Unnecessary escape character: \#  no-useless-escape
+  2:192   error  Unnecessary escape character: \%  no-useless-escape
+  2:194   error  Unnecessary escape character: \^  no-useless-escape
+  2:196   error  Unnecessary escape character: \&  no-useless-escape
+  2:198   error  Unnecessary escape character: \*  no-useless-escape
+  2:200   error  Unnecessary escape character: \(  no-useless-escape
+  2:202   error  Unnecessary escape character: \)  no-useless-escape
+  2:206   error  Unnecessary escape character: \=  no-useless-escape
+  2:208   error  Unnecessary escape character: \+  no-useless-escape
+  2:210   error  Unnecessary escape character: \[  no-useless-escape
+  2:212   error  Unnecessary escape character: \{  no-useless-escape
+  2:216   error  Unnecessary escape character: \}  no-useless-escape
+  2:220   error  Unnecessary escape character: \|  no-useless-escape
+  2:222   error  Unnecessary escape character: \;  no-useless-escape
+  2:224   error  Unnecessary escape character: \:  no-useless-escape
+  2:226   error  Unnecessary escape character: \'  no-useless-escape
+  2:228   error  Unnecessary escape character: \"  no-useless-escape
+  2:230   error  Unnecessary escape character: \,  no-useless-escape
+  2:232   error  Unnecessary escape character: \.  no-useless-escape
+  2:234   error  Unnecessary escape character: \<  no-useless-escape
+  2:236   error  Unnecessary escape character: \>  no-useless-escape
+  2:238   error  Unnecessary escape character: \/  no-useless-escape
+  2:240   error  Unnecessary escape character: \?  no-useless-escape
+  2:2177  error  Unnecessary escape character: \^  no-useless-escape
+  2:2185  error  Unnecessary escape character: \/  no-useless-escape
+  2:2187  error  Unnecessary escape character: \^  no-useless-escape
+  2:2328  error  Unnecessary escape character: \[  no-useless-escape
+  2:2459  error  Unnecessary escape character: \-  no-useless-escape
+  2:2672  error  Unnecessary escape character: \#  no-useless-escape
+  2:2703  error  Unnecessary escape character: \*  no-useless-escape
+  2:2705  error  Unnecessary escape character: \}  no-useless-escape
+  2:2749  error  Unnecessary escape character: \{  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/6990.bundle.js
+  2:2395  error  Unnecessary escape character: \{  no-useless-escape
+  2:2397  error  Unnecessary escape character: \[  no-useless-escape
+  2:2544  error  Unnecessary escape character: \}  no-useless-escape
+  2:3579  error  Unnecessary escape character: \}  no-useless-escape
+  2:3622  error  Unnecessary escape character: \}  no-useless-escape
+  2:3671  error  Unnecessary escape character: \}  no-useless-escape
+  2:3718  error  Unnecessary escape character: \}  no-useless-escape
+  2:3768  error  Unnecessary escape character: \}  no-useless-escape
+  2:3818  error  Unnecessary escape character: \}  no-useless-escape
+  2:3864  error  Unnecessary escape character: \}  no-useless-escape
+  2:3899  error  Unnecessary escape character: \!  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/7048.bundle.js
+  2:184   error  Unnecessary escape character: \`  no-useless-escape
+  2:186   error  Unnecessary escape character: \~  no-useless-escape
+  2:188   error  Unnecessary escape character: \!  no-useless-escape
+  2:190   error  Unnecessary escape character: \#  no-useless-escape
+  2:192   error  Unnecessary escape character: \%  no-useless-escape
+  2:194   error  Unnecessary escape character: \^  no-useless-escape
+  2:196   error  Unnecessary escape character: \&  no-useless-escape
+  2:198   error  Unnecessary escape character: \*  no-useless-escape
+  2:200   error  Unnecessary escape character: \(  no-useless-escape
+  2:202   error  Unnecessary escape character: \)  no-useless-escape
+  2:206   error  Unnecessary escape character: \=  no-useless-escape
+  2:208   error  Unnecessary escape character: \+  no-useless-escape
+  2:210   error  Unnecessary escape character: \[  no-useless-escape
+  2:212   error  Unnecessary escape character: \{  no-useless-escape
+  2:216   error  Unnecessary escape character: \}  no-useless-escape
+  2:220   error  Unnecessary escape character: \|  no-useless-escape
+  2:222   error  Unnecessary escape character: \;  no-useless-escape
+  2:224   error  Unnecessary escape character: \:  no-useless-escape
+  2:226   error  Unnecessary escape character: \'  no-useless-escape
+  2:228   error  Unnecessary escape character: \"  no-useless-escape
+  2:230   error  Unnecessary escape character: \,  no-useless-escape
+  2:232   error  Unnecessary escape character: \.  no-useless-escape
+  2:234   error  Unnecessary escape character: \<  no-useless-escape
+  2:236   error  Unnecessary escape character: \>  no-useless-escape
+  2:238   error  Unnecessary escape character: \/  no-useless-escape
+  2:240   error  Unnecessary escape character: \?  no-useless-escape
+  2:2421  error  Unnecessary escape character: \/  no-useless-escape
+  2:2423  error  Unnecessary escape character: \^  no-useless-escape
+  2:2751  error  Unnecessary escape character: \$  no-useless-escape
+  2:2861  error  Unnecessary escape character: \[  no-useless-escape
+  2:2990  error  Unnecessary escape character: \$  no-useless-escape
+  2:2996  error  Unnecessary escape character: \$  no-useless-escape
+  2:3033  error  Unnecessary escape character: \-  no-useless-escape
+  2:3102  error  Unnecessary escape character: \-  no-useless-escape
+  2:3598  error  Unnecessary escape character: \/  no-useless-escape
+  2:3645  error  Unnecessary escape character: \/  no-useless-escape
+  2:3676  error  Unnecessary escape character: \/  no-useless-escape
+  2:3731  error  Unnecessary escape character: \/  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/7200.bundle.js
+  2:184   error  Unnecessary escape character: \`  no-useless-escape
+  2:186   error  Unnecessary escape character: \~  no-useless-escape
+  2:188   error  Unnecessary escape character: \!  no-useless-escape
+  2:190   error  Unnecessary escape character: \#  no-useless-escape
+  2:192   error  Unnecessary escape character: \%  no-useless-escape
+  2:194   error  Unnecessary escape character: \^  no-useless-escape
+  2:196   error  Unnecessary escape character: \&  no-useless-escape
+  2:198   error  Unnecessary escape character: \*  no-useless-escape
+  2:200   error  Unnecessary escape character: \(  no-useless-escape
+  2:202   error  Unnecessary escape character: \)  no-useless-escape
+  2:206   error  Unnecessary escape character: \=  no-useless-escape
+  2:208   error  Unnecessary escape character: \+  no-useless-escape
+  2:210   error  Unnecessary escape character: \[  no-useless-escape
+  2:212   error  Unnecessary escape character: \{  no-useless-escape
+  2:216   error  Unnecessary escape character: \}  no-useless-escape
+  2:220   error  Unnecessary escape character: \|  no-useless-escape
+  2:222   error  Unnecessary escape character: \;  no-useless-escape
+  2:224   error  Unnecessary escape character: \:  no-useless-escape
+  2:226   error  Unnecessary escape character: \'  no-useless-escape
+  2:228   error  Unnecessary escape character: \"  no-useless-escape
+  2:230   error  Unnecessary escape character: \,  no-useless-escape
+  2:232   error  Unnecessary escape character: \.  no-useless-escape
+  2:234   error  Unnecessary escape character: \<  no-useless-escape
+  2:236   error  Unnecessary escape character: \>  no-useless-escape
+  2:238   error  Unnecessary escape character: \/  no-useless-escape
+  2:240   error  Unnecessary escape character: \?  no-useless-escape
+  2:1544  error  Unnecessary escape character: \/  no-useless-escape
+  2:1546  error  Unnecessary escape character: \^  no-useless-escape
+  2:1934  error  Unnecessary escape character: \[  no-useless-escape
+  2:2063  error  Unnecessary escape character: \$  no-useless-escape
+  2:2069  error  Unnecessary escape character: \$  no-useless-escape
+  2:2106  error  Unnecessary escape character: \-  no-useless-escape
+  2:2175  error  Unnecessary escape character: \-  no-useless-escape
+  2:2762  error  Unnecessary escape character: \/  no-useless-escape
+  2:2809  error  Unnecessary escape character: \/  no-useless-escape
+  2:2840  error  Unnecessary escape character: \/  no-useless-escape
+  2:2926  error  Unnecessary escape character: \/  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/7246.bundle.js
+  2:584   error  Unnecessary escape character: \[  no-useless-escape
+  2:596   error  Unnecessary escape character: \.  no-useless-escape
+  2:1046  error  Unnecessary escape character: \[  no-useless-escape
+  2:1257  error  Unnecessary escape character: \*  no-useless-escape
+  2:2486  error  Unnecessary escape character: \`  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/7466.bundle.js
+  2:10729  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/7836.bundle.js
+  2:632   error  Unnecessary escape character: \`  no-useless-escape
+  2:634   error  Unnecessary escape character: \~  no-useless-escape
+  2:636   error  Unnecessary escape character: \!  no-useless-escape
+  2:638   error  Unnecessary escape character: \@  no-useless-escape
+  2:640   error  Unnecessary escape character: \$  no-useless-escape
+  2:642   error  Unnecessary escape character: \^  no-useless-escape
+  2:644   error  Unnecessary escape character: \&  no-useless-escape
+  2:646   error  Unnecessary escape character: \*  no-useless-escape
+  2:648   error  Unnecessary escape character: \(  no-useless-escape
+  2:650   error  Unnecessary escape character: \)  no-useless-escape
+  2:652   error  Unnecessary escape character: \=  no-useless-escape
+  2:654   error  Unnecessary escape character: \+  no-useless-escape
+  2:656   error  Unnecessary escape character: \[  no-useless-escape
+  2:658   error  Unnecessary escape character: \{  no-useless-escape
+  2:662   error  Unnecessary escape character: \}  no-useless-escape
+  2:666   error  Unnecessary escape character: \|  no-useless-escape
+  2:668   error  Unnecessary escape character: \;  no-useless-escape
+  2:670   error  Unnecessary escape character: \:  no-useless-escape
+  2:672   error  Unnecessary escape character: \'  no-useless-escape
+  2:674   error  Unnecessary escape character: \"  no-useless-escape
+  2:676   error  Unnecessary escape character: \,  no-useless-escape
+  2:678   error  Unnecessary escape character: \.  no-useless-escape
+  2:680   error  Unnecessary escape character: \<  no-useless-escape
+  2:682   error  Unnecessary escape character: \>  no-useless-escape
+  2:684   error  Unnecessary escape character: \/  no-useless-escape
+  2:2763  error  Unnecessary escape character: \-  no-useless-escape
+  2:3014  error  Unnecessary escape character: \-  no-useless-escape
+  2:4254  error  Unnecessary escape character: \-  no-useless-escape
+  2:4738  error  Unnecessary escape character: \-  no-useless-escape
+  2:5920  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/7886.bundle.js
+  2:4555  error  Unnecessary escape character: \^  no-useless-escape
+  2:4568  error  Unnecessary escape character: \/  no-useless-escape
+  2:4571  error  Unnecessary escape character: \.  no-useless-escape
+  2:4968  error  Unnecessary escape character: \$  no-useless-escape
+  2:4978  error  Unnecessary escape character: \+  no-useless-escape
+  2:4982  error  Unnecessary escape character: \$  no-useless-escape
+  2:4989  error  Unnecessary escape character: \^  no-useless-escape
+  2:4996  error  Unnecessary escape character: \.  no-useless-escape
+  2:5169  error  Unnecessary escape character: \[  no-useless-escape
+  2:5194  error  Unnecessary escape character: \/  no-useless-escape
+  2:5235  error  Unnecessary escape character: \/  no-useless-escape
+  2:5242  error  Unnecessary escape character: \/  no-useless-escape
+  2:5442  error  Unnecessary escape character: \-  no-useless-escape
+  2:7810  error  Unnecessary escape character: \-  no-useless-escape
+  2:7903  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/8230.bundle.js
+  2:1176  error  Unnecessary escape character: \^  no-useless-escape
+  2:1184  error  Unnecessary escape character: \/  no-useless-escape
+  2:1186  error  Unnecessary escape character: \^  no-useless-escape
+  2:1327  error  Unnecessary escape character: \[  no-useless-escape
+  2:1458  error  Unnecessary escape character: \-  no-useless-escape
+  2:1671  error  Unnecessary escape character: \#  no-useless-escape
+  2:1702  error  Unnecessary escape character: \(  no-useless-escape
+  2:1704  error  Unnecessary escape character: \*  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/8332.bundle.js
+  2:1305  error  Unnecessary escape character: \/  no-useless-escape
+  2:1307  error  Unnecessary escape character: \^  no-useless-escape
+  2:1669  error  Unnecessary escape character: \[  no-useless-escape
+  2:1798  error  Unnecessary escape character: \-  no-useless-escape
+  2:1856  error  Unnecessary escape character: \-  no-useless-escape
+  2:2464  error  Unnecessary escape character: \/  no-useless-escape
+  2:2511  error  Unnecessary escape character: \/  no-useless-escape
+  2:2545  error  Unnecessary escape character: \/  no-useless-escape
+  2:2600  error  Unnecessary escape character: \/  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/8334.bundle.js
+  2:5337  error  Unnecessary escape character: \/  no-useless-escape
+  2:5339  error  Unnecessary escape character: \^  no-useless-escape
+  2:5484  error  Unnecessary escape character: \_  no-useless-escape
+  2:5518  error  Unnecessary escape character: \_  no-useless-escape
+  2:5556  error  Unnecessary escape character: \_  no-useless-escape
+  2:5600  error  Unnecessary escape character: \-  no-useless-escape
+  2:5647  error  Unnecessary escape character: \_  no-useless-escape
+  2:5649  error  Unnecessary escape character: \.  no-useless-escape
+  2:5718  error  Unnecessary escape character: \_  no-useless-escape
+  2:5795  error  Unnecessary escape character: \%  no-useless-escape
+  2:5819  error  Unnecessary escape character: \.  no-useless-escape
+  2:5834  error  Unnecessary escape character: \%  no-useless-escape
+  2:5847  error  Unnecessary escape character: \.  no-useless-escape
+  2:6336  error  Unnecessary escape character: \[  no-useless-escape
+  2:6750  error  Unnecessary escape character: \/  no-useless-escape
+  2:6824  error  Unnecessary escape character: \/  no-useless-escape
+  2:6856  error  Unnecessary escape character: \(  no-useless-escape
+  2:6932  error  Unnecessary escape character: \(  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/8390.bundle.js
+  2:755   error  Unnecessary escape character: \-  no-useless-escape
+  2:779   error  Unnecessary escape character: \|  no-useless-escape
+  2:862   error  Unnecessary escape character: \-  no-useless-escape
+  2:1325  error  Unnecessary escape character: \[  no-useless-escape
+  2:1407  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/8494.bundle.js
+  2:1107  error  Unnecessary escape character: \-  no-useless-escape
+  2:1110  error  Unnecessary escape character: \!  no-useless-escape
+  2:1222  error  Unnecessary escape character: \?  no-useless-escape
+  2:1224  error  Unnecessary escape character: \!  no-useless-escape
+  2:1226  error  Unnecessary escape character: \*  no-useless-escape
+  2:1352  error  Unnecessary escape character: \|  no-useless-escape
+  2:1424  error  Unnecessary escape character: \|  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/8542.bundle.js
+  2:650  error  Unnecessary escape character: \=  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/8546.bundle.js
+  2:125   error    'r' is a function                                                no-func-assign
+  2:792   error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:835   error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:1411  error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:2088  error    'o' is a function                                                no-func-assign
+  2:2194  warning  't' is defined but never used                                    no-unused-vars
+  2:2202  error    'i' is a function                                                no-func-assign
+  2:5327  error    Unsafe usage of ThrowStatement                                   no-unsafe-finally
+  2:6339  warning  't' is defined but never used                                    no-unused-vars
+  2:6341  warning  'n' is defined but never used                                    no-unused-vars
+  2:6343  warning  'e' is defined but never used                                    no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/dist/8566.bundle.js
+  2:184   error  Unnecessary escape character: \`  no-useless-escape
+  2:186   error  Unnecessary escape character: \~  no-useless-escape
+  2:188   error  Unnecessary escape character: \!  no-useless-escape
+  2:190   error  Unnecessary escape character: \#  no-useless-escape
+  2:192   error  Unnecessary escape character: \%  no-useless-escape
+  2:194   error  Unnecessary escape character: \^  no-useless-escape
+  2:196   error  Unnecessary escape character: \&  no-useless-escape
+  2:198   error  Unnecessary escape character: \*  no-useless-escape
+  2:200   error  Unnecessary escape character: \(  no-useless-escape
+  2:202   error  Unnecessary escape character: \)  no-useless-escape
+  2:206   error  Unnecessary escape character: \=  no-useless-escape
+  2:208   error  Unnecessary escape character: \+  no-useless-escape
+  2:210   error  Unnecessary escape character: \[  no-useless-escape
+  2:212   error  Unnecessary escape character: \{  no-useless-escape
+  2:216   error  Unnecessary escape character: \}  no-useless-escape
+  2:220   error  Unnecessary escape character: \|  no-useless-escape
+  2:222   error  Unnecessary escape character: \;  no-useless-escape
+  2:224   error  Unnecessary escape character: \:  no-useless-escape
+  2:226   error  Unnecessary escape character: \'  no-useless-escape
+  2:228   error  Unnecessary escape character: \"  no-useless-escape
+  2:230   error  Unnecessary escape character: \,  no-useless-escape
+  2:232   error  Unnecessary escape character: \.  no-useless-escape
+  2:234   error  Unnecessary escape character: \<  no-useless-escape
+  2:236   error  Unnecessary escape character: \>  no-useless-escape
+  2:238   error  Unnecessary escape character: \/  no-useless-escape
+  2:240   error  Unnecessary escape character: \?  no-useless-escape
+  2:1702  error  Unnecessary escape character: \/  no-useless-escape
+  2:1704  error  Unnecessary escape character: \^  no-useless-escape
+  2:1947  error  Unnecessary escape character: \$  no-useless-escape
+  2:2091  error  Unnecessary escape character: \[  no-useless-escape
+  2:2220  error  Unnecessary escape character: \$  no-useless-escape
+  2:2226  error  Unnecessary escape character: \$  no-useless-escape
+  2:2263  error  Unnecessary escape character: \-  no-useless-escape
+  2:2332  error  Unnecessary escape character: \-  no-useless-escape
+  2:2919  error  Unnecessary escape character: \/  no-useless-escape
+  2:2996  error  Unnecessary escape character: \/  no-useless-escape
+  2:3027  error  Unnecessary escape character: \/  no-useless-escape
+  2:3144  error  Unnecessary escape character: \/  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/8902.bundle.js
+  2:1194  error  Unnecessary escape character: \/  no-useless-escape
+  2:1404  error  Unnecessary escape character: \$  no-useless-escape
+  2:1507  error  Unnecessary escape character: \[  no-useless-escape
+  2:1602  error  Unnecessary escape character: \$  no-useless-escape
+  2:1608  error  Unnecessary escape character: \$  no-useless-escape
+  2:1679  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/8990.bundle.js
+  2:3214  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/9034.bundle.js
+  2:1341  error  Unnecessary escape character: \-  no-useless-escape
+  2:1429  error  Unnecessary escape character: \/  no-useless-escape
+  2:1431  error  Unnecessary escape character: \^  no-useless-escape
+  2:1434  error  Unnecessary escape character: \.  no-useless-escape
+  2:1735  error  Unnecessary escape character: \[  no-useless-escape
+  2:1924  error  Unnecessary escape character: \-  no-useless-escape
+  2:2234  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/9038.bundle.js
+  2:184   error  Unnecessary escape character: \`  no-useless-escape
+  2:186   error  Unnecessary escape character: \~  no-useless-escape
+  2:188   error  Unnecessary escape character: \!  no-useless-escape
+  2:190   error  Unnecessary escape character: \#  no-useless-escape
+  2:192   error  Unnecessary escape character: \$  no-useless-escape
+  2:194   error  Unnecessary escape character: \%  no-useless-escape
+  2:196   error  Unnecessary escape character: \^  no-useless-escape
+  2:198   error  Unnecessary escape character: \&  no-useless-escape
+  2:200   error  Unnecessary escape character: \*  no-useless-escape
+  2:202   error  Unnecessary escape character: \(  no-useless-escape
+  2:204   error  Unnecessary escape character: \)  no-useless-escape
+  2:208   error  Unnecessary escape character: \=  no-useless-escape
+  2:210   error  Unnecessary escape character: \+  no-useless-escape
+  2:212   error  Unnecessary escape character: \[  no-useless-escape
+  2:214   error  Unnecessary escape character: \{  no-useless-escape
+  2:218   error  Unnecessary escape character: \}  no-useless-escape
+  2:222   error  Unnecessary escape character: \|  no-useless-escape
+  2:224   error  Unnecessary escape character: \;  no-useless-escape
+  2:226   error  Unnecessary escape character: \:  no-useless-escape
+  2:228   error  Unnecessary escape character: \'  no-useless-escape
+  2:230   error  Unnecessary escape character: \"  no-useless-escape
+  2:232   error  Unnecessary escape character: \,  no-useless-escape
+  2:234   error  Unnecessary escape character: \.  no-useless-escape
+  2:236   error  Unnecessary escape character: \<  no-useless-escape
+  2:238   error  Unnecessary escape character: \>  no-useless-escape
+  2:240   error  Unnecessary escape character: \/  no-useless-escape
+  2:242   error  Unnecessary escape character: \?  no-useless-escape
+  2:2217  error  Unnecessary escape character: \/  no-useless-escape
+  2:2219  error  Unnecessary escape character: \^  no-useless-escape
+  2:2325  error  Unnecessary escape character: \@  no-useless-escape
+  2:2702  error  Unnecessary escape character: \[  no-useless-escape
+  2:2841  error  Unnecessary escape character: \-  no-useless-escape
+  2:3069  error  Unnecessary escape character: \@  no-useless-escape
+  2:3124  error  Unnecessary escape character: \@  no-useless-escape
+  2:3527  error  Unnecessary escape character: \.  no-useless-escape
+  2:3575  error  Unnecessary escape character: \/  no-useless-escape
+  2:3622  error  Unnecessary escape character: \/  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/9150.bundle.js
+  2:683   error  Unnecessary escape character: \-  no-useless-escape
+  2:707   error  Unnecessary escape character: \-  no-useless-escape
+  2:740   error  Unnecessary escape character: \-  no-useless-escape
+  2:796   error  Unnecessary escape character: \[  no-useless-escape
+  2:938   error  Unnecessary escape character: \[  no-useless-escape
+  2:1070  error  Unnecessary escape character: \/  no-useless-escape
+  2:1072  error  Unnecessary escape character: \[  no-useless-escape
+  2:1098  error  Unnecessary escape character: \[  no-useless-escape
+  2:1126  error  Unnecessary escape character: \/  no-useless-escape
+  2:1128  error  Unnecessary escape character: \[  no-useless-escape
+  2:1154  error  Unnecessary escape character: \[  no-useless-escape
+  2:1189  error  Unnecessary escape character: \/  no-useless-escape
+  2:1191  error  Unnecessary escape character: \[  no-useless-escape
+  2:1217  error  Unnecessary escape character: \[  no-useless-escape
+  2:1244  error  Unnecessary escape character: \[  no-useless-escape
+  2:9087  error  Unnecessary escape character: \[  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/934.bundle.js
+  2:558   error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:601   error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:1177  error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:1854  error    'e' is a function                                                no-func-assign
+  2:1960  warning  'r' is defined but never used                                    no-unused-vars
+  2:1968  error    'o' is a function                                                no-func-assign
+  2:3367  warning  'r' is defined but never used                                    no-unused-vars
+  2:3369  warning  't' is defined but never used                                    no-unused-vars
+  2:3536  error    Expected a conditional expression and instead saw an assignment  no-cond-assign
+  2:4694  error    's' is a function                                                no-func-assign
+
+/Users/nicetop/Documents/DY_VScode/public/dist/9355.bundle.js
+  1:16992  error  Parsing error: Unexpected token {
+
+/Users/nicetop/Documents/DY_VScode/public/dist/9390.bundle.js
+  2:628   error  Unnecessary escape character: \[  no-useless-escape
+  2:640   error  Unnecessary escape character: \.  no-useless-escape
+  2:665   error  Unnecessary escape character: \[  no-useless-escape
+  2:677   error  Unnecessary escape character: \.  no-useless-escape
+  2:1022  error  Unnecessary escape character: \-  no-useless-escape
+  2:1113  error  Unnecessary escape character: \*  no-useless-escape
+  2:1195  error  Unnecessary escape character: \/  no-useless-escape
+  2:1267  error  Unnecessary escape character: \/  no-useless-escape
+  2:1458  error  Unnecessary escape character: \|  no-useless-escape
+  2:1573  error  Unnecessary escape character: \-  no-useless-escape
+  2:1664  error  Unnecessary escape character: \|  no-useless-escape
+  2:2356  error  Unnecessary escape character: \)  no-useless-escape
+  2:2504  error  Unnecessary escape character: \-  no-useless-escape
+  2:2613  error  Unnecessary escape character: \-  no-useless-escape
+  2:2686  error  Unnecessary escape character: \-  no-useless-escape
+  2:2775  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/946.bundle.js
+  2:631   error  Unnecessary escape character: \`  no-useless-escape
+  2:633   error  Unnecessary escape character: \~  no-useless-escape
+  2:635   error  Unnecessary escape character: \!  no-useless-escape
+  2:637   error  Unnecessary escape character: \@  no-useless-escape
+  2:639   error  Unnecessary escape character: \$  no-useless-escape
+  2:641   error  Unnecessary escape character: \^  no-useless-escape
+  2:643   error  Unnecessary escape character: \&  no-useless-escape
+  2:645   error  Unnecessary escape character: \*  no-useless-escape
+  2:647   error  Unnecessary escape character: \(  no-useless-escape
+  2:649   error  Unnecessary escape character: \)  no-useless-escape
+  2:653   error  Unnecessary escape character: \=  no-useless-escape
+  2:655   error  Unnecessary escape character: \+  no-useless-escape
+  2:657   error  Unnecessary escape character: \[  no-useless-escape
+  2:659   error  Unnecessary escape character: \{  no-useless-escape
+  2:663   error  Unnecessary escape character: \}  no-useless-escape
+  2:667   error  Unnecessary escape character: \|  no-useless-escape
+  2:669   error  Unnecessary escape character: \;  no-useless-escape
+  2:671   error  Unnecessary escape character: \:  no-useless-escape
+  2:673   error  Unnecessary escape character: \'  no-useless-escape
+  2:675   error  Unnecessary escape character: \"  no-useless-escape
+  2:677   error  Unnecessary escape character: \,  no-useless-escape
+  2:679   error  Unnecessary escape character: \.  no-useless-escape
+  2:681   error  Unnecessary escape character: \<  no-useless-escape
+  2:683   error  Unnecessary escape character: \>  no-useless-escape
+  2:685   error  Unnecessary escape character: \/  no-useless-escape
+  2:1565  error  Unnecessary escape character: \-  no-useless-escape
+  2:1771  error  Unnecessary escape character: \-  no-useless-escape
+  2:1845  error  Unnecessary escape character: \-  no-useless-escape
+  2:2448  error  Unnecessary escape character: \-  no-useless-escape
+  2:2695  error  Unnecessary escape character: \-  no-useless-escape
+  2:3923  error  Unnecessary escape character: \-  no-useless-escape
+  2:4399  error  Unnecessary escape character: \-  no-useless-escape
+  2:5569  error  Unnecessary escape character: \-  no-useless-escape
+  2:7155  error  Unnecessary escape character: \[  no-useless-escape
+  2:7327  error  Unnecessary escape character: \-  no-useless-escape
+  2:7396  error  Unnecessary escape character: \-  no-useless-escape
+  2:7465  error  Unnecessary escape character: \-  no-useless-escape
+  2:7526  error  Unnecessary escape character: \+  no-useless-escape
+  2:7530  error  Unnecessary escape character: \*  no-useless-escape
+  2:7532  error  Unnecessary escape character: \%  no-useless-escape
+  2:7534  error  Unnecessary escape character: \&  no-useless-escape
+  2:7536  error  Unnecessary escape character: \|  no-useless-escape
+  2:7538  error  Unnecessary escape character: \^  no-useless-escape
+  2:7540  error  Unnecessary escape character: \~  no-useless-escape
+  2:7542  error  Unnecessary escape character: \!  no-useless-escape
+  2:7544  error  Unnecessary escape character: \=  no-useless-escape
+  2:7546  error  Unnecessary escape character: \<  no-useless-escape
+  2:7548  error  Unnecessary escape character: \>  no-useless-escape
+  2:7550  error  Unnecessary escape character: \/  no-useless-escape
+  2:7552  error  Unnecessary escape character: \?  no-useless-escape
+  2:7554  error  Unnecessary escape character: \;  no-useless-escape
+  2:7556  error  Unnecessary escape character: \:  no-useless-escape
+  2:7558  error  Unnecessary escape character: \.  no-useless-escape
+  2:7560  error  Unnecessary escape character: \,  no-useless-escape
+  2:7595  error  Unnecessary escape character: \-  no-useless-escape
+  2:7642  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/968.bundle.js
+  2:183   error  Unnecessary escape character: \`  no-useless-escape
+  2:185   error  Unnecessary escape character: \~  no-useless-escape
+  2:187   error  Unnecessary escape character: \!  no-useless-escape
+  2:189   error  Unnecessary escape character: \@  no-useless-escape
+  2:191   error  Unnecessary escape character: \#  no-useless-escape
+  2:194   error  Unnecessary escape character: \^  no-useless-escape
+  2:196   error  Unnecessary escape character: \&  no-useless-escape
+  2:198   error  Unnecessary escape character: \*  no-useless-escape
+  2:200   error  Unnecessary escape character: \(  no-useless-escape
+  2:202   error  Unnecessary escape character: \)  no-useless-escape
+  2:204   error  Unnecessary escape character: \=  no-useless-escape
+  2:206   error  Unnecessary escape character: \$  no-useless-escape
+  2:210   error  Unnecessary escape character: \+  no-useless-escape
+  2:212   error  Unnecessary escape character: \[  no-useless-escape
+  2:214   error  Unnecessary escape character: \{  no-useless-escape
+  2:218   error  Unnecessary escape character: \}  no-useless-escape
+  2:222   error  Unnecessary escape character: \|  no-useless-escape
+  2:224   error  Unnecessary escape character: \;  no-useless-escape
+  2:226   error  Unnecessary escape character: \:  no-useless-escape
+  2:228   error  Unnecessary escape character: \'  no-useless-escape
+  2:230   error  Unnecessary escape character: \"  no-useless-escape
+  2:232   error  Unnecessary escape character: \,  no-useless-escape
+  2:234   error  Unnecessary escape character: \.  no-useless-escape
+  2:236   error  Unnecessary escape character: \<  no-useless-escape
+  2:238   error  Unnecessary escape character: \>  no-useless-escape
+  2:240   error  Unnecessary escape character: \/  no-useless-escape
+  2:242   error  Unnecessary escape character: \?  no-useless-escape
+  2:924   error  Unnecessary escape character: \/  no-useless-escape
+  2:1302  error  Unnecessary escape character: \/  no-useless-escape
+  2:1304  error  Unnecessary escape character: \^  no-useless-escape
+  2:1306  error  Unnecessary escape character: \.  no-useless-escape
+  2:1309  error  Unnecessary escape character: \:  no-useless-escape
+  2:1415  error  Unnecessary escape character: \@  no-useless-escape
+  2:1749  error  Unnecessary escape character: \,  no-useless-escape
+  2:1797  error  Unnecessary escape character: \=  no-useless-escape
+  2:1845  error  Unnecessary escape character: \:  no-useless-escape
+  2:1941  error  Unnecessary escape character: \!  no-useless-escape
+  2:1989  error  Unnecessary escape character: \&  no-useless-escape
+  2:2181  error  Unnecessary escape character: \;  no-useless-escape
+  2:2318  error  Unnecessary escape character: \[  no-useless-escape
+  2:2374  error  Unnecessary escape character: \-  no-useless-escape
+  2:2418  error  Unnecessary escape character: \-  no-useless-escape
+  2:2795  error  Unnecessary escape character: \#  no-useless-escape
+  2:3455  error  Unnecessary escape character: \/  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/970.bundle.js
+  2:1725  error  Unnecessary escape character: \+  no-useless-escape
+  2:1729  error  Unnecessary escape character: \*  no-useless-escape
+  2:1731  error  Unnecessary escape character: \%  no-useless-escape
+  2:1733  error  Unnecessary escape character: \&  no-useless-escape
+  2:1735  error  Unnecessary escape character: \|  no-useless-escape
+  2:1737  error  Unnecessary escape character: \!  no-useless-escape
+  2:1739  error  Unnecessary escape character: \=  no-useless-escape
+  2:1741  error  Unnecessary escape character: \/  no-useless-escape
+  2:1743  error  Unnecessary escape character: \.  no-useless-escape
+  2:1745  error  Unnecessary escape character: \,  no-useless-escape
+  2:1747  error  Unnecessary escape character: \:  no-useless-escape
+  2:2386  error  Unnecessary escape character: \[  no-useless-escape
+  2:2447  error  Unnecessary escape character: \-  no-useless-escape
+  2:3882  error  Unnecessary escape character: \-  no-useless-escape
+  2:3984  error  Unnecessary escape character: \-  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/9838.bundle.js
+  2:764   error  Unnecessary escape character: \/  no-useless-escape
+  2:766   error  Unnecessary escape character: \^  no-useless-escape
+  2:2405  error  Unnecessary escape character: \[  no-useless-escape
+  2:2533  error  Unnecessary escape character: \-  no-useless-escape
+  2:2577  error  Unnecessary escape character: \-  no-useless-escape
+  2:2735  error  Unnecessary escape character: \-  no-useless-escape
+  2:2825  error  Unnecessary escape character: \-  no-useless-escape
+  2:3073  error  Unnecessary escape character: \/  no-useless-escape
+  2:3120  error  Unnecessary escape character: \/  no-useless-escape
+  2:3207  error  Unnecessary escape character: \$  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/dist/bundle.js
+  2:16076  error  Parsing error: Unexpected token {
+
+/Users/nicetop/Documents/DY_VScode/public/dist/css.worker.js
+  2:32788  error  Parsing error: Unexpected token {
+
+/Users/nicetop/Documents/DY_VScode/public/dist/editor.worker.js
+  2:32788  error  Parsing error: Unexpected token {
+
+/Users/nicetop/Documents/DY_VScode/public/dist/html.worker.js
+  2:32788  error  Parsing error: Unexpected token {
+
+/Users/nicetop/Documents/DY_VScode/public/dist/json.worker.js
+  2:32788  error  Parsing error: Unexpected token {
+
+/Users/nicetop/Documents/DY_VScode/public/dist/ts.worker.js
+  2:32953  error  Parsing error: Unexpected token {
+
+/Users/nicetop/Documents/DY_VScode/public/editor.js
+  5:10  warning  'openFiles' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/aiAssistant.js
+   78:18  warning  'e' is defined but never used               no-unused-vars
+  136:43  warning  'cursorPosition' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/aiChat.js
+  12:9  warning  'chatMessages' is assigned a value but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/animations.js
+  176:27  warning  'options' is assigned a value but never used  no-unused-vars
+  206:27  warning  'options' is assigned a value but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/browserRunner.js
+  251:7  error  Unexpected lexical declaration in case block  no-case-declarations
+
+/Users/nicetop/Documents/DY_VScode/public/js/colorPicker.js
+  52:30  warning  'instance' is defined but never used  no-unused-vars
+  58:32  warning  'instance' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/commandPalette.js
+  347:7  error  Unexpected lexical declaration in case block  no-case-declarations
+
+/Users/nicetop/Documents/DY_VScode/public/js/dataUtils.js
+  28:17  error  Parsing error: Unexpected token =
+
+/Users/nicetop/Documents/DY_VScode/public/js/downloadManager.js
+  6:8  warning  'download' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/dropzone.js
+  31:35  warning  'response' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/editor.js
+    5:10  warning  'openFiles' is defined but never used  no-unused-vars
+  130:5   error    Duplicate key 'parameterHints'         no-dupe-keys
+  134:5   error    Duplicate key 'autoClosingBrackets'    no-dupe-keys
+  135:5   error    Duplicate key 'autoClosingQuotes'      no-dupe-keys
+  167:7   warning  'toggleBreakpoint' is not defined      no-undef
+
+/Users/nicetop/Documents/DY_VScode/public/js/editorSplit.js
+  206:35  warning  'id' is defined but never used  no-unused-vars
+  216:33  warning  'id' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/emmetSupport.js
+  37:23  error  Unnecessary escape character: \-  no-useless-escape
+  37:38  error  Unnecessary escape character: \-  no-useless-escape
+  37:45  error  Unnecessary escape character: \#  no-useless-escape
+  37:55  error  Unnecessary escape character: \-  no-useless-escape
+  37:95  error  Unnecessary escape character: \>  no-useless-escape
+  38:18  error  Unnecessary escape character: \-  no-useless-escape
+  78:36  error  Unnecessary escape character: \.  no-useless-escape
+  78:38  error  Unnecessary escape character: \#  no-useless-escape
+  78:40  error  Unnecessary escape character: \[  no-useless-escape
+  78:44  error  Unnecessary escape character: \{  no-useless-escape
+  78:46  error  Unnecessary escape character: \}  no-useless-escape
+  78:48  error  Unnecessary escape character: \*  no-useless-escape
+  78:50  error  Unnecessary escape character: \>  no-useless-escape
+  78:52  error  Unnecessary escape character: \+  no-useless-escape
+  78:54  error  Unnecessary escape character: \^  no-useless-escape
+
+/Users/nicetop/Documents/DY_VScode/public/js/enhancedAutocomplete.js
+  77:43  warning  'context' is defined but never used  no-unused-vars
+  77:52  warning  'token' is defined but never used    no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/fileSystem.js
+  341:11  warning  'isDirectory' is assigned a value but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/gitClient.js
+   43:16  warning  'err' is defined but never used              no-unused-vars
+  200:21  warning  'remote' is assigned a value but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/github.js
+    2:10  warning  'githubCloneRepo' is defined but never used     no-unused-vars
+    2:27  warning  'githubPush' is defined but never used          no-unused-vars
+   61:14  warning  'e' is defined but never used                   no-unused-vars
+  146:14  warning  'e' is defined but never used                   no-unused-vars
+  655:33  warning  'repo' is defined but never used                no-unused-vars
+  748:22  warning  'gitClient' is assigned a value but never used  no-unused-vars
+  878:10  warning  'updateGitHubUI' is defined but never used      no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/languageClient.js
+  4:13  warning  'monaco' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/modernFS.js
+  106:14  warning  'err' is defined but never used  no-unused-vars
+  168:16  warning  'err' is defined but never used  no-unused-vars
+  214:14  warning  'err' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/monacoConfig.js
+  367:30  warning  'model' is defined but never used     no-unused-vars
+  367:37  warning  'position' is defined but never used  no-unused-vars
+  541:30  warning  'model' is defined but never used     no-unused-vars
+  541:37  warning  'position' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/premiumIntro.js
+    6:8   warning  'lottie' is defined but never used      no-unused-vars
+    7:8   warning  'anime' is defined but never used       no-unused-vars
+  206:15  warning  'y' is assigned a value but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/premiumUI.js
+    5:8   warning  'gsap' is defined but never used   no-unused-vars
+    6:8   warning  'anime' is defined but never used  no-unused-vars
+  519:47  warning  'e' is defined but never used      no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/progress.js
+  99:31  warning  'message' is assigned a value but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/shortcuts.js
+  13:23  warning  'event' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/sortable.js
+  41:15  warning  'evt' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/terminal.js
+  113:14  warning  'e' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/ui.js
+     2:25  warning  'uploadFile' is defined but never used                   no-unused-vars
+    22:5   warning  'statusLeft' is assigned a value but never used          no-unused-vars
+    23:5   warning  'statusRight' is assigned a value but never used         no-unused-vars
+    29:5   warning  'editorGroup' is assigned a value but never used         no-unused-vars
+    35:5   warning  'activeFile' is assigned a value but never used          no-unused-vars
+   133:16  warning  'fetchAndRenderFileTree' is defined but never used       no-unused-vars
+   182:12  warning  'err' is defined but never used                          no-unused-vars
+   356:36  warning  'module' is defined but never used                       no-unused-vars
+   825:53  warning  'e' is defined but never used                            no-unused-vars
+   971:22  warning  'e' is defined but never used                            no-unused-vars
+  1211:14  warning  'e' is defined but never used                            no-unused-vars
+  1283:16  warning  'err' is defined but never used                          no-unused-vars
+  1590:37  warning  'e' is defined but never used                            no-unused-vars
+  1603:41  warning  'e' is defined but never used                            no-unused-vars
+  1769:16  warning  'err' is defined but never used                          no-unused-vars
+  1784:16  warning  'err' is defined but never used                          no-unused-vars
+  1931:11  warning  'result' is assigned a value but never used              no-unused-vars
+  1994:9   warning  'filePath' is assigned a value but never used            no-unused-vars
+  2192:10  warning  'showFileContextMenu' is defined but never used          no-unused-vars
+  2232:10  warning  'showFileExplorerContextMenu' is defined but never used  no-unused-vars
+  2339:63  warning  'fileName' is defined but never used                     no-unused-vars
+  2444:14  warning  'removeErr' is defined but never used                    no-unused-vars
+  2972:10  warning  'loginToGitHub' is defined but never used                no-unused-vars
+  2985:9   warning  'popup' is assigned a value but never used               no-unused-vars
+  3218:11  warning  'commitsHtml' is assigned a value but never used         no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/uiEffects.js
+  123:13  warning  'particlesJS' is assigned a value but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/public/js/workspace.js
+  234:15  warning  'workspace' is assigned a value but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/server.js
+    10:7    warning  'inspector' is assigned a value but never used      no-unused-vars
+   136:17   warning  'childStats' is assigned a value but never used     no-unused-vars
+   151:10   warning  'isPathSafe' is defined but never used              no-unused-vars
+   158:10   warning  'sanitizeFilename' is defined but never used        no-unused-vars
+   391:160  warning  'stderr' is defined but never used                  no-unused-vars
+   453:14   warning  'error' is defined but never used                   no-unused-vars
+   475:7    warning  'dataBuffer' is assigned a value but never used     no-unused-vars
+   476:7    warning  'bufferTimeout' is assigned a value but never used  no-unused-vars
+   536:14   warning  'e' is defined but never used                       no-unused-vars
+  1208:7    warning  'output' is assigned a value but never used         no-unused-vars
+  1255:23   warning  'req' is defined but never used                     no-unused-vars
+  1276:21   warning  'req' is defined but never used                     no-unused-vars
+  1324:29   warning  'req' is defined but never used                     no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/src/api/extensionApi.js
+  12:30  warning  'handler' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/src/api/fileSystemApi.js
+   9:19  warning  'content' is defined but never used   no-unused-vars
+  13:19  warning  'callback' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/src/api/processApi.js
+  4:33  warning  'options' is defined but never used  no-unused-vars
+  9:31  warning  'options' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/src/editor/editorCore.js
+  280:17  warning  'selection' is defined but never used  no-unused-vars
+  285:14  warning  'line' is defined but never used       no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/src/preview/previewManager.js
+  80:27  warning  'editorContext' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/src/settings/settingsManager.js
+  63:14  warning  'layoutConfig' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/src/terminal/terminalManager.js
+  18:18  warning  'terminal' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/src/ui/uiManager.js
+  12:28  warning  'settingsManager' is defined but never used  no-unused-vars
+
+/Users/nicetop/Documents/DY_VScode/tests/integration/userStory1.test.js
+  5:8  warning  'EditorCore' is defined but never used  no-unused-vars
+  6:8  warning  'UIManager' is defined but never used   no-unused-vars
+  7:8  warning  'File' is defined but never used        no-unused-vars
+  8:8  warning  'Project' is defined but never used     no-unused-vars
+
+✖ 1706 problems (1355 errors, 351 warnings)
+

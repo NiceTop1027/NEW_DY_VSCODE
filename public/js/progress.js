@@ -5,24 +5,24 @@ import NProgress from 'nprogress';
 import 'nprogress/nprogress.css';
 
 class ProgressManager {
-    constructor() {
-        // Configure NProgress
-        NProgress.configure({
-            showSpinner: true,
-            trickleSpeed: 200,
-            minimum: 0.08,
-            easing: 'ease',
-            speed: 500
-        });
+  constructor() {
+    // Configure NProgress
+    NProgress.configure({
+      showSpinner: true,
+      trickleSpeed: 200,
+      minimum: 0.08,
+      easing: 'ease',
+      speed: 500
+    });
 
-        // Custom styling
-        this.injectCustomStyles();
-    }
+    // Custom styling
+    this.injectCustomStyles();
+  }
 
-    // Inject custom styles
-    injectCustomStyles() {
-        const style = document.createElement('style');
-        style.textContent = `
+  // Inject custom styles
+  injectCustomStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
             #nprogress {
                 pointer-events: none;
             }
@@ -67,80 +67,80 @@ class ProgressManager {
                 100% { transform: rotate(360deg); }
             }
         `;
-        document.head.appendChild(style);
-    }
+    document.head.appendChild(style);
+  }
 
-    // Start progress
-    start() {
-        NProgress.start();
-    }
+  // Start progress
+  start() {
+    NProgress.start();
+  }
 
-    // Set progress (0 to 1)
-    set(progress) {
-        NProgress.set(progress);
-    }
+  // Set progress (0 to 1)
+  set(progress) {
+    NProgress.set(progress);
+  }
 
-    // Increment progress
-    inc(amount) {
-        NProgress.inc(amount);
-    }
+  // Increment progress
+  inc(amount) {
+    NProgress.inc(amount);
+  }
 
-    // Complete progress
-    done() {
-        NProgress.done();
-    }
+  // Complete progress
+  done() {
+    NProgress.done();
+  }
 
-    // Remove progress
-    remove() {
-        NProgress.remove();
-    }
+  // Remove progress
+  remove() {
+    NProgress.remove();
+  }
 
-    // Show progress for promise
-    async trackPromise(promise, message = '') {
-        this.start();
-        try {
-            const result = await promise;
-            this.done();
-            return result;
-        } catch (error) {
-            this.done();
-            throw error;
-        }
+  // Show progress for promise
+  async trackPromise(promise, message = '') {
+    this.start();
+    try {
+      const result = await promise;
+      this.done();
+      return result;
+    } catch (error) {
+      this.done();
+      throw error;
     }
+  }
 
-    // Show progress for async function
-    async track(fn, message = '') {
-        return this.trackPromise(fn(), message);
-    }
+  // Show progress for async function
+  async track(fn, message = '') {
+    return this.trackPromise(fn(), message);
+  }
 
-    // Show progress for multiple steps
-    async trackSteps(steps) {
-        this.start();
-        const increment = 1 / steps.length;
+  // Show progress for multiple steps
+  async trackSteps(steps) {
+    this.start();
+    const increment = 1 / steps.length;
         
-        for (let i = 0; i < steps.length; i++) {
-            await steps[i]();
-            this.set((i + 1) * increment);
-        }
+    for (let i = 0; i < steps.length; i++) {
+      await steps[i]();
+      this.set((i + 1) * increment);
+    }
         
-        this.done();
-    }
+    this.done();
+  }
 
-    // Show progress for file operations
-    async trackFileOperation(operation, fileName) {
-        console.log(`📁 ${operation}: ${fileName}`);
-        this.start();
-        try {
-            const result = await operation;
-            this.done();
-            console.log(`✅ ${operation} complete: ${fileName}`);
-            return result;
-        } catch (error) {
-            this.done();
-            console.error(`❌ ${operation} failed: ${fileName}`, error);
-            throw error;
-        }
+  // Show progress for file operations
+  async trackFileOperation(operation, fileName) {
+    console.log(`📁 ${operation}: ${fileName}`);
+    this.start();
+    try {
+      const result = await operation;
+      this.done();
+      console.log(`✅ ${operation} complete: ${fileName}`);
+      return result;
+    } catch (error) {
+      this.done();
+      console.error(`❌ ${operation} failed: ${fileName}`, error);
+      throw error;
     }
+  }
 }
 
 export const progress = new ProgressManager();

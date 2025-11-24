@@ -31,12 +31,12 @@ module.exports = {
   resolve: {
     extensions: ['.js'],
     fallback: {
-      "fs": false,
-      "path": false,
-      "crypto": false,
-      "stream": false,
-      "buffer": require.resolve('buffer/'),
-      "process": require.resolve('process/browser.js')
+      'fs': false,
+      'path': false,
+      'crypto': false,
+      'stream': false,
+      'buffer': require.resolve('buffer/'),
+      'process': require.resolve('process/browser.js')
     }
   },
   plugins: [

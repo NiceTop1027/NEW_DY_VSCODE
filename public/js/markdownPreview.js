@@ -6,44 +6,44 @@ import hljs from 'highlight.js';
 import 'highlight.js/styles/github-dark.css';
 
 class MarkdownPreview {
-    constructor() {
-        // Configure marked
-        marked.setOptions({
-            highlight: (code, lang) => {
-                if (lang && hljs.getLanguage(lang)) {
-                    try {
-                        return hljs.highlight(code, { language: lang }).value;
-                    } catch (err) {
-                        console.error('Highlight error:', err);
-                    }
-                }
-                return hljs.highlightAuto(code).value;
-            },
-            breaks: true,
-            gfm: true,
-            headerIds: true,
-            mangle: false
-        });
-    }
-
-    // Render markdown to HTML
-    render(markdown) {
-        try {
-            return marked.parse(markdown);
-        } catch (error) {
-            console.error('Markdown render error:', error);
-            return `<p style="color: red;">마크다운 렌더링 실패: ${error.message}</p>`;
+  constructor() {
+    // Configure marked
+    marked.setOptions({
+      highlight: (code, lang) => {
+        if (lang && hljs.getLanguage(lang)) {
+          try {
+            return hljs.highlight(code, { language: lang }).value;
+          } catch (err) {
+            console.error('Highlight error:', err);
+          }
         }
-    }
+        return hljs.highlightAuto(code).value;
+      },
+      breaks: true,
+      gfm: true,
+      headerIds: true,
+      mangle: false
+    });
+  }
 
-    // Show preview in split view
-    showPreview(markdown, container) {
-        const html = this.render(markdown);
+  // Render markdown to HTML
+  render(markdown) {
+    try {
+      return marked.parse(markdown);
+    } catch (error) {
+      console.error('Markdown render error:', error);
+      return `<p style="color: red;">마크다운 렌더링 실패: ${error.message}</p>`;
+    }
+  }
+
+  // Show preview in split view
+  showPreview(markdown, container) {
+    const html = this.render(markdown);
         
-        if (!container) {
-            container = document.createElement('div');
-            container.className = 'markdown-preview';
-            container.style.cssText = `
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'markdown-preview';
+      container.style.cssText = `
                 padding: 20px;
                 background: var(--editor-background);
                 color: var(--text-color);
@@ -52,15 +52,15 @@ class MarkdownPreview {
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
                 line-height: 1.6;
             `;
-        }
-        
-        container.innerHTML = this.wrapWithStyles(html);
-        return container;
     }
+        
+    container.innerHTML = this.wrapWithStyles(html);
+    return container;
+  }
 
-    // Wrap HTML with custom styles
-    wrapWithStyles(html) {
-        return `
+  // Wrap HTML with custom styles
+  wrapWithStyles(html) {
+    return `
             <style>
                 .markdown-preview h1 { font-size: 2em; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3em; }
                 .markdown-preview h2 { font-size: 1.5em; border-bottom: 1px solid var(--border-color); padding-bottom: 0.3em; }
@@ -83,35 +83,35 @@ class MarkdownPreview {
                 ${html}
             </div>
         `;
-    }
+  }
 
-    // Generate table of contents
-    generateTOC(markdown) {
-        const tokens = marked.lexer(markdown);
-        const toc = [];
+  // Generate table of contents
+  generateTOC(markdown) {
+    const tokens = marked.lexer(markdown);
+    const toc = [];
         
-        tokens.forEach(token => {
-            if (token.type === 'heading' && token.depth <= 3) {
-                toc.push({
-                    level: token.depth,
-                    text: token.text,
-                    id: token.text.toLowerCase().replace(/[^\w]+/g, '-')
-                });
-            }
+    tokens.forEach(token => {
+      if (token.type === 'heading' && token.depth <= 3) {
+        toc.push({
+          level: token.depth,
+          text: token.text,
+          id: token.text.toLowerCase().replace(/[^\w]+/g, '-')
         });
+      }
+    });
         
-        return toc;
-    }
+    return toc;
+  }
 
-    // Show preview modal
-    showPreviewModal(markdown, fileName = 'Preview') {
-        const html = this.render(markdown);
-        const toc = this.generateTOC(markdown);
+  // Show preview modal
+  showPreviewModal(markdown, fileName = 'Preview') {
+    const html = this.render(markdown);
+    const toc = this.generateTOC(markdown);
         
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.style.display = 'flex';
-        modal.innerHTML = `
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'flex';
+    modal.innerHTML = `
             <div class="modal-content" style="max-width: 90%; width: 1000px; max-height: 90vh; display: flex; flex-direction: column;">
                 <div class="modal-header">
                     <h2>📄 ${fileName}</h2>
@@ -139,25 +139,25 @@ class MarkdownPreview {
             </div>
         `;
         
-        document.body.appendChild(modal);
+    document.body.appendChild(modal);
         
-        // Event listeners
-        document.getElementById('md-modal-close').addEventListener('click', () => {
-            modal.remove();
-        });
+    // Event listeners
+    document.getElementById('md-modal-close').addEventListener('click', () => {
+      modal.remove();
+    });
         
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.remove();
-            }
-        });
-    }
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+  }
 
-    // Export as HTML
-    exportHTML(markdown, title = 'Document') {
-        const html = this.render(markdown);
+  // Export as HTML
+  exportHTML(markdown, title = 'Document') {
+    const html = this.render(markdown);
         
-        return `
+    return `
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -183,10 +183,10 @@ class MarkdownPreview {
 </body>
 </html>
         `;
-    }
+  }
 
-    getExportStyles() {
-        return `
+  getExportStyles() {
+    return `
             h1 { font-size: 2em; border-bottom: 1px solid #d0d7de; padding-bottom: 0.3em; }
             h2 { font-size: 1.5em; border-bottom: 1px solid #d0d7de; padding-bottom: 0.3em; }
             code { background: #f6f8fa; padding: 0.2em 0.4em; border-radius: 3px; font-size: 85%; }
@@ -200,7 +200,7 @@ class MarkdownPreview {
             a { color: #0969da; text-decoration: none; }
             a:hover { text-decoration: underline; }
         `;
-    }
+  }
 }
 
 export const markdownPreview = new MarkdownPreview();

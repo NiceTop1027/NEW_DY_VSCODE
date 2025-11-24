@@ -8,39 +8,39 @@ import { showNotification } from './utils.js';
 import { clientFS as clientFileSystem } from './fileSystem.js';
 
 class DownloadManager {
-    constructor() {
-        this.selectedFiles = new Set();
-        this.selectedFolders = new Set();
-    }
+  constructor() {
+    this.selectedFiles = new Set();
+    this.selectedFolders = new Set();
+  }
 
-    // Initialize download manager
-    init() {
-        this.addDownloadButtons();
-        this.addContextMenuItems();
-        this.addKeyboardShortcuts();
-        console.log('✅ Download manager initialized');
-    }
+  // Initialize download manager
+  init() {
+    this.addDownloadButtons();
+    this.addContextMenuItems();
+    this.addKeyboardShortcuts();
+    console.log('✅ Download manager initialized');
+  }
 
-    // Add download buttons to file explorer
-    addDownloadButtons() {
-        // Wait for file explorer to be ready
-        const tryAddButtons = () => {
-            const fileExplorer = document.getElementById('file-explorer');
-            if (!fileExplorer) {
-                console.log('⏳ Waiting for file-explorer...');
-                setTimeout(tryAddButtons, 100);
-                return;
-            }
+  // Add download buttons to file explorer
+  addDownloadButtons() {
+    // Wait for file explorer to be ready
+    const tryAddButtons = () => {
+      const fileExplorer = document.getElementById('file-explorer');
+      if (!fileExplorer) {
+        console.log('⏳ Waiting for file-explorer...');
+        setTimeout(tryAddButtons, 100);
+        return;
+      }
 
-            // Check if buttons already exist
-            if (document.getElementById('download-selected-btn')) {
-                console.log('✅ Download buttons already exist');
-                return;
-            }
+      // Check if buttons already exist
+      if (document.getElementById('download-selected-btn')) {
+        console.log('✅ Download buttons already exist');
+        return;
+      }
 
-            const header = document.createElement('div');
-            header.id = 'download-buttons-header';
-            header.style.cssText = `
+      const header = document.createElement('div');
+      header.id = 'download-buttons-header';
+      header.style.cssText = `
                 padding: 12px 10px;
                 border-bottom: 1px solid var(--border-color);
                 display: flex;
@@ -48,7 +48,7 @@ class DownloadManager {
                 background: linear-gradient(180deg, rgba(102, 126, 234, 0.05) 0%, transparent 100%);
             `;
 
-            header.innerHTML = `
+      header.innerHTML = `
                 <button id="download-selected-btn" class="premium-download-btn" title="Download selected files">
                     <div class="btn-glow"></div>
                     <i class="codicon codicon-cloud-download"></i>
@@ -61,42 +61,42 @@ class DownloadManager {
                 </button>
             `;
 
-            fileExplorer.insertBefore(header, fileExplorer.firstChild);
+      fileExplorer.insertBefore(header, fileExplorer.firstChild);
 
-            // Event listeners
-            document.getElementById('download-selected-btn')?.addEventListener('click', () => {
-                this.downloadSelected();
-            });
+      // Event listeners
+      document.getElementById('download-selected-btn')?.addEventListener('click', () => {
+        this.downloadSelected();
+      });
 
-            document.getElementById('download-all-btn')?.addEventListener('click', () => {
-                this.downloadAll();
-            });
+      document.getElementById('download-all-btn')?.addEventListener('click', () => {
+        this.downloadAll();
+      });
 
-            console.log('✅ Download buttons added');
-        };
+      console.log('✅ Download buttons added');
+    };
 
-        tryAddButtons();
-    }
+    tryAddButtons();
+  }
 
-    // Add context menu items
-    addContextMenuItems() {
-        document.addEventListener('contextmenu', (e) => {
-            const treeItem = e.target.closest('.tree-item');
-            if (!treeItem) return;
+  // Add context menu items
+  addContextMenuItems() {
+    document.addEventListener('contextmenu', (e) => {
+      const treeItem = e.target.closest('.tree-item');
+      if (!treeItem) return;
 
-            e.preventDefault();
-            this.showContextMenu(e, treeItem);
-        });
-    }
+      e.preventDefault();
+      this.showContextMenu(e, treeItem);
+    });
+  }
 
-    // Show context menu
-    showContextMenu(e, treeItem) {
-        // Remove existing menu
-        document.querySelectorAll('.download-context-menu').forEach(m => m.remove());
+  // Show context menu
+  showContextMenu(e, treeItem) {
+    // Remove existing menu
+    document.querySelectorAll('.download-context-menu').forEach(m => m.remove());
 
-        const menu = document.createElement('div');
-        menu.className = 'download-context-menu glass-effect';
-        menu.style.cssText = `
+    const menu = document.createElement('div');
+    menu.className = 'download-context-menu glass-effect';
+    menu.style.cssText = `
             position: fixed;
             left: ${e.clientX}px;
             top: ${e.clientY}px;
@@ -108,10 +108,10 @@ class DownloadManager {
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         `;
 
-        const path = treeItem.dataset.path;
-        const isFolder = treeItem.classList.contains('folder');
+    const path = treeItem.dataset.path;
+    const isFolder = treeItem.classList.contains('folder');
 
-        menu.innerHTML = `
+    menu.innerHTML = `
             <div class="context-menu-item" data-action="download" style="padding: 12px 16px; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 10px; min-height: 42px; font-size: 14px;">
                 <i class="codicon codicon-cloud-download" style="font-size: 18px;"></i>
                 <span>Download ${isFolder ? 'Folder' : 'File'}</span>
@@ -128,302 +128,302 @@ class DownloadManager {
             ` : ''}
         `;
 
-        document.body.appendChild(menu);
+    document.body.appendChild(menu);
 
-        // Hover effect
-        menu.querySelectorAll('.context-menu-item').forEach(item => {
-            item.addEventListener('mouseenter', () => {
-                item.style.background = 'var(--hover-background)';
-            });
-            item.addEventListener('mouseleave', () => {
-                item.style.background = 'transparent';
-            });
-        });
+    // Hover effect
+    menu.querySelectorAll('.context-menu-item').forEach(item => {
+      item.addEventListener('mouseenter', () => {
+        item.style.background = 'var(--hover-background)';
+      });
+      item.addEventListener('mouseleave', () => {
+        item.style.background = 'transparent';
+      });
+    });
 
-        // Actions
-        menu.querySelector('[data-action="download"]')?.addEventListener('click', () => {
-            if (isFolder) {
-                this.downloadFolder(path);
-            } else {
-                this.downloadFile(path);
-            }
-            menu.remove();
-        });
+    // Actions
+    menu.querySelector('[data-action="download"]')?.addEventListener('click', () => {
+      if (isFolder) {
+        this.downloadFolder(path);
+      } else {
+        this.downloadFile(path);
+      }
+      menu.remove();
+    });
 
-        menu.querySelector('[data-action="select"]')?.addEventListener('click', () => {
-            this.toggleSelection(path, isFolder, treeItem);
-            menu.remove();
-        });
+    menu.querySelector('[data-action="select"]')?.addEventListener('click', () => {
+      this.toggleSelection(path, isFolder, treeItem);
+      menu.remove();
+    });
 
-        menu.querySelector('[data-action="download-selected"]')?.addEventListener('click', () => {
-            this.downloadSelected();
-            menu.remove();
-        });
+    menu.querySelector('[data-action="download-selected"]')?.addEventListener('click', () => {
+      this.downloadSelected();
+      menu.remove();
+    });
 
-        // Close on outside click
-        setTimeout(() => {
-            document.addEventListener('click', function closeMenu(e) {
-                if (!menu.contains(e.target)) {
-                    menu.remove();
-                    document.removeEventListener('click', closeMenu);
-                }
-            });
-        }, 100);
-    }
-
-    // Toggle selection
-    toggleSelection(path, isFolder, treeItem) {
-        if (isFolder) {
-            if (this.selectedFolders.has(path)) {
-                this.selectedFolders.delete(path);
-                treeItem.style.background = '';
-            } else {
-                this.selectedFolders.add(path);
-                treeItem.style.background = 'rgba(102, 126, 234, 0.2)';
-            }
-        } else {
-            if (this.selectedFiles.has(path)) {
-                this.selectedFiles.delete(path);
-                treeItem.style.background = '';
-            } else {
-                this.selectedFiles.add(path);
-                treeItem.style.background = 'rgba(102, 126, 234, 0.2)';
-            }
+    // Close on outside click
+    setTimeout(() => {
+      document.addEventListener('click', function closeMenu(e) {
+        if (!menu.contains(e.target)) {
+          menu.remove();
+          document.removeEventListener('click', closeMenu);
         }
+      });
+    }, 100);
+  }
 
-        showNotification(
-            `${isFolder ? 'Folder' : 'File'} ${this.selectedFiles.has(path) || this.selectedFolders.has(path) ? 'selected' : 'deselected'}`,
-            'info'
-        );
+  // Toggle selection
+  toggleSelection(path, isFolder, treeItem) {
+    if (isFolder) {
+      if (this.selectedFolders.has(path)) {
+        this.selectedFolders.delete(path);
+        treeItem.style.background = '';
+      } else {
+        this.selectedFolders.add(path);
+        treeItem.style.background = 'rgba(102, 126, 234, 0.2)';
+      }
+    } else {
+      if (this.selectedFiles.has(path)) {
+        this.selectedFiles.delete(path);
+        treeItem.style.background = '';
+      } else {
+        this.selectedFiles.add(path);
+        treeItem.style.background = 'rgba(102, 126, 234, 0.2)';
+      }
     }
 
-    // Download single file
-    async downloadFile(path) {
-        try {
-            showNotification(`Downloading ${path}...`, 'info');
+    showNotification(
+      `${isFolder ? 'Folder' : 'File'} ${this.selectedFiles.has(path) || this.selectedFolders.has(path) ? 'selected' : 'deselected'}`,
+      'info'
+    );
+  }
 
-            const file = clientFileSystem.getFile(path);
-            if (!file) {
-                // Try to get from files map
-                const allFiles = Array.from(clientFileSystem.files.values());
-                const foundFile = allFiles.find(f => f.path === path || f.name === path);
+  // Download single file
+  async downloadFile(path) {
+    try {
+      showNotification(`Downloading ${path}...`, 'info');
+
+      const file = clientFileSystem.getFile(path);
+      if (!file) {
+        // Try to get from files map
+        const allFiles = Array.from(clientFileSystem.files.values());
+        const foundFile = allFiles.find(f => f.path === path || f.name === path);
                 
-                if (!foundFile) {
-                    throw new Error('File not found');
-                }
-                
-                const blob = new Blob([foundFile.content || ''], { type: 'text/plain' });
-                saveAs(blob, foundFile.name);
-                showNotification(`✅ Downloaded ${foundFile.name}`, 'success');
-                return;
-            }
-
-            const blob = new Blob([file.content || ''], { type: 'text/plain' });
-            saveAs(blob, file.name);
-
-            showNotification(`✅ Downloaded ${file.name}`, 'success');
-        } catch (error) {
-            console.error('Download file error:', error);
-            showNotification(`Download failed: ${error.message}`, 'error');
+        if (!foundFile) {
+          throw new Error('File not found');
         }
+                
+        const blob = new Blob([foundFile.content || ''], { type: 'text/plain' });
+        saveAs(blob, foundFile.name);
+        showNotification(`✅ Downloaded ${foundFile.name}`, 'success');
+        return;
+      }
+
+      const blob = new Blob([file.content || ''], { type: 'text/plain' });
+      saveAs(blob, file.name);
+
+      showNotification(`✅ Downloaded ${file.name}`, 'success');
+    } catch (error) {
+      console.error('Download file error:', error);
+      showNotification(`Download failed: ${error.message}`, 'error');
     }
+  }
 
-    // Download folder as ZIP
-    async downloadFolder(path) {
-        try {
-            showNotification(`Creating ZIP for ${path}...`, 'info');
+  // Download folder as ZIP
+  async downloadFolder(path) {
+    try {
+      showNotification(`Creating ZIP for ${path}...`, 'info');
 
-            const zip = new JSZip();
-            let folder = clientFileSystem.getFile(path);
+      const zip = new JSZip();
+      let folder = clientFileSystem.getFile(path);
             
-            if (!folder) {
-                // Try to find folder in files map
-                const allFiles = Array.from(clientFileSystem.files.values());
-                folder = allFiles.find(f => (f.path === path || f.name === path) && f.type === 'directory');
+      if (!folder) {
+        // Try to find folder in files map
+        const allFiles = Array.from(clientFileSystem.files.values());
+        folder = allFiles.find(f => (f.path === path || f.name === path) && f.type === 'directory');
                 
-                if (!folder) {
-                    // Try to find by searching root children
-                    const findFolder = (node, targetPath) => {
-                        if (node.path === targetPath || node.name === targetPath) {
-                            return node;
-                        }
-                        if (node.children) {
-                            for (const child of node.children) {
-                                const found = findFolder(child, targetPath);
-                                if (found) return found;
-                            }
-                        }
-                        return null;
-                    };
+        if (!folder) {
+          // Try to find by searching root children
+          const findFolder = (node, targetPath) => {
+            if (node.path === targetPath || node.name === targetPath) {
+              return node;
+            }
+            if (node.children) {
+              for (const child of node.children) {
+                const found = findFolder(child, targetPath);
+                if (found) return found;
+              }
+            }
+            return null;
+          };
                     
-                    folder = findFolder(clientFileSystem.root, path);
-                }
+          folder = findFolder(clientFileSystem.root, path);
+        }
                 
-                if (!folder) {
-                    throw new Error('Folder not found');
-                }
-            }
-
-            // Add files to zip recursively
-            await this.addToZip(zip, folder, '');
-
-            // Generate ZIP
-            const content = await zip.generateAsync({ 
-                type: 'blob',
-                compression: 'DEFLATE',
-                compressionOptions: { level: 9 }
-            });
-
-            // Download
-            const folderName = folder.name || 'download';
-            saveAs(content, `${folderName}.zip`);
-
-            showNotification(`✅ Downloaded ${folderName}.zip`, 'success');
-        } catch (error) {
-            console.error('Download folder error:', error);
-            showNotification(`Download failed: ${error.message}`, 'error');
+        if (!folder) {
+          throw new Error('Folder not found');
         }
-    }
+      }
 
-    // Add files to ZIP recursively
-    async addToZip(zip, item, basePath) {
-        if (item.type === 'file') {
-            const filePath = basePath ? `${basePath}/${item.name}` : item.name;
-            const content = item.content || '';
-            zip.file(filePath, content);
-        } else if (item.type === 'directory' && item.children) {
-            const folderPath = basePath ? `${basePath}/${item.name}` : item.name;
+      // Add files to zip recursively
+      await this.addToZip(zip, folder, '');
+
+      // Generate ZIP
+      const content = await zip.generateAsync({ 
+        type: 'blob',
+        compression: 'DEFLATE',
+        compressionOptions: { level: 9 }
+      });
+
+      // Download
+      const folderName = folder.name || 'download';
+      saveAs(content, `${folderName}.zip`);
+
+      showNotification(`✅ Downloaded ${folderName}.zip`, 'success');
+    } catch (error) {
+      console.error('Download folder error:', error);
+      showNotification(`Download failed: ${error.message}`, 'error');
+    }
+  }
+
+  // Add files to ZIP recursively
+  async addToZip(zip, item, basePath) {
+    if (item.type === 'file') {
+      const filePath = basePath ? `${basePath}/${item.name}` : item.name;
+      const content = item.content || '';
+      zip.file(filePath, content);
+    } else if (item.type === 'directory' && item.children) {
+      const folderPath = basePath ? `${basePath}/${item.name}` : item.name;
             
-            // Create folder in zip
-            if (folderPath) {
-                zip.folder(folderPath);
-            }
+      // Create folder in zip
+      if (folderPath) {
+        zip.folder(folderPath);
+      }
             
-            // Add all children
-            for (const child of item.children) {
-                await this.addToZip(zip, child, folderPath);
-            }
-        }
+      // Add all children
+      for (const child of item.children) {
+        await this.addToZip(zip, child, folderPath);
+      }
     }
+  }
 
-    // Download selected files/folders
-    async downloadSelected() {
-        try {
-            if (this.selectedFiles.size === 0 && this.selectedFolders.size === 0) {
-                showNotification('No files selected', 'warning');
-                return;
-            }
+  // Download selected files/folders
+  async downloadSelected() {
+    try {
+      if (this.selectedFiles.size === 0 && this.selectedFolders.size === 0) {
+        showNotification('No files selected', 'warning');
+        return;
+      }
 
-            showNotification('Creating ZIP...', 'info');
+      showNotification('Creating ZIP...', 'info');
 
-            const zip = new JSZip();
+      const zip = new JSZip();
 
-            // Add selected files
-            for (const path of this.selectedFiles) {
-                const file = clientFileSystem.getFile(path);
-                if (file) {
-                    zip.file(file.name, file.content);
-                }
-            }
-
-            // Add selected folders
-            for (const path of this.selectedFolders) {
-                const folder = clientFileSystem.getFile(path);
-                if (folder) {
-                    await this.addToZip(zip, folder, '');
-                }
-            }
-
-            // Generate ZIP
-            const content = await zip.generateAsync({ 
-                type: 'blob',
-                compression: 'DEFLATE',
-                compressionOptions: { level: 9 }
-            });
-
-            // Download
-            const timestamp = new Date().toISOString().slice(0, 10);
-            saveAs(content, `selected-files-${timestamp}.zip`);
-
-            showNotification(`✅ Downloaded ${this.selectedFiles.size + this.selectedFolders.size} items`, 'success');
-
-            // Clear selection
-            this.clearSelection();
-        } catch (error) {
-            console.error('Download selected error:', error);
-            showNotification(`Download failed: ${error.message}`, 'error');
+      // Add selected files
+      for (const path of this.selectedFiles) {
+        const file = clientFileSystem.getFile(path);
+        if (file) {
+          zip.file(file.name, file.content);
         }
-    }
+      }
 
-    // Download all files
-    async downloadAll() {
-        try {
-            showNotification('Creating ZIP of all files...', 'info');
-
-            const zip = new JSZip();
-            const root = clientFileSystem.root;
-
-            // Add all files
-            if (root.children) {
-                for (const child of root.children) {
-                    await this.addToZip(zip, child, '');
-                }
-            }
-
-            // Generate ZIP
-            const content = await zip.generateAsync({ 
-                type: 'blob',
-                compression: 'DEFLATE',
-                compressionOptions: { level: 9 }
-            });
-
-            // Download
-            const timestamp = new Date().toISOString().slice(0, 10);
-            saveAs(content, `workspace-${timestamp}.zip`);
-
-            showNotification('✅ Downloaded all files', 'success');
-        } catch (error) {
-            console.error('Download all error:', error);
-            showNotification(`Download failed: ${error.message}`, 'error');
+      // Add selected folders
+      for (const path of this.selectedFolders) {
+        const folder = clientFileSystem.getFile(path);
+        if (folder) {
+          await this.addToZip(zip, folder, '');
         }
-    }
+      }
 
-    // Clear selection
-    clearSelection() {
-        this.selectedFiles.clear();
-        this.selectedFolders.clear();
+      // Generate ZIP
+      const content = await zip.generateAsync({ 
+        type: 'blob',
+        compression: 'DEFLATE',
+        compressionOptions: { level: 9 }
+      });
+
+      // Download
+      const timestamp = new Date().toISOString().slice(0, 10);
+      saveAs(content, `selected-files-${timestamp}.zip`);
+
+      showNotification(`✅ Downloaded ${this.selectedFiles.size + this.selectedFolders.size} items`, 'success');
+
+      // Clear selection
+      this.clearSelection();
+    } catch (error) {
+      console.error('Download selected error:', error);
+      showNotification(`Download failed: ${error.message}`, 'error');
+    }
+  }
+
+  // Download all files
+  async downloadAll() {
+    try {
+      showNotification('Creating ZIP of all files...', 'info');
+
+      const zip = new JSZip();
+      const root = clientFileSystem.root;
+
+      // Add all files
+      if (root.children) {
+        for (const child of root.children) {
+          await this.addToZip(zip, child, '');
+        }
+      }
+
+      // Generate ZIP
+      const content = await zip.generateAsync({ 
+        type: 'blob',
+        compression: 'DEFLATE',
+        compressionOptions: { level: 9 }
+      });
+
+      // Download
+      const timestamp = new Date().toISOString().slice(0, 10);
+      saveAs(content, `workspace-${timestamp}.zip`);
+
+      showNotification('✅ Downloaded all files', 'success');
+    } catch (error) {
+      console.error('Download all error:', error);
+      showNotification(`Download failed: ${error.message}`, 'error');
+    }
+  }
+
+  // Clear selection
+  clearSelection() {
+    this.selectedFiles.clear();
+    this.selectedFolders.clear();
         
-        // Remove visual selection
-        document.querySelectorAll('.tree-item').forEach(item => {
-            item.style.background = '';
-        });
-    }
+    // Remove visual selection
+    document.querySelectorAll('.tree-item').forEach(item => {
+      item.style.background = '';
+    });
+  }
 
-    // Add keyboard shortcuts
-    addKeyboardShortcuts() {
-        document.addEventListener('keydown', (e) => {
-            // Ctrl+Shift+D - Download selected
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'D') {
-                e.preventDefault();
-                this.downloadSelected();
-            }
+  // Add keyboard shortcuts
+  addKeyboardShortcuts() {
+    document.addEventListener('keydown', (e) => {
+      // Ctrl+Shift+D - Download selected
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'D') {
+        e.preventDefault();
+        this.downloadSelected();
+      }
 
-            // Ctrl+Shift+A - Download all
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'A') {
-                e.preventDefault();
-                this.downloadAll();
-            }
+      // Ctrl+Shift+A - Download all
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'A') {
+        e.preventDefault();
+        this.downloadAll();
+      }
 
-            // Escape - Clear selection
-            if (e.key === 'Escape') {
-                this.clearSelection();
-            }
-        });
-    }
+      // Escape - Clear selection
+      if (e.key === 'Escape') {
+        this.clearSelection();
+      }
+    });
+  }
 
-    // Show download info
-    showInfo() {
-        const info = `
+  // Show download info
+  showInfo() {
+    const info = `
             <h3>📥 Download Manager</h3>
             <div style="font-family: monospace; font-size: 12px;">
                 <h4>Features:</h4>
@@ -452,10 +452,10 @@ class DownloadManager {
             </div>
         `;
 
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-        modal.style.display = 'flex';
-        modal.innerHTML = `
+    const modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.style.display = 'flex';
+    modal.innerHTML = `
             <div class="modal-content" style="max-width: 500px;">
                 <div class="modal-header">
                     <h2>📥 Download Manager</h2>
@@ -467,18 +467,18 @@ class DownloadManager {
             </div>
         `;
 
-        document.body.appendChild(modal);
+    document.body.appendChild(modal);
 
-        modal.querySelector('.modal-close').addEventListener('click', () => {
-            modal.remove();
-        });
+    modal.querySelector('.modal-close').addEventListener('click', () => {
+      modal.remove();
+    });
 
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.remove();
-            }
-        });
-    }
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        modal.remove();
+      }
+    });
+  }
 }
 
 export const downloadManager = new DownloadManager();

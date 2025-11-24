@@ -9,10 +9,10 @@ class EditorCore {
 
   openFileInNewTab(file) {
     if (!file || !file.path) {
-      console.error("Invalid file object provided for openFileInNewTab.");
+      console.error('Invalid file object provided for openFileInNewTab.');
       return null;
     }
-    console.log("Opening file in new tab:", file.path);
+    console.log('Opening file in new tab:', file.path);
     const newTab = { id: `tab-${Date.now()}`, file: file, content: file.content, isDirty: false };
     this.openTabs.push(newTab);
     this.activeTab = newTab.id;
@@ -22,10 +22,10 @@ class EditorCore {
   }
 
   closeTab(tabId) {
-    console.log("Closing tab:", tabId);
+    console.log('Closing tab:', tabId);
     const tabIndex = this.openTabs.findIndex(tab => tab.id === tabId);
     if (tabIndex === -1) {
-      console.warn("Attempted to close non-existent tab:", tabId);
+      console.warn('Attempted to close non-existent tab:', tabId);
       return false;
     }
 
@@ -70,7 +70,7 @@ class EditorCore {
   }
 
   autoSave() {
-    console.log("Automatically saving all open files.");
+    console.log('Automatically saving all open files.');
     this.openTabs.forEach(tab => {
       if (tab.isDirty) {
         console.log(`Simulating auto-saving file: ${tab.file.path}`);
@@ -82,11 +82,11 @@ class EditorCore {
   }
 
   recoverFiles() {
-    console.log("Attempting to recover files after abnormal termination.");
+    console.log('Attempting to recover files after abnormal termination.');
     // In a real implementation, this would load data from a persistent recovery store
     const recoveredData = {
-      "path/to/file1.js": "console.log('recovered content 1');",
-      "path/to/file2.py": "print('recovered content 2')",
+      'path/to/file1.js': 'console.log(\'recovered content 1\');',
+      'path/to/file2.py': 'print(\'recovered content 2\')',
     }; // Simulated recovered data
 
     Object.entries(recoveredData).forEach(([path, content]) => {
@@ -100,14 +100,14 @@ class EditorCore {
   }
 
   showDiff(file1, file2) {
-    console.log("Displaying diff between", file1.path, "and", file2.path);
+    console.log('Displaying diff between', file1.path, 'and', file2.path);
     if (!file1 || !file1.content || !file2 || !file2.content) {
-      console.error("Cannot show diff: file content missing.");
+      console.error('Cannot show diff: file content missing.');
       return null;
     }
 
     const diffResult = this._generateSimpleDiff(file1.content, file2.content);
-    console.log("Simulating diff result:", diffResult);
+    console.log('Simulating diff result:', diffResult);
     // In a real implementation, this would render the diff in a UI component
     return diffResult;
   }
@@ -132,9 +132,9 @@ class EditorCore {
   }
 
   showFileExplorer(project) {
-    console.log("Displaying file explorer for project:", project.name);
+    console.log('Displaying file explorer for project:', project.name);
     if (!project || !project.rootPath) {
-      console.error("Invalid project object provided for showFileExplorer.");
+      console.error('Invalid project object provided for showFileExplorer.');
       return null;
     }
 
@@ -162,9 +162,9 @@ class EditorCore {
   }
 
   applySyntaxHighlighting(file) {
-    console.log("Applying syntax highlighting for:", file.languageMode);
+    console.log('Applying syntax highlighting for:', file.languageMode);
     if (!file || !file.content || !file.languageMode) {
-      console.error("Cannot apply syntax highlighting: file content or language mode missing.");
+      console.error('Cannot apply syntax highlighting: file content or language mode missing.');
       return null;
     }
 
@@ -183,15 +183,15 @@ class EditorCore {
       highlightedContent = highlightedContent.replace(regex, `<span class="keyword">${keyword}</span>`);
     });
 
-    console.log("Simulating highlighted content (first 100 chars):", highlightedContent.substring(0, 100) + "...");
+    console.log('Simulating highlighted content (first 100 chars):', highlightedContent.substring(0, 100) + '...');
     // In a real implementation, this would update the editor's rendering
     return highlightedContent;
   }
 
   provideIntelliSense(editorContext) {
-    console.log("Providing IntelliSense for current context.");
+    console.log('Providing IntelliSense for current context.');
     if (!editorContext || !editorContext.languageMode || !editorContext.textBeforeCursor) {
-      console.error("Cannot provide IntelliSense: editor context missing.");
+      console.error('Cannot provide IntelliSense: editor context missing.');
       return { completions: [], info: null, hints: [] };
     }
 
@@ -221,14 +221,14 @@ class EditorCore {
       hints = ['message', 'optionalParams'];
     }
 
-    console.log("Simulating IntelliSense: completions:", completions, "info:", info, "hints:", hints);
+    console.log('Simulating IntelliSense: completions:', completions, 'info:', info, 'hints:', hints);
     return { completions, info, hints };
   }
 
   goToDefinition(symbol) {
-    console.log("Navigating to definition of:", symbol);
+    console.log('Navigating to definition of:', symbol);
     if (!symbol || !symbol.name || !symbol.contextFile) {
-      console.error("Cannot go to definition: symbol name or context file missing.");
+      console.error('Cannot go to definition: symbol name or context file missing.');
       return null;
     }
 
@@ -252,43 +252,43 @@ class EditorCore {
   }
 
   formatCode(file) {
-    console.log("Formatting code for file:", file.path);
+    console.log('Formatting code for file:', file.path);
     // Logic to apply code formatting and alignment rules
-    return "Formatted code content";
+    return 'Formatted code content';
   }
 
   enableMultiCursor() {
-    console.log("Multi-cursor enabled.");
+    console.log('Multi-cursor enabled.');
     // Logic for multi-cursor editing
   }
 
   selectBlock(startLine, endLine) {
-    console.log("Selecting code block from line", startLine, "to", endLine);
+    console.log('Selecting code block from line', startLine, 'to', endLine);
     // Logic for block selection
   }
 
   toggleCodeFolding(regionId) {
-    console.log("Toggling code folding for region:", regionId);
+    console.log('Toggling code folding for region:', regionId);
     // Logic for code folding
   }
 
   autoCloseBrackets(char) {
-    console.log("Auto-closing bracket for:", char);
+    console.log('Auto-closing bracket for:', char);
     // Logic to automatically close brackets
   }
 
   toggleComment(selection) {
-    console.log("Toggling comment for selection.");
+    console.log('Toggling comment for selection.');
     // Logic to toggle comments
   }
 
   autoIndent(line) {
-    console.log("Auto-indenting line.");
+    console.log('Auto-indenting line.');
     // Logic for auto-indentation
   }
 
   renderMinimap(file) {
-    console.log("Rendering minimap for file:", file.path);
+    console.log('Rendering minimap for file:', file.path);
     // Logic to generate and display a minimap of the code
   }
 

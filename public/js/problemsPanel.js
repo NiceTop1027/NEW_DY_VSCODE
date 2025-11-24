@@ -2,42 +2,42 @@
 // Problems panel for errors and warnings
 
 class ProblemsPanel {
-    constructor() {
-        this.problems = new Map(); // filePath -> problems[]
-        this.panel = null;
-        this.initialized = false;
-    }
+  constructor() {
+    this.problems = new Map(); // filePath -> problems[]
+    this.panel = null;
+    this.initialized = false;
+  }
 
-    // Initialize problems panel
-    init() {
-        if (this.initialized) return;
+  // Initialize problems panel
+  init() {
+    if (this.initialized) return;
         
-        const panel = document.getElementById('panel');
-        if (!panel) return;
+    const panel = document.getElementById('panel');
+    if (!panel) return;
         
-        // Add problems tab
-        const tabsContainer = panel.querySelector('.panel-tabs');
-        if (!tabsContainer) return;
+    // Add problems tab
+    const tabsContainer = panel.querySelector('.panel-tabs');
+    if (!tabsContainer) return;
         
-        const problemsTab = document.createElement('div');
-        problemsTab.className = 'panel-tab';
-        problemsTab.dataset.panel = 'problems';
-        problemsTab.innerHTML = `
+    const problemsTab = document.createElement('div');
+    problemsTab.className = 'panel-tab';
+    problemsTab.dataset.panel = 'problems';
+    problemsTab.innerHTML = `
             <span class="codicon codicon-warning"></span>
             <span>문제</span>
             <span class="problems-count" id="problems-count">0</span>
         `;
-        tabsContainer.appendChild(problemsTab);
+    tabsContainer.appendChild(problemsTab);
         
-        // Add problems content
-        const contentContainer = panel.querySelector('.panel-content');
-        if (!contentContainer) return;
+    // Add problems content
+    const contentContainer = panel.querySelector('.panel-content');
+    if (!contentContainer) return;
         
-        const problemsContent = document.createElement('div');
-        problemsContent.id = 'problems-content';
-        problemsContent.className = 'panel-section';
-        problemsContent.style.display = 'none';
-        problemsContent.innerHTML = `
+    const problemsContent = document.createElement('div');
+    problemsContent.id = 'problems-content';
+    problemsContent.className = 'panel-section';
+    problemsContent.style.display = 'none';
+    problemsContent.innerHTML = `
             <div class="problems-toolbar">
                 <div class="problems-filters">
                     <button class="filter-btn active" data-filter="all">
@@ -70,122 +70,122 @@ class ProblemsPanel {
                 </div>
             </div>
         `;
-        contentContainer.appendChild(problemsContent);
+    contentContainer.appendChild(problemsContent);
         
-        // Event listeners
-        problemsTab.addEventListener('click', () => this.show());
+    // Event listeners
+    problemsTab.addEventListener('click', () => this.show());
         
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-                e.currentTarget.classList.add('active');
-                this.filterProblems(e.currentTarget.dataset.filter);
-            });
-        });
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        this.filterProblems(e.currentTarget.dataset.filter);
+      });
+    });
         
-        document.getElementById('clear-problems-btn')?.addEventListener('click', () => {
-            this.clearAll();
-        });
+    document.getElementById('clear-problems-btn')?.addEventListener('click', () => {
+      this.clearAll();
+    });
         
-        this.panel = problemsContent;
-        this.initialized = true;
+    this.panel = problemsContent;
+    this.initialized = true;
         
-        console.log('✅ Problems panel initialized');
-    }
+    console.log('✅ Problems panel initialized');
+  }
 
-    // Add problem
-    addProblem(filePath, problem) {
-        if (!this.problems.has(filePath)) {
-            this.problems.set(filePath, []);
-        }
-        
-        const problems = this.problems.get(filePath);
-        problems.push({
-            ...problem,
-            id: Date.now() + Math.random(),
-            timestamp: Date.now()
-        });
-        
-        this.render();
+  // Add problem
+  addProblem(filePath, problem) {
+    if (!this.problems.has(filePath)) {
+      this.problems.set(filePath, []);
     }
-
-    // Add multiple problems
-    addProblems(filePath, problems) {
-        this.problems.set(filePath, problems.map(p => ({
-            ...p,
-            id: Date.now() + Math.random(),
-            timestamp: Date.now()
-        })));
         
-        this.render();
-    }
-
-    // Clear problems for file
-    clearFile(filePath) {
-        this.problems.delete(filePath);
-        this.render();
-    }
-
-    // Clear all problems
-    clearAll() {
-        this.problems.clear();
-        this.render();
-    }
-
-    // Get all problems
-    getAllProblems() {
-        const all = [];
-        this.problems.forEach((problems, filePath) => {
-            problems.forEach(problem => {
-                all.push({ ...problem, filePath });
-            });
-        });
-        return all.sort((a, b) => {
-            // Sort by severity: error > warning > info
-            const severityOrder = { error: 0, warning: 1, info: 2 };
-            return severityOrder[a.severity] - severityOrder[b.severity];
-        });
-    }
-
-    // Get problem counts
-    getCounts() {
-        const all = this.getAllProblems();
-        return {
-            all: all.length,
-            error: all.filter(p => p.severity === 'error').length,
-            warning: all.filter(p => p.severity === 'warning').length,
-            info: all.filter(p => p.severity === 'info').length
-        };
-    }
-
-    // Render problems list
-    render() {
-        if (!this.initialized) return;
+    const problems = this.problems.get(filePath);
+    problems.push({
+      ...problem,
+      id: Date.now() + Math.random(),
+      timestamp: Date.now()
+    });
         
-        const list = document.getElementById('problems-list');
-        if (!list) return;
+    this.render();
+  }
+
+  // Add multiple problems
+  addProblems(filePath, problems) {
+    this.problems.set(filePath, problems.map(p => ({
+      ...p,
+      id: Date.now() + Math.random(),
+      timestamp: Date.now()
+    })));
         
-        const problems = this.getAllProblems();
-        const counts = this.getCounts();
+    this.render();
+  }
+
+  // Clear problems for file
+  clearFile(filePath) {
+    this.problems.delete(filePath);
+    this.render();
+  }
+
+  // Clear all problems
+  clearAll() {
+    this.problems.clear();
+    this.render();
+  }
+
+  // Get all problems
+  getAllProblems() {
+    const all = [];
+    this.problems.forEach((problems, filePath) => {
+      problems.forEach(problem => {
+        all.push({ ...problem, filePath });
+      });
+    });
+    return all.sort((a, b) => {
+      // Sort by severity: error > warning > info
+      const severityOrder = { error: 0, warning: 1, info: 2 };
+      return severityOrder[a.severity] - severityOrder[b.severity];
+    });
+  }
+
+  // Get problem counts
+  getCounts() {
+    const all = this.getAllProblems();
+    return {
+      all: all.length,
+      error: all.filter(p => p.severity === 'error').length,
+      warning: all.filter(p => p.severity === 'warning').length,
+      info: all.filter(p => p.severity === 'info').length
+    };
+  }
+
+  // Render problems list
+  render() {
+    if (!this.initialized) return;
         
-        // Update counts
-        document.getElementById('problems-count').textContent = counts.all;
-        document.getElementById('count-all').textContent = counts.all;
-        document.getElementById('count-error').textContent = counts.error;
-        document.getElementById('count-warning').textContent = counts.warning;
-        document.getElementById('count-info').textContent = counts.info;
+    const list = document.getElementById('problems-list');
+    if (!list) return;
         
-        if (problems.length === 0) {
-            list.innerHTML = `
+    const problems = this.getAllProblems();
+    const counts = this.getCounts();
+        
+    // Update counts
+    document.getElementById('problems-count').textContent = counts.all;
+    document.getElementById('count-all').textContent = counts.all;
+    document.getElementById('count-error').textContent = counts.error;
+    document.getElementById('count-warning').textContent = counts.warning;
+    document.getElementById('count-info').textContent = counts.info;
+        
+    if (problems.length === 0) {
+      list.innerHTML = `
                 <div class="empty-state">
                     <span class="codicon codicon-check"></span>
                     <p>문제가 감지되지 않았습니다</p>
                 </div>
             `;
-            return;
-        }
+      return;
+    }
         
-        list.innerHTML = problems.map(problem => `
+    list.innerHTML = problems.map(problem => `
             <div class="problem-item ${problem.severity}" data-file="${problem.filePath}" data-line="${problem.line}">
                 <span class="problem-icon codicon codicon-${this.getIcon(problem.severity)}"></span>
                 <div class="problem-content">
@@ -199,88 +199,88 @@ class ProblemsPanel {
             </div>
         `).join('');
         
-        // Add click handlers
-        list.querySelectorAll('.problem-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const filePath = item.dataset.file;
-                const line = parseInt(item.dataset.line);
-                this.goToProblem(filePath, line);
-            });
-        });
-    }
+    // Add click handlers
+    list.querySelectorAll('.problem-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const filePath = item.dataset.file;
+        const line = parseInt(item.dataset.line);
+        this.goToProblem(filePath, line);
+      });
+    });
+  }
 
-    // Filter problems
-    filterProblems(filter) {
-        const items = document.querySelectorAll('.problem-item');
-        items.forEach(item => {
-            if (filter === 'all') {
-                item.style.display = 'flex';
-            } else {
-                item.style.display = item.classList.contains(filter) ? 'flex' : 'none';
-            }
-        });
-    }
+  // Filter problems
+  filterProblems(filter) {
+    const items = document.querySelectorAll('.problem-item');
+    items.forEach(item => {
+      if (filter === 'all') {
+        item.style.display = 'flex';
+      } else {
+        item.style.display = item.classList.contains(filter) ? 'flex' : 'none';
+      }
+    });
+  }
 
-    // Go to problem location
-    goToProblem(filePath, line) {
-        // TODO: Open file and go to line
-        console.log(`Go to ${filePath}:${line}`);
-    }
+  // Go to problem location
+  goToProblem(filePath, line) {
+    // TODO: Open file and go to line
+    console.log(`Go to ${filePath}:${line}`);
+  }
 
-    // Get icon for severity
-    getIcon(severity) {
-        const icons = {
-            error: 'error',
-            warning: 'warning',
-            info: 'info'
-        };
-        return icons[severity] || 'info';
-    }
+  // Get icon for severity
+  getIcon(severity) {
+    const icons = {
+      error: 'error',
+      warning: 'warning',
+      info: 'info'
+    };
+    return icons[severity] || 'info';
+  }
 
-    // Get file name from path
-    getFileName(path) {
-        return path.split('/').pop();
-    }
+  // Get file name from path
+  getFileName(path) {
+    return path.split('/').pop();
+  }
 
-    // Escape HTML
-    escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
+  // Escape HTML
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
 
+  // Show problems panel
+  show() {
+    if (!this.initialized) this.init();
+        
+    // Hide other panels
+    document.querySelectorAll('.panel-section').forEach(section => {
+      section.style.display = 'none';
+    });
+        
     // Show problems panel
-    show() {
-        if (!this.initialized) this.init();
-        
-        // Hide other panels
-        document.querySelectorAll('.panel-section').forEach(section => {
-            section.style.display = 'none';
-        });
-        
-        // Show problems panel
-        if (this.panel) {
-            this.panel.style.display = 'block';
-        }
-        
-        // Update tab states
-        document.querySelectorAll('.panel-tab').forEach(tab => {
-            tab.classList.remove('active');
-        });
-        document.querySelector('[data-panel="problems"]')?.classList.add('active');
+    if (this.panel) {
+      this.panel.style.display = 'block';
     }
+        
+    // Update tab states
+    document.querySelectorAll('.panel-tab').forEach(tab => {
+      tab.classList.remove('active');
+    });
+    document.querySelector('[data-panel="problems"]')?.classList.add('active');
+  }
 
-    // Hide problems panel
-    hide() {
-        if (this.panel) {
-            this.panel.style.display = 'none';
-        }
+  // Hide problems panel
+  hide() {
+    if (this.panel) {
+      this.panel.style.display = 'none';
     }
+  }
 
-    // Add CSS styles
-    injectStyles() {
-        const style = document.createElement('style');
-        style.textContent = `
+  // Add CSS styles
+  injectStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
             .problems-count {
                 background: var(--primary-color);
                 color: white;
@@ -387,8 +387,8 @@ class ProblemsPanel {
                 color: #4ec9b0;
             }
         `;
-        document.head.appendChild(style);
-    }
+    document.head.appendChild(style);
+  }
 }
 
 export const problemsPanel = new ProblemsPanel();

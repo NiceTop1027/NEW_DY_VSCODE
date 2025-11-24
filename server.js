@@ -19,38 +19,38 @@ app.set('trust proxy', 1);
 
 // Security: Helmet middleware
 app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "https://cdn.jsdelivr.net", "https://api-inference.huggingface.co"],
-            scriptSrcAttr: ["'unsafe-inline'"],
-            styleSrc: ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"],
-            fontSrc: ["'self'", "data:", "https://cdn.jsdelivr.net"],
-            imgSrc: ["'self'", "data:", "https:", "blob:"],
-            connectSrc: ["'self'", "ws:", "wss:", "https:"],
-            workerSrc: ["'self'", "blob:"],
-            frameSrc: ["'self'", "blob:"],
-            childSrc: ["'self'", "blob:"]
-        }
-    },
-    hsts: {
-        maxAge: 31536000,
-        includeSubDomains: true,
-        preload: true
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ['\'self\''],
+      scriptSrc: ['\'self\'', '\'unsafe-inline\'', '\'unsafe-eval\'', 'https://cdn.jsdelivr.net', 'https://api-inference.huggingface.co'],
+      scriptSrcAttr: ['\'unsafe-inline\''],
+      styleSrc: ['\'self\'', '\'unsafe-inline\'', 'https://cdn.jsdelivr.net'],
+      fontSrc: ['\'self\'', 'data:', 'https://cdn.jsdelivr.net'],
+      imgSrc: ['\'self\'', 'data:', 'https:', 'blob:'],
+      connectSrc: ['\'self\'', 'ws:', 'wss:', 'https:'],
+      workerSrc: ['\'self\'', 'blob:'],
+      frameSrc: ['\'self\'', 'blob:'],
+      childSrc: ['\'self\'', 'blob:']
     }
+  },
+  hsts: {
+    maxAge: 31536000,
+    includeSubDomains: true,
+    preload: true
+  }
 }));
 
 // Security: Rate limiting
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
-    message: '너무 많은 요청을 보냈습니다. 잠시 후 다시 시도하세요.'
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: '너무 많은 요청을 보냈습니다. 잠시 후 다시 시도하세요.'
 });
 
 const strictLimiter = rateLimit({
-    windowMs: 60 * 1000, // 1 minute
-    max: 10, // limit each IP to 10 requests per minute
-    message: '너무 많은 요청을 보냈습니다. 잠시 후 다시 시도하세요.'
+  windowMs: 60 * 1000, // 1 minute
+  max: 10, // limit each IP to 10 requests per minute
+  message: '너무 많은 요청을 보냈습니다. 잠시 후 다시 시도하세요.'
 });
 
 app.use('/api/', limiter);
@@ -58,37 +58,37 @@ app.use('/api/execute', strictLimiter);
 
 // CORS 설정 (Railway serves both frontend and backend)
 app.use((req, res, next) => {
-    const allowedOrigins = [
-        'http://localhost:3000',
-        'https://vscode.dyhs.kr',
-        'https://web-production-87bbd.up.railway.app'
-    ];
-    const origin = req.headers.origin;
-    if (allowedOrigins.includes(origin)) {
-        res.header('Access-Control-Allow-Origin', origin);
-    }
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
-    }
-    next();
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'https://vscode.dyhs.kr',
+    'https://web-production-87bbd.up.railway.app'
+  ];
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  }
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.header('Access-Control-Allow-Credentials', 'true');
+
+  if (req.method === 'OPTIONS') {
+    return res.sendStatus(200);
+  }
+  next();
 });
 
 expressWs(app); // app에 WebSocket 기능 추가
 
 // Define the project root directory (for security, restrict to a specific folder)
 // Use Railway Volume if available, otherwise /tmp
-const PROJECT_ROOT = process.env.RAILWAY_VOLUME_MOUNT_PATH 
-    ? path.join(process.env.RAILWAY_VOLUME_MOUNT_PATH, 'workspace')
-    : (process.env.NODE_ENV === 'production' ? '/tmp/workspace' : path.resolve(__dirname, './'));
+const PROJECT_ROOT = process.env.RAILWAY_VOLUME_MOUNT_PATH
+  ? path.join(process.env.RAILWAY_VOLUME_MOUNT_PATH, 'workspace')
+  : (process.env.NODE_ENV === 'production' ? '/tmp/workspace' : path.resolve(__dirname, './'));
 
 // Ensure workspace directory exists
 if (!fsSync.existsSync(PROJECT_ROOT)) {
-    fsSync.mkdirSync(PROJECT_ROOT, { recursive: true });
-    console.log(`✅ Workspace directory created: ${PROJECT_ROOT}`);
+  fsSync.mkdirSync(PROJECT_ROOT, { recursive: true });
+  console.log(`✅ Workspace directory created: ${PROJECT_ROOT}`);
 }
 
 // Multer setup for file uploads
@@ -96,281 +96,281 @@ const upload = multer({ dest: path.join(PROJECT_ROOT, 'uploads/') });
 
 // Serve static files from the 'public' directory with proper MIME types
 app.use(express.static('public', {
-    setHeaders: (res, filePath) => {
-        if (filePath.endsWith('.css')) {
-            res.setHeader('Content-Type', 'text/css');
-        } else if (filePath.endsWith('.js')) {
-            res.setHeader('Content-Type', 'application/javascript');
-        } else if (filePath.endsWith('.json')) {
-            res.setHeader('Content-Type', 'application/json');
-        } else if (filePath.endsWith('.wasm')) {
-            res.setHeader('Content-Type', 'application/wasm');
-        }
+  setHeaders: (res, filePath) => {
+    if (filePath.endsWith('.css')) {
+      res.setHeader('Content-Type', 'text/css');
+    } else if (filePath.endsWith('.js')) {
+      res.setHeader('Content-Type', 'application/javascript');
+    } else if (filePath.endsWith('.json')) {
+      res.setHeader('Content-Type', 'application/json');
+    } else if (filePath.endsWith('.wasm')) {
+      res.setHeader('Content-Type', 'application/wasm');
     }
+  }
 }));
 app.use(express.json()); // JSON 요청 본문을 파싱하기 위한 미들웨어 추가
 
 // Helper function to validate file paths
 function isValidPath(filePath) {
-    const absolutePath = path.resolve(PROJECT_ROOT, filePath);
-    return absolutePath.startsWith(PROJECT_ROOT);
+  const absolutePath = path.resolve(PROJECT_ROOT, filePath);
+  return absolutePath.startsWith(PROJECT_ROOT);
 }
 
 // Helper function to get directory structure
 async function getDirectoryStructure(dirPath) {
-    const name = path.basename(dirPath);
-    const stats = await fs.stat(dirPath);
+  const name = path.basename(dirPath);
+  const stats = await fs.stat(dirPath);
 
-    if (stats.isFile()) {
-        return { name, type: 'file', path: path.relative(PROJECT_ROOT, dirPath) };
-    } else if (stats.isDirectory()) {
-        const childrenNames = await fs.readdir(dirPath);
-        const children = await Promise.all(
-            childrenNames.map(async childName => {
-                const childPath = path.join(dirPath, childName);
-                // Ignore node_modules and .git for cleaner explorer
-                if (childName === 'node_modules' || childName === '.git' || childName === 'uploads') { // 'uploads' 폴더도 무시
-                    return null;
-                }
-                try {
-                    const childStats = await fs.stat(childPath);
-                    return getDirectoryStructure(childPath);
-                } catch (error) {
-                    // If stat fails (e.g., permission denied), ignore this child
-                    console.warn(`Could not stat ${childPath}: ${error.message}`);
-                    return null;
-                }
-            })
-        );
-        return { name, type: 'directory', path: path.relative(PROJECT_ROOT, dirPath), children: children.filter(Boolean) };
-    }
-    return null;
+  if (stats.isFile()) {
+    return { name, type: 'file', path: path.relative(PROJECT_ROOT, dirPath) };
+  } else if (stats.isDirectory()) {
+    const childrenNames = await fs.readdir(dirPath);
+    const children = await Promise.all(
+      childrenNames.map(async childName => {
+        const childPath = path.join(dirPath, childName);
+        // Ignore node_modules and .git for cleaner explorer
+        if (childName === 'node_modules' || childName === '.git' || childName === 'uploads') { // 'uploads' 폴더도 무시
+          return null;
+        }
+        try {
+          const childStats = await fs.stat(childPath);
+          return getDirectoryStructure(childPath);
+        } catch (error) {
+          // If stat fails (e.g., permission denied), ignore this child
+          console.warn(`Could not stat ${childPath}: ${error.message}`);
+          return null;
+        }
+      })
+    );
+    return { name, type: 'directory', path: path.relative(PROJECT_ROOT, dirPath), children: children.filter(Boolean) };
+  }
+  return null;
 }
 
 // Security: Path traversal prevention
 function isPathSafe(requestedPath) {
-    const normalizedPath = path.normalize(requestedPath);
-    const resolvedPath = path.resolve(PROJECT_ROOT, normalizedPath);
-    return resolvedPath.startsWith(PROJECT_ROOT);
+  const normalizedPath = path.normalize(requestedPath);
+  const resolvedPath = path.resolve(PROJECT_ROOT, normalizedPath);
+  return resolvedPath.startsWith(PROJECT_ROOT);
 }
 
 // Security: Sanitize filename
 function sanitizeFilename(filename) {
-    return filename.replace(/[^a-zA-Z0-9._-]/g, '_');
+  return filename.replace(/[^a-zA-Z0-9._-]/g, '_');
 }
 
 // A simple API endpoint to get the file explorer structure
 app.get('/api/files', async (req, res) => {
-    try {
-        const structure = await getDirectoryStructure(PROJECT_ROOT);
-        res.json(structure);
-    } catch (error) {
-        console.error('Error reading directory structure:', error);
-        if (error.code === 'ENOENT') { // No such file or directory
-            res.status(404).json({ error: 'Project directory not found', details: error.message });
-        } else if (error.code === 'EACCES') { // Permission denied
-            res.status(403).json({ error: 'Permission denied to access project directory', details: error.message });
-        } else {
-            res.status(500).json({ error: 'Failed to read directory structure', details: error.message });
-        }
+  try {
+    const structure = await getDirectoryStructure(PROJECT_ROOT);
+    res.json(structure);
+  } catch (error) {
+    console.error('Error reading directory structure:', error);
+    if (error.code === 'ENOENT') { // No such file or directory
+      res.status(404).json({ error: 'Project directory not found', details: error.message });
+    } else if (error.code === 'EACCES') { // Permission denied
+      res.status(403).json({ error: 'Permission denied to access project directory', details: error.message });
+    } else {
+      res.status(500).json({ error: 'Failed to read directory structure', details: error.message });
     }
+  }
 });
 
 app.get('/api/file-content', async (req, res) => {
-    const relativeFilePath = req.query.path;
-    if (!relativeFilePath) {
-        return res.status(400).send({ error: 'File path is required' });
-    }
-    if (!isValidPath(relativeFilePath)) { // 경로 유효성 검사
-        return res.status(403).json({ error: 'Access denied: Invalid file path' });
-    }
+  const relativeFilePath = req.query.path;
+  if (!relativeFilePath) {
+    return res.status(400).send({ error: 'File path is required' });
+  }
+  if (!isValidPath(relativeFilePath)) { // 경로 유효성 검사
+    return res.status(403).json({ error: 'Access denied: Invalid file path' });
+  }
 
-    const absoluteFilePath = path.join(PROJECT_ROOT, relativeFilePath);
+  const absoluteFilePath = path.join(PROJECT_ROOT, relativeFilePath);
 
-    try {
-        const content = await fs.readFile(absoluteFilePath, 'utf8');
-        res.json({ path: relativeFilePath, content: content });
-    } catch (error) {
-        console.error('Error reading file content:', absoluteFilePath, error);
-        if (error.code === 'ENOENT') {
-            res.status(404).json({ error: 'File not found', details: error.message });
-        } else if (error.code === 'EACCES') {
-            res.status(403).json({ error: 'Permission denied to read file', details: error.message });
-        } else {
-            res.status(500).json({ error: 'Failed to read file content', details: error.message });
-        }
+  try {
+    const content = await fs.readFile(absoluteFilePath, 'utf8');
+    res.json({ path: relativeFilePath, content: content });
+  } catch (error) {
+    console.error('Error reading file content:', absoluteFilePath, error);
+    if (error.code === 'ENOENT') {
+      res.status(404).json({ error: 'File not found', details: error.message });
+    } else if (error.code === 'EACCES') {
+      res.status(403).json({ error: 'Permission denied to read file', details: error.message });
+    } else {
+      res.status(500).json({ error: 'Failed to read file content', details: error.message });
     }
+  }
 });
 
 app.post('/api/save-file', async (req, res) => {
-    const { path: relativeFilePath, content } = req.body;
-    if (!relativeFilePath || content === undefined) {
-        return res.status(400).send({ error: 'File path and content are required' });
-    }
-    if (!isValidPath(relativeFilePath)) { // 경로 유효성 검사
-        return res.status(403).json({ error: 'Access denied: Invalid file path' });
+  const { path: relativeFilePath, content } = req.body;
+  if (!relativeFilePath || content === undefined) {
+    return res.status(400).send({ error: 'File path and content are required' });
+  }
+  if (!isValidPath(relativeFilePath)) { // 경로 유효성 검사
+    return res.status(403).json({ error: 'Access denied: Invalid file path' });
+  }
+
+  const absoluteFilePath = path.join(PROJECT_ROOT, relativeFilePath);
+
+  try {
+    // 상위 디렉토리가 없으면 생성
+    const dir = path.dirname(absoluteFilePath);
+    if (!fsSync.existsSync(dir)) {
+      await fs.mkdir(dir, { recursive: true });
     }
 
-    const absoluteFilePath = path.join(PROJECT_ROOT, relativeFilePath);
-
-    try {
-        // 상위 디렉토리가 없으면 생성
-        const dir = path.dirname(absoluteFilePath);
-        if (!fsSync.existsSync(dir)) {
-            await fs.mkdir(dir, { recursive: true });
-        }
-        
-        await fs.writeFile(absoluteFilePath, content, 'utf8');
-        res.json({ success: true, message: 'File saved successfully' });
-    } catch (error) {
-        console.error('Error saving file:', absoluteFilePath, error);
-        if (error.code === 'ENOENT') {
-            res.status(404).json({ error: 'Target directory or file not found', details: error.message });
-        } else if (error.code === 'EACCES') {
-            res.status(403).json({ error: 'Permission denied to write file', details: error.message });
-        } else {
-            res.status(500).json({ error: 'Failed to save file', details: error.message });
-        }
+    await fs.writeFile(absoluteFilePath, content, 'utf8');
+    res.json({ success: true, message: 'File saved successfully' });
+  } catch (error) {
+    console.error('Error saving file:', absoluteFilePath, error);
+    if (error.code === 'ENOENT') {
+      res.status(404).json({ error: 'Target directory or file not found', details: error.message });
+    } else if (error.code === 'EACCES') {
+      res.status(403).json({ error: 'Permission denied to write file', details: error.message });
+    } else {
+      res.status(500).json({ error: 'Failed to save file', details: error.message });
     }
+  }
 });
 
 // Delete file or directory
 app.get('/api/delete', (req, res) => {
-    res.status(405).json({ error: 'Method Not Allowed. Use DELETE method to delete files.' });
+  res.status(405).json({ error: 'Method Not Allowed. Use DELETE method to delete files.' });
 });
 
 app.delete('/api/delete', async (req, res) => {
-    console.log('DELETE /api/delete - Body:', req.body);
-    const { path: relativeFilePath } = req.body;
-    if (!relativeFilePath) {
-        console.error('No path provided in request body');
-        return res.status(400).json({ error: 'File path is required' });
-    }
-    if (!isValidPath(relativeFilePath)) {
-        return res.status(403).json({ error: 'Access denied: Invalid file path' });
-    }
+  console.log('DELETE /api/delete - Body:', req.body);
+  const { path: relativeFilePath } = req.body;
+  if (!relativeFilePath) {
+    console.error('No path provided in request body');
+    return res.status(400).json({ error: 'File path is required' });
+  }
+  if (!isValidPath(relativeFilePath)) {
+    return res.status(403).json({ error: 'Access denied: Invalid file path' });
+  }
 
-    const absoluteFilePath = path.join(PROJECT_ROOT, relativeFilePath);
-    console.log('Attempting to delete:', absoluteFilePath);
+  const absoluteFilePath = path.join(PROJECT_ROOT, relativeFilePath);
+  console.log('Attempting to delete:', absoluteFilePath);
 
-    try {
-        const stats = await fs.stat(absoluteFilePath);
-        if (stats.isDirectory()) {
-            await fs.remove(absoluteFilePath); // Remove directory and all contents
-            console.log('Directory deleted successfully');
-        } else {
-            await fs.unlink(absoluteFilePath); // Remove file
-            console.log('File deleted successfully');
-        }
-        res.json({ success: true, message: 'Deleted successfully' });
-    } catch (error) {
-        console.error('Error deleting:', absoluteFilePath, error);
-        if (error.code === 'ENOENT') {
-            res.status(404).json({ error: 'File or directory not found', details: error.message });
-        } else if (error.code === 'EACCES') {
-            res.status(403).json({ error: 'Permission denied', details: error.message });
-        } else {
-            res.status(500).json({ error: 'Failed to delete', details: error.message });
-        }
+  try {
+    const stats = await fs.stat(absoluteFilePath);
+    if (stats.isDirectory()) {
+      await fs.remove(absoluteFilePath); // Remove directory and all contents
+      console.log('Directory deleted successfully');
+    } else {
+      await fs.unlink(absoluteFilePath); // Remove file
+      console.log('File deleted successfully');
     }
+    res.json({ success: true, message: 'Deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting:', absoluteFilePath, error);
+    if (error.code === 'ENOENT') {
+      res.status(404).json({ error: 'File or directory not found', details: error.message });
+    } else if (error.code === 'EACCES') {
+      res.status(403).json({ error: 'Permission denied', details: error.message });
+    } else {
+      res.status(500).json({ error: 'Failed to delete', details: error.message });
+    }
+  }
 });
 
 // Rename file or directory
 app.post('/api/rename', async (req, res) => {
-    const { oldPath, newPath } = req.body;
-    if (!oldPath || !newPath) {
-        return res.status(400).json({ error: 'Both old and new paths are required' });
-    }
-    if (!isValidPath(oldPath) || !isValidPath(newPath)) {
-        return res.status(403).json({ error: 'Access denied: Invalid file path' });
-    }
+  const { oldPath, newPath } = req.body;
+  if (!oldPath || !newPath) {
+    return res.status(400).json({ error: 'Both old and new paths are required' });
+  }
+  if (!isValidPath(oldPath) || !isValidPath(newPath)) {
+    return res.status(403).json({ error: 'Access denied: Invalid file path' });
+  }
 
-    const absoluteOldPath = path.join(PROJECT_ROOT, oldPath);
-    const absoluteNewPath = path.join(PROJECT_ROOT, newPath);
+  const absoluteOldPath = path.join(PROJECT_ROOT, oldPath);
+  const absoluteNewPath = path.join(PROJECT_ROOT, newPath);
 
-    try {
-        await fs.rename(absoluteOldPath, absoluteNewPath);
-        res.json({ success: true, message: 'Renamed successfully' });
-    } catch (error) {
-        console.error('Error renaming:', absoluteOldPath, error);
-        if (error.code === 'ENOENT') {
-            res.status(404).json({ error: 'File or directory not found', details: error.message });
-        } else if (error.code === 'EACCES') {
-            res.status(403).json({ error: 'Permission denied', details: error.message });
-        } else {
-            res.status(500).json({ error: 'Failed to rename', details: error.message });
-        }
+  try {
+    await fs.rename(absoluteOldPath, absoluteNewPath);
+    res.json({ success: true, message: 'Renamed successfully' });
+  } catch (error) {
+    console.error('Error renaming:', absoluteOldPath, error);
+    if (error.code === 'ENOENT') {
+      res.status(404).json({ error: 'File or directory not found', details: error.message });
+    } else if (error.code === 'EACCES') {
+      res.status(403).json({ error: 'Permission denied', details: error.message });
+    } else {
+      res.status(500).json({ error: 'Failed to rename', details: error.message });
     }
+  }
 });
 
 // Create new file
 app.post('/api/create-file', async (req, res) => {
-    const { path: relativeFilePath } = req.body;
-    if (!relativeFilePath) {
-        return res.status(400).json({ error: 'File path is required' });
-    }
-    if (!isValidPath(relativeFilePath)) {
-        return res.status(403).json({ error: 'Access denied: Invalid file path' });
-    }
+  const { path: relativeFilePath } = req.body;
+  if (!relativeFilePath) {
+    return res.status(400).json({ error: 'File path is required' });
+  }
+  if (!isValidPath(relativeFilePath)) {
+    return res.status(403).json({ error: 'Access denied: Invalid file path' });
+  }
 
-    const absoluteFilePath = path.join(PROJECT_ROOT, relativeFilePath);
+  const absoluteFilePath = path.join(PROJECT_ROOT, relativeFilePath);
 
-    try {
-        await fs.ensureFile(absoluteFilePath); // Create file and parent directories if needed
-        res.json({ success: true, message: 'File created successfully' });
-    } catch (error) {
-        console.error('Error creating file:', absoluteFilePath, error);
-        res.status(500).json({ error: 'Failed to create file', details: error.message });
-    }
+  try {
+    await fs.ensureFile(absoluteFilePath); // Create file and parent directories if needed
+    res.json({ success: true, message: 'File created successfully' });
+  } catch (error) {
+    console.error('Error creating file:', absoluteFilePath, error);
+    res.status(500).json({ error: 'Failed to create file', details: error.message });
+  }
 });
 
 // Create new directory
 app.post('/api/create-directory', async (req, res) => {
-    const { path: relativeDirPath } = req.body;
-    if (!relativeDirPath) {
-        return res.status(400).json({ error: 'Directory path is required' });
-    }
-    if (!isValidPath(relativeDirPath)) {
-        return res.status(403).json({ error: 'Access denied: Invalid directory path' });
-    }
+  const { path: relativeDirPath } = req.body;
+  if (!relativeDirPath) {
+    return res.status(400).json({ error: 'Directory path is required' });
+  }
+  if (!isValidPath(relativeDirPath)) {
+    return res.status(403).json({ error: 'Access denied: Invalid directory path' });
+  }
 
-    const absoluteDirPath = path.join(PROJECT_ROOT, relativeDirPath);
+  const absoluteDirPath = path.join(PROJECT_ROOT, relativeDirPath);
 
-    try {
-        await fs.ensureDir(absoluteDirPath);
-        res.json({ success: true, message: 'Directory created successfully' });
-    } catch (error) {
-        console.error('Error creating directory:', absoluteDirPath, error);
-        res.status(500).json({ error: 'Failed to create directory', details: error.message });
-    }
+  try {
+    await fs.ensureDir(absoluteDirPath);
+    res.json({ success: true, message: 'Directory created successfully' });
+  } catch (error) {
+    console.error('Error creating directory:', absoluteDirPath, error);
+    res.status(500).json({ error: 'Failed to create directory', details: error.message });
+  }
 });
 
 app.post('/api/upload-file', upload.single('file'), async (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ error: 'No file uploaded' });
-    }
+  if (!req.file) {
+    return res.status(400).json({ error: 'No file uploaded' });
+  }
 
-    const tempPath = req.file.path;
-    const targetPath = path.join(PROJECT_ROOT, req.file.originalname);
+  const tempPath = req.file.path;
+  const targetPath = path.join(PROJECT_ROOT, req.file.originalname);
 
-    if (!isValidPath(req.file.originalname)) { // 업로드 파일 경로 유효성 검사
-        await fs.remove(tempPath); // 임시 파일 삭제
-        return res.status(403).json({ error: 'Access denied: Invalid upload path' });
-    }
+  if (!isValidPath(req.file.originalname)) { // 업로드 파일 경로 유효성 검사
+    await fs.remove(tempPath); // 임시 파일 삭제
+    return res.status(403).json({ error: 'Access denied: Invalid upload path' });
+  }
 
-    try {
-        // Ensure the target directory exists
-        await fs.ensureDir(path.dirname(targetPath));
-        await fs.move(tempPath, targetPath, { overwrite: true });
-        res.json({ success: true, message: 'File uploaded successfully', filePath: req.file.originalname });
-    } catch (error) {
-        console.error('Error uploading file:', error);
-        if (error.code === 'EACCES') {
-            res.status(403).json({ error: 'Permission denied to upload file', details: error.message });
-        } else {
-            res.status(500).json({ error: 'Failed to upload file', details: error.message });
-        }
+  try {
+    // Ensure the target directory exists
+    await fs.ensureDir(path.dirname(targetPath));
+    await fs.move(tempPath, targetPath, { overwrite: true });
+    res.json({ success: true, message: 'File uploaded successfully', filePath: req.file.originalname });
+  } catch (error) {
+    console.error('Error uploading file:', error);
+    if (error.code === 'EACCES') {
+      res.status(403).json({ error: 'Permission denied to upload file', details: error.message });
+    } else {
+      res.status(500).json({ error: 'Failed to upload file', details: error.message });
     }
+  }
 });
 
 // Session-based terminal management
@@ -379,196 +379,200 @@ const dockerContainers = new Map(); // 세션별 Docker 컨테이너 관리
 
 // Generate unique session ID
 function generateSessionId() {
-    return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 }
 
 // Docker 컨테이너 생성 함수
 async function createUserContainer(sessionId) {
-    return new Promise((resolve, reject) => {
-        const containerName = `vscode-${sessionId}`;
-        
-        // Docker 컨테이너 생성 및 시작
-        exec(`docker run -d --name ${containerName} --rm -w /workspace -v ${PROJECT_ROOT}/${sessionId}:/workspace ubuntu:22.04 tail -f /dev/null`, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`Docker 컨테이너 생성 실패: ${error}`);
-                reject(error);
-                return;
-            }
-            
-            const containerId = stdout.trim();
-            console.log(`✅ Docker 컨테이너 생성됨: ${containerName} (${containerId})`);
-            
-            // 기본 패키지 설치
-            exec(`docker exec ${containerName} apt-get update && docker exec ${containerName} apt-get install -y python3 nodejs npm`, (err) => {
-                if (err) console.warn('패키지 설치 경고:', err);
-            });
-            
-            resolve({ containerName, containerId });
-        });
+  return new Promise((resolve, reject) => {
+    const containerName = `vscode-${sessionId}`;
+
+    // Docker 컨테이너 생성 및 시작
+    exec(`docker run -d --name ${containerName} --rm -w /workspace -v ${PROJECT_ROOT}/${sessionId}:/workspace ubuntu:22.04 tail -f /dev/null`, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Docker 컨테이너 생성 실패: ${error}`);
+        reject(error);
+        return;
+      }
+
+      const containerId = stdout.trim();
+      console.log(`✅ Docker 컨테이너 생성됨: ${containerName} (${containerId})`);
+
+      // 기본 패키지 설치
+      exec(`docker exec ${containerName} apt-get update && docker exec ${containerName} apt-get install -y python3 nodejs npm`, (err) => {
+        if (err) console.warn('패키지 설치 경고:', err);
+      });
+
+      resolve({ containerName, containerId });
     });
+  });
 }
 
 // WebSocket endpoint for terminal
 app.ws('/terminal', async (ws, req) => {
-    const sessionId = req.query.sessionId || generateSessionId();
-    let useDocker = process.env.USE_DOCKER === 'true'; // 환경 변수로 Docker 사용 여부 결정
-    
-    // Create user-specific workspace directory
+  const sessionId = req.query.sessionId || generateSessionId();
+  let useDocker = process.env.USE_DOCKER === 'true'; // 환경 변수로 Docker 사용 여부 결정
+
+  const restrictedEnv = {
+    PS1: '\r\n\x1b[1;32muser@vscode:~/workspace$ \x1b[0m'
+  };
+
+  // Create user-specific workspace directory
+  const userWorkspace = path.join(PROJECT_ROOT, sessionId);
+  if (!fsSync.existsSync(userWorkspace)) {
+    fsSync.mkdirSync(userWorkspace, { recursive: true });
+  }
+
+  let ptyProcess;
+  let containerName;
+
+  if (useDocker) {
+    // 🐳 Docker 모드: 컨테이너 내부에서 터미널 실행
+    try {
+      const container = await createUserContainer(sessionId);
+      containerName = container.containerName;
+      dockerContainers.set(sessionId, container);
+
+      // Docker 컨테이너 내부에서 bash 실행 (탈출 방지)
+      ptyProcess = pty.spawn('docker', ['exec', '-it', containerName, 'bash', '--noprofile', '--norc'], {
+        name: 'xterm-color',
+        cols: 80,
+        rows: 30,
+        env: {
+          TERM: 'xterm-color',
+          PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+          HOME: '/workspace',
+          PWD: '/workspace'
+        }
+      });
+
+      ws.send('\r\n\x1b[1;32m🐳 Docker 컨테이너 환경\x1b[0m\r\n');
+      ws.send(`컨테이너: ${containerName}\r\n`);
+      ws.send('완전히 격리된 우분투 환경입니다.\r\n\r\n');
+
+    } catch (error) {
+      // Docker 실패 시 조용히 일반 모드로 전환
+      useDocker = false;
+    }
+  }
+
+  // Docker 없이도 터미널 사용 가능 (관리자 인증 완료)
+
+  // 세션 정보 저장 (타임아웃 없음 - 웹 나가면 자동 삭제)
+  terminalSessions.set(sessionId, {
+    ptyProcess,
+    userWorkspace,
+    sessionId
+  });
+
+  console.log(`Terminal WebSocket connected. Session: ${sessionId}`);
+
+  // Send session ID to client
+  ws.send(JSON.stringify({ type: 'session', sessionId }));
+
+  // 데이터 버퍼링 및 중복 제거
+  let lastData = '';
+  let dataBuffer = '';
+  let bufferTimeout = null;
+
+  ptyProcess.onData(data => {
+    // 중복된 개행 문자 제거
+    if (data === '\r\n' && lastData === '\r\n') {
+      return; // 연속된 개행 무시
+    }
+
+    lastData = data;
+    ws.send(data);
+  });
+
+  ws.onmessage = msg => {
+    try {
+      const data = JSON.parse(msg.data);
+      if (data.type === 'resize') {
+        ptyProcess.resize(data.cols, data.rows);
+      } else {
+        // 보안: 위험한 명령어 필터링
+        const command = msg.data.toString().trim();
+
+        // 상위 디렉토리 접근 시도 감지
+        if (command.includes('cd ..') || command.includes('cd /') ||
+          command.includes('cd ~') || command.match(/cd\s+\.\./)) {
+          const warning = '\r\n\x1b[1;31m❌ 보안: 상위 디렉토리 접근이 제한됩니다.\x1b[0m\r\n';
+          ws.send(warning);
+          ws.send(`${restrictedEnv.PS1}`);
+          return;
+        }
+
+        // 절대 경로 접근 차단
+        if (command.match(/\/[a-zA-Z]/)) {
+          const warning = '\r\n\x1b[1;31m❌ 보안: 절대 경로 접근이 차단되었습니다.\x1b[0m\r\n';
+          ws.send(warning);
+          ws.send(`${restrictedEnv.PS1}`);
+          return;
+        }
+
+        // 심볼릭 링크 생성 차단
+        if (command.includes('ln -s') || command.includes('ln -sf')) {
+          const warning = '\r\n\x1b[1;31m❌ 보안: 심볼릭 링크 생성이 차단되었습니다.\x1b[0m\r\n';
+          ws.send(warning);
+          ws.send(`${restrictedEnv.PS1}`);
+          return;
+        }
+
+        // 위험한 시스템 명령어 차단
+        const dangerousCommands = [
+          'rm -rf /', 'mkfs', 'dd if=', 'chmod 777', ':(){:|:&};:',
+          'sudo', 'su -', 'chroot', 'mount', 'umount'
+        ];
+        if (dangerousCommands.some(cmd => command.includes(cmd))) {
+          const warning = '\r\n\x1b[1;31m❌ 보안: 위험한 명령어가 차단되었습니다.\x1b[0m\r\n';
+          ws.send(warning);
+          ws.send(`${restrictedEnv.PS1}`);
+          return;
+        }
+
+        ptyProcess.write(msg.data);
+      }
+    } catch (e) {
+      ptyProcess.write(msg.data);
+    }
+  };
+
+  ws.onclose = () => {
+    const session = terminalSessions.get(sessionId);
+    if (session) {
+      session.ptyProcess.kill();
+      terminalSessions.delete(sessionId);
+    }
+
+    // Docker 컨테이너 정리
+    const container = dockerContainers.get(sessionId);
+    if (container) {
+      exec(`docker stop ${container.containerName}`, (error) => {
+        if (error) {
+          console.error(`Docker 컨테이너 정리 실패: ${error}`);
+        } else {
+          console.log(`✅ Docker 컨테이너 정리됨: ${container.containerName}`);
+        }
+      });
+      dockerContainers.delete(sessionId);
+    }
+
+    // 세션 디렉토리 삭제
     const userWorkspace = path.join(PROJECT_ROOT, sessionId);
-    if (!fsSync.existsSync(userWorkspace)) {
-        fsSync.mkdirSync(userWorkspace, { recursive: true });
+    if (fsSync.existsSync(userWorkspace)) {
+      fsSync.rmSync(userWorkspace, { recursive: true, force: true });
+      console.log(`✅ 세션 디렉토리 삭제됨: ${userWorkspace}`);
     }
-    
-    let ptyProcess;
-    let containerName;
-    
-    if (useDocker) {
-        // 🐳 Docker 모드: 컨테이너 내부에서 터미널 실행
-        try {
-            const container = await createUserContainer(sessionId);
-            containerName = container.containerName;
-            dockerContainers.set(sessionId, container);
-            
-            // Docker 컨테이너 내부에서 bash 실행 (탈출 방지)
-            ptyProcess = pty.spawn('docker', ['exec', '-it', containerName, 'bash', '--noprofile', '--norc'], {
-                name: 'xterm-color',
-                cols: 80,
-                rows: 30,
-                env: {
-                    TERM: 'xterm-color',
-                    PATH: '/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
-                    HOME: '/workspace',
-                    PWD: '/workspace'
-                }
-            });
-            
-            ws.send(`\r\n\x1b[1;32m🐳 Docker 컨테이너 환경\x1b[0m\r\n`);
-            ws.send(`컨테이너: ${containerName}\r\n`);
-            ws.send(`완전히 격리된 우분투 환경입니다.\r\n\r\n`);
-            
-        } catch (error) {
-            // Docker 실패 시 조용히 일반 모드로 전환
-            useDocker = false;
-        }
-    }
-    
-    // Docker 없이도 터미널 사용 가능 (관리자 인증 완료)
 
-    // 세션 정보 저장 (타임아웃 없음 - 웹 나가면 자동 삭제)
-    terminalSessions.set(sessionId, {
-        ptyProcess,
-        userWorkspace,
-        sessionId
-    });
-    
-    console.log(`Terminal WebSocket connected. Session: ${sessionId}`);
-    
-    // Send session ID to client
-    ws.send(JSON.stringify({ type: 'session', sessionId }));
+    console.log(`Terminal WebSocket disconnected. Session: ${sessionId}`);
+  };
 
-    // 데이터 버퍼링 및 중복 제거
-    let lastData = '';
-    let dataBuffer = '';
-    let bufferTimeout = null;
-    
-    ptyProcess.onData(data => {
-        // 중복된 개행 문자 제거
-        if (data === '\r\n' && lastData === '\r\n') {
-            return; // 연속된 개행 무시
-        }
-        
-        lastData = data;
-        ws.send(data);
-    });
-
-    ws.onmessage = msg => {
-        try {
-            const data = JSON.parse(msg.data);
-            if (data.type === 'resize') {
-                ptyProcess.resize(data.cols, data.rows);
-            } else {
-                // 보안: 위험한 명령어 필터링
-                const command = msg.data.toString().trim();
-                
-                // 상위 디렉토리 접근 시도 감지
-                if (command.includes('cd ..') || command.includes('cd /') || 
-                    command.includes('cd ~') || command.match(/cd\s+\.\./)) {
-                    const warning = `\r\n\x1b[1;31m❌ 보안: 상위 디렉토리 접근이 제한됩니다.\x1b[0m\r\n`;
-                    ws.send(warning);
-                    ws.send(`${restrictedEnv.PS1}`);
-                    return;
-                }
-                
-                // 절대 경로 접근 차단
-                if (command.match(/\/[a-zA-Z]/)) {
-                    const warning = `\r\n\x1b[1;31m❌ 보안: 절대 경로 접근이 차단되었습니다.\x1b[0m\r\n`;
-                    ws.send(warning);
-                    ws.send(`${restrictedEnv.PS1}`);
-                    return;
-                }
-                
-                // 심볼릭 링크 생성 차단
-                if (command.includes('ln -s') || command.includes('ln -sf')) {
-                    const warning = `\r\n\x1b[1;31m❌ 보안: 심볼릭 링크 생성이 차단되었습니다.\x1b[0m\r\n`;
-                    ws.send(warning);
-                    ws.send(`${restrictedEnv.PS1}`);
-                    return;
-                }
-                
-                // 위험한 시스템 명령어 차단
-                const dangerousCommands = [
-                    'rm -rf /', 'mkfs', 'dd if=', 'chmod 777', ':(){:|:&};:',
-                    'sudo', 'su -', 'chroot', 'mount', 'umount'
-                ];
-                if (dangerousCommands.some(cmd => command.includes(cmd))) {
-                    const warning = `\r\n\x1b[1;31m❌ 보안: 위험한 명령어가 차단되었습니다.\x1b[0m\r\n`;
-                    ws.send(warning);
-                    ws.send(`${restrictedEnv.PS1}`);
-                    return;
-                }
-                
-                ptyProcess.write(msg.data);
-            }
-        } catch (e) {
-            ptyProcess.write(msg.data);
-        }
-    };
-
-    ws.onclose = () => {
-        const session = terminalSessions.get(sessionId);
-        if (session) {
-            session.ptyProcess.kill();
-            terminalSessions.delete(sessionId);
-        }
-        
-        // Docker 컨테이너 정리
-        const container = dockerContainers.get(sessionId);
-        if (container) {
-            exec(`docker stop ${container.containerName}`, (error) => {
-                if (error) {
-                    console.error(`Docker 컨테이너 정리 실패: ${error}`);
-                } else {
-                    console.log(`✅ Docker 컨테이너 정리됨: ${container.containerName}`);
-                }
-            });
-            dockerContainers.delete(sessionId);
-        }
-        
-        // 세션 디렉토리 삭제
-        const userWorkspace = path.join(PROJECT_ROOT, sessionId);
-        if (fsSync.existsSync(userWorkspace)) {
-            fsSync.rmSync(userWorkspace, { recursive: true, force: true });
-            console.log(`✅ 세션 디렉토리 삭제됨: ${userWorkspace}`);
-        }
-        
-        console.log(`Terminal WebSocket disconnected. Session: ${sessionId}`);
-    };
-
-    ptyProcess.onExit(({ exitCode, signal }) => {
-        console.log(`Terminal process exited with code ${exitCode}, signal ${signal}. Session: ${sessionId}`);
-        terminalSessions.delete(sessionId);
-        ws.close();
-    });
+  ptyProcess.onExit(({ exitCode, signal }) => {
+    console.log(`Terminal process exited with code ${exitCode}, signal ${signal}. Session: ${sessionId}`);
+    terminalSessions.delete(sessionId);
+    ws.close();
+  });
 });
 
 // ===== GitHub OAuth & API =====
@@ -576,15 +580,15 @@ const GITHUB_CLIENT_ID = process.env.GITHUB_CLIENT_ID;
 const GITHUB_CLIENT_SECRET = process.env.GITHUB_CLIENT_SECRET;
 
 if (!GITHUB_CLIENT_ID || !GITHUB_CLIENT_SECRET) {
-    console.warn('⚠️  GitHub OAuth credentials not configured. Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET environment variables.');
+  console.warn('⚠️  GitHub OAuth credentials not configured. Set GITHUB_CLIENT_ID and GITHUB_CLIENT_SECRET environment variables.');
 }
 
 // GitHub OAuth callback - serve HTML page
 app.get('/api/github/callback', async (req, res) => {
-    const { code } = req.query;
-    
-    if (!code) {
-        return res.send(`
+  const { code } = req.query;
+
+  if (!code) {
+    return res.send(`
             <html>
                 <body>
                     <script>
@@ -594,22 +598,22 @@ app.get('/api/github/callback', async (req, res) => {
                 </body>
             </html>
         `);
-    }
-    
-    try {
-        // Exchange code for access token
-        const tokenResponse = await axios.post('https://github.com/login/oauth/access_token', {
-            client_id: GITHUB_CLIENT_ID,
-            client_secret: GITHUB_CLIENT_SECRET,
-            code: code
-        }, {
-            headers: { Accept: 'application/json' }
-        });
-        
-        const accessToken = tokenResponse.data.access_token;
-        
-        if (!accessToken) {
-            return res.send(`
+  }
+
+  try {
+    // Exchange code for access token
+    const tokenResponse = await axios.post('https://github.com/login/oauth/access_token', {
+      client_id: GITHUB_CLIENT_ID,
+      client_secret: GITHUB_CLIENT_SECRET,
+      code: code
+    }, {
+      headers: { Accept: 'application/json' }
+    });
+
+    const accessToken = tokenResponse.data.access_token;
+
+    if (!accessToken) {
+      return res.send(`
                 <html>
                     <body>
                         <script>
@@ -619,15 +623,15 @@ app.get('/api/github/callback', async (req, res) => {
                     </body>
                 </html>
             `);
-        }
-        
-        // Get user info
-        const userResponse = await axios.get('https://api.github.com/user', {
-            headers: { Authorization: `token ${accessToken}` }
-        });
-        
-        // Send HTML page that posts message to opener
-        res.send(`
+    }
+
+    // Get user info
+    const userResponse = await axios.get('https://api.github.com/user', {
+      headers: { Authorization: `token ${accessToken}` }
+    });
+
+    // Send HTML page that posts message to opener
+    res.send(`
             <!DOCTYPE html>
             <html>
             <head>
@@ -712,9 +716,9 @@ app.get('/api/github/callback', async (req, res) => {
             </body>
             </html>
         `);
-    } catch (error) {
-        console.error('GitHub OAuth error:', error);
-        res.send(`
+  } catch (error) {
+    console.error('GitHub OAuth error:', error);
+    res.send(`
             <html>
                 <body>
                     <script>
@@ -724,451 +728,451 @@ app.get('/api/github/callback', async (req, res) => {
                 </body>
             </html>
         `);
-    }
+  }
 });
 
 // Get user repositories
 app.get('/api/github/repos', async (req, res) => {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    
-    if (!token) {
-        return res.status(401).json({ error: 'No token provided' });
-    }
-    
-    try {
-        const response = await axios.get('https://api.github.com/user/repos', {
-            headers: { Authorization: `token ${token}` },
-            params: {
-                sort: 'updated',
-                per_page: 100
-            }
-        });
-        
-        res.json(response.data);
-    } catch (error) {
-        console.error('GitHub API error:', error);
-        res.status(500).json({ error: 'Failed to fetch repositories' });
-    }
+  const token = req.headers.authorization?.replace('Bearer ', '');
+
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  try {
+    const response = await axios.get('https://api.github.com/user/repos', {
+      headers: { Authorization: `token ${token}` },
+      params: {
+        sort: 'updated',
+        per_page: 100
+      }
+    });
+
+    res.json(response.data);
+  } catch (error) {
+    console.error('GitHub API error:', error);
+    res.status(500).json({ error: 'Failed to fetch repositories' });
+  }
 });
 
 // Create repository
 app.post('/api/github/repos', async (req, res) => {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    const { name, description, private: isPrivate } = req.body;
-    
-    if (!token) {
-        return res.status(401).json({ error: 'No token provided' });
-    }
-    
-    try {
-        const response = await axios.post('https://api.github.com/user/repos', {
-            name,
-            description,
-            private: isPrivate || false
-        }, {
-            headers: { Authorization: `token ${token}` }
-        });
-        
-        res.json(response.data);
-    } catch (error) {
-        console.error('GitHub API error:', error);
-        res.status(500).json({ error: 'Failed to create repository' });
-    }
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  const { name, description, private: isPrivate } = req.body;
+
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  try {
+    const response = await axios.post('https://api.github.com/user/repos', {
+      name,
+      description,
+      private: isPrivate || false
+    }, {
+      headers: { Authorization: `token ${token}` }
+    });
+
+    res.json(response.data);
+  } catch (error) {
+    console.error('GitHub API error:', error);
+    res.status(500).json({ error: 'Failed to create repository' });
+  }
 });
 
 // Delete repository
 app.delete('/api/github/repos/:owner/:repo', async (req, res) => {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    const { owner, repo } = req.params;
-    
-    if (!token) {
-        return res.status(401).json({ error: 'No token provided' });
-    }
-    
-    try {
-        await axios.delete(`https://api.github.com/repos/${owner}/${repo}`, {
-            headers: { Authorization: `token ${token}` }
-        });
-        
-        res.json({ success: true });
-    } catch (error) {
-        console.error('GitHub API error:', error);
-        res.status(500).json({ error: 'Failed to delete repository' });
-    }
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  const { owner, repo } = req.params;
+
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  try {
+    await axios.delete(`https://api.github.com/repos/${owner}/${repo}`, {
+      headers: { Authorization: `token ${token}` }
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('GitHub API error:', error);
+    res.status(500).json({ error: 'Failed to delete repository' });
+  }
 });
 
 // Get repository contents (root)
 app.get('/api/github/repos/:owner/:repo/contents', async (req, res) => {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    const { owner, repo } = req.params;
-    
-    if (!token) {
-        return res.status(401).json({ error: 'No token provided' });
-    }
-    
-    try {
-        const response = await axios.get(
-            `https://api.github.com/repos/${owner}/${repo}/contents/`,
-            { headers: { Authorization: `token ${token}` } }
-        );
-        
-        res.json(response.data);
-    } catch (error) {
-        console.error('GitHub API error:', error);
-        res.status(500).json({ error: 'Failed to fetch contents' });
-    }
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  const { owner, repo } = req.params;
+
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  try {
+    const response = await axios.get(
+      `https://api.github.com/repos/${owner}/${repo}/contents/`,
+      { headers: { Authorization: `token ${token}` } }
+    );
+
+    res.json(response.data);
+  } catch (error) {
+    console.error('GitHub API error:', error);
+    res.status(500).json({ error: 'Failed to fetch contents' });
+  }
 });
 
 // Get repository contents (with path)
 app.get('/api/github/repos/:owner/:repo/contents/:path', async (req, res) => {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    const { owner, repo, path: filePath } = req.params;
-    
-    if (!token) {
-        return res.status(401).json({ error: 'No token provided' });
-    }
-    
-    try {
-        const response = await axios.get(
-            `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
-            { headers: { Authorization: `token ${token}` } }
-        );
-        
-        res.json(response.data);
-    } catch (error) {
-        console.error('GitHub API error:', error);
-        res.status(500).json({ error: 'Failed to fetch contents' });
-    }
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  const { owner, repo, path: filePath } = req.params;
+
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  try {
+    const response = await axios.get(
+      `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+      { headers: { Authorization: `token ${token}` } }
+    );
+
+    res.json(response.data);
+  } catch (error) {
+    console.error('GitHub API error:', error);
+    res.status(500).json({ error: 'Failed to fetch contents' });
+  }
 });
 
 // Create or update file
 app.put('/api/github/repos/:owner/:repo/contents/:path', async (req, res) => {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    const { owner, repo, path: filePath } = req.params;
-    const { message, content, sha } = req.body;
-    
-    if (!token) {
-        return res.status(401).json({ error: 'No token provided' });
-    }
-    
-    try {
-        const response = await axios.put(
-            `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
-            {
-                message,
-                content: Buffer.from(content).toString('base64'),
-                sha
-            },
-            { headers: { Authorization: `token ${token}` } }
-        );
-        
-        res.json(response.data);
-    } catch (error) {
-        console.error('GitHub API error:', error);
-        res.status(500).json({ error: 'Failed to update file' });
-    }
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  const { owner, repo, path: filePath } = req.params;
+  const { message, content, sha } = req.body;
+
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+
+  try {
+    const response = await axios.put(
+      `https://api.github.com/repos/${owner}/${repo}/contents/${filePath}`,
+      {
+        message,
+        content: Buffer.from(content).toString('base64'),
+        sha
+      },
+      { headers: { Authorization: `token ${token}` } }
+    );
+
+    res.json(response.data);
+  } catch (error) {
+    console.error('GitHub API error:', error);
+    res.status(500).json({ error: 'Failed to update file' });
+  }
 });
 
 // Get commits
 app.get('/api/github/repos/:owner/:repo/commits', async (req, res) => {
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    const { owner, repo } = req.params;
-    
-    if (!token) {
-        return res.status(401).json({ error: 'Unauthorized' });
-    }
-    
-    try {
-        const response = await axios.get(
-            `https://api.github.com/repos/${owner}/${repo}/commits`,
-            { 
-                headers: { Authorization: `token ${token}` },
-                params: { per_page: 30 }
-            }
-        );
-        
-        res.json(response.data);
-    } catch (error) {
-        console.error('GitHub API error:', error);
-        res.status(500).json({ error: 'Failed to fetch commits' });
-    }
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  const { owner, repo } = req.params;
+
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  try {
+    const response = await axios.get(
+      `https://api.github.com/repos/${owner}/${repo}/commits`,
+      {
+        headers: { Authorization: `token ${token}` },
+        params: { per_page: 30 }
+      }
+    );
+
+    res.json(response.data);
+  } catch (error) {
+    console.error('GitHub API error:', error);
+    res.status(500).json({ error: 'Failed to fetch commits' });
+  }
 });
 
 // Clone repository to workspace
 app.post('/api/github/clone', async (req, res) => {
-    const { owner, repo, sessionId } = req.body;
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    
-    if (!token) {
-        return res.status(401).json({ error: 'Unauthorized' });
+  const { owner, repo, sessionId } = req.body;
+  const token = req.headers.authorization?.replace('Bearer ', '');
+
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!owner || !repo) {
+    return res.status(400).json({ error: 'Owner and repo are required' });
+  }
+
+  // 세션 작업 디렉토리
+  let workingDir = PROJECT_ROOT;
+  if (sessionId) {
+    workingDir = path.join(PROJECT_ROOT, sessionId);
+  }
+
+  const repoPath = path.join(workingDir, repo);
+  const cloneUrl = `https://${token}@github.com/${owner}/${repo}.git`;
+
+  try {
+    // 이미 존재하면 삭제
+    if (fsSync.existsSync(repoPath)) {
+      fsSync.rmSync(repoPath, { recursive: true, force: true });
     }
-    
-    if (!owner || !repo) {
-        return res.status(400).json({ error: 'Owner and repo are required' });
-    }
-    
-    // 세션 작업 디렉토리
-    let workingDir = PROJECT_ROOT;
-    if (sessionId) {
-        workingDir = path.join(PROJECT_ROOT, sessionId);
-    }
-    
-    const repoPath = path.join(workingDir, repo);
-    const cloneUrl = `https://${token}@github.com/${owner}/${repo}.git`;
-    
-    try {
-        // 이미 존재하면 삭제
-        if (fsSync.existsSync(repoPath)) {
-            fsSync.rmSync(repoPath, { recursive: true, force: true });
-        }
-        
-        // Git clone 실행
-        exec(`git clone ${cloneUrl} ${repoPath}`, { cwd: workingDir }, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`Clone error: ${error}`);
-                return res.status(500).json({ 
-                    error: 'Failed to clone repository',
-                    details: stderr || error.message 
-                });
-            }
-            
-            console.log(`✅ Repository cloned: ${owner}/${repo} -> ${repoPath}`);
-            res.json({ 
-                success: true, 
-                path: repo,
-                message: `Successfully cloned ${owner}/${repo}`
-            });
+
+    // Git clone 실행
+    exec(`git clone ${cloneUrl} ${repoPath}`, { cwd: workingDir }, (error, stdout, stderr) => {
+      if (error) {
+        console.error(`Clone error: ${error}`);
+        return res.status(500).json({
+          error: 'Failed to clone repository',
+          details: stderr || error.message
         });
-    } catch (error) {
-        console.error('Clone error:', error);
-        res.status(500).json({ error: 'Failed to clone repository' });
-    }
+      }
+
+      console.log(`✅ Repository cloned: ${owner}/${repo} -> ${repoPath}`);
+      res.json({
+        success: true,
+        path: repo,
+        message: `Successfully cloned ${owner}/${repo}`
+      });
+    });
+  } catch (error) {
+    console.error('Clone error:', error);
+    res.status(500).json({ error: 'Failed to clone repository' });
+  }
 });
 
 // Create sandbox environment
 app.post('/api/sandbox/create', async (req, res) => {
-    const { sessionId } = req.body;
-    
-    if (!sessionId) {
-        return res.status(400).json({ error: 'Session ID is required' });
+  const { sessionId } = req.body;
+
+  if (!sessionId) {
+    return res.status(400).json({ error: 'Session ID is required' });
+  }
+
+  try {
+    // Docker가 사용 가능한지 확인
+    const isDockerAvailable = await new Promise((resolve) => {
+      exec('docker --version', (error) => {
+        resolve(!error);
+      });
+    });
+
+    if (isDockerAvailable) {
+      // Docker 모드: 컨테이너 생성
+      const container = await createUserContainer(sessionId);
+      dockerContainers.set(sessionId, container);
+
+      console.log(`✅ Docker sandbox created for session: ${sessionId}`);
+
+      res.json({
+        success: true,
+        mode: 'docker',
+        containerName: container.containerName,
+        message: 'Docker sandbox environment created successfully'
+      });
+    } else {
+      // 일반 모드: 격리된 디렉토리만 생성
+      const userWorkspace = path.join(PROJECT_ROOT, sessionId);
+      if (!fsSync.existsSync(userWorkspace)) {
+        fsSync.mkdirSync(userWorkspace, { recursive: true });
+      }
+
+      console.log(`✅ Isolated workspace created for session: ${sessionId}`);
+
+      res.json({
+        success: true,
+        mode: 'isolated',
+        workspace: userWorkspace,
+        message: 'Isolated workspace created successfully'
+      });
     }
-    
-    try {
-        // Docker가 사용 가능한지 확인
-        const isDockerAvailable = await new Promise((resolve) => {
-            exec('docker --version', (error) => {
-                resolve(!error);
-            });
-        });
-        
-        if (isDockerAvailable) {
-            // Docker 모드: 컨테이너 생성
-            const container = await createUserContainer(sessionId);
-            dockerContainers.set(sessionId, container);
-            
-            console.log(`✅ Docker sandbox created for session: ${sessionId}`);
-            
-            res.json({ 
-                success: true, 
-                mode: 'docker',
-                containerName: container.containerName,
-                message: 'Docker sandbox environment created successfully'
-            });
-        } else {
-            // 일반 모드: 격리된 디렉토리만 생성
-            const userWorkspace = path.join(PROJECT_ROOT, sessionId);
-            if (!fsSync.existsSync(userWorkspace)) {
-                fsSync.mkdirSync(userWorkspace, { recursive: true });
-            }
-            
-            console.log(`✅ Isolated workspace created for session: ${sessionId}`);
-            
-            res.json({ 
-                success: true, 
-                mode: 'isolated',
-                workspace: userWorkspace,
-                message: 'Isolated workspace created successfully'
-            });
-        }
-    } catch (error) {
-        console.error('Sandbox creation error:', error);
-        res.status(500).json({ 
-            error: 'Failed to create sandbox environment',
-            details: error.message 
-        });
-    }
+  } catch (error) {
+    console.error('Sandbox creation error:', error);
+    res.status(500).json({
+      error: 'Failed to create sandbox environment',
+      details: error.message
+    });
+  }
 });
 
 // Git commit and push
 app.post('/api/github/push', async (req, res) => {
-    const { repoPath, message, sessionId, files } = req.body;
-    const token = req.headers.authorization?.replace('Bearer ', '');
-    
-    if (!token) {
-        return res.status(401).json({ error: 'Unauthorized' });
+  const { repoPath, message, sessionId, files } = req.body;
+  const token = req.headers.authorization?.replace('Bearer ', '');
+
+  if (!token) {
+    return res.status(401).json({ error: 'Unauthorized' });
+  }
+
+  if (!repoPath || !message) {
+    return res.status(400).json({ error: 'Repository path and commit message are required' });
+  }
+
+  // 세션 작업 디렉토리
+  let workingDir = PROJECT_ROOT;
+  if (sessionId) {
+    workingDir = path.join(PROJECT_ROOT, sessionId);
+  }
+
+  const absoluteRepoPath = path.join(workingDir, repoPath);
+
+  if (!fsSync.existsSync(absoluteRepoPath)) {
+    return res.status(404).json({ error: 'Repository not found' });
+  }
+
+  try {
+    // Git add command - either all files or specific files
+    let gitAddCmd = 'git add .';
+    if (files && Array.isArray(files) && files.length > 0) {
+      // Add specific files
+      const fileList = files.map(f => `"${f}"`).join(' ');
+      gitAddCmd = `git add ${fileList}`;
+      console.log(`📝 Adding specific files: ${fileList}`);
+    } else {
+      console.log('📝 Adding all files');
     }
-    
-    if (!repoPath || !message) {
-        return res.status(400).json({ error: 'Repository path and commit message are required' });
-    }
-    
-    // 세션 작업 디렉토리
-    let workingDir = PROJECT_ROOT;
-    if (sessionId) {
-        workingDir = path.join(PROJECT_ROOT, sessionId);
-    }
-    
-    const absoluteRepoPath = path.join(workingDir, repoPath);
-    
-    if (!fsSync.existsSync(absoluteRepoPath)) {
-        return res.status(404).json({ error: 'Repository not found' });
-    }
-    
-    try {
-        // Git add command - either all files or specific files
-        let gitAddCmd = 'git add .';
-        if (files && Array.isArray(files) && files.length > 0) {
-            // Add specific files
-            const fileList = files.map(f => `"${f}"`).join(' ');
-            gitAddCmd = `git add ${fileList}`;
-            console.log(`📝 Adding specific files: ${fileList}`);
-        } else {
-            console.log('📝 Adding all files');
-        }
-        
-        // Escape commit message to prevent command injection
-        const escapedMessage = message.replace(/"/g, '\\"');
-        
-        const commands = [
-            gitAddCmd,
-            `git commit -m "${escapedMessage}"`,
-            'git push'
-        ];
-        
-        const executeCommands = (index) => {
-            if (index >= commands.length) {
-                return res.json({ 
-                    success: true, 
-                    message: 'Successfully pushed to GitHub',
-                    filesCount: files ? files.length : 'all'
-                });
-            }
-            
-            exec(commands[index], { cwd: absoluteRepoPath }, (error, stdout, stderr) => {
-                if (error) {
-                    // commit 시 변경사항 없으면 에러지만 계속 진행
-                    if (error.message.includes('nothing to commit') || 
-                        stderr.includes('nothing to commit')) {
-                        return res.json({ 
-                            success: true, 
-                            message: 'No changes to commit' 
-                        });
-                    }
-                    
-                    console.error(`❌ Git error: ${error.message}`);
-                    console.error(`stderr: ${stderr}`);
-                    return res.status(500).json({ 
-                        error: 'Git command failed',
-                        message: stderr || error.message,
-                        command: commands[index]
-                    });
-                }
-                
-                console.log(`✅ Git command executed: ${commands[index]}`);
-                if (stdout) console.log(`Output: ${stdout}`);
-                executeCommands(index + 1);
-            });
-        };
-        
-        executeCommands(0);
-    } catch (error) {
-        console.error('Push error:', error);
-        res.status(500).json({ 
-            error: 'Failed to push to GitHub',
-            message: error.message 
+
+    // Escape commit message to prevent command injection
+    const escapedMessage = message.replace(/"/g, '\\"');
+
+    const commands = [
+      gitAddCmd,
+      `git commit -m "${escapedMessage}"`,
+      'git push'
+    ];
+
+    const executeCommands = (index) => {
+      if (index >= commands.length) {
+        return res.json({
+          success: true,
+          message: 'Successfully pushed to GitHub',
+          filesCount: files ? files.length : 'all'
         });
-    }
+      }
+
+      exec(commands[index], { cwd: absoluteRepoPath }, (error, stdout, stderr) => {
+        if (error) {
+          // commit 시 변경사항 없으면 에러지만 계속 진행
+          if (error.message.includes('nothing to commit') ||
+            stderr.includes('nothing to commit')) {
+            return res.json({
+              success: true,
+              message: 'No changes to commit'
+            });
+          }
+
+          console.error(`❌ Git error: ${error.message}`);
+          console.error(`stderr: ${stderr}`);
+          return res.status(500).json({
+            error: 'Git command failed',
+            message: stderr || error.message,
+            command: commands[index]
+          });
+        }
+
+        console.log(`✅ Git command executed: ${commands[index]}`);
+        if (stdout) console.log(`Output: ${stdout}`);
+        executeCommands(index + 1);
+      });
+    };
+
+    executeCommands(0);
+  } catch (error) {
+    console.error('Push error:', error);
+    res.status(500).json({
+      error: 'Failed to push to GitHub',
+      message: error.message
+    });
+  }
 });
 
 // API endpoint to run a code file
 app.get('/api/run', (req, res) => {
-    res.status(405).json({ error: 'Method Not Allowed. Use POST to run code.' });
+  res.status(405).json({ error: 'Method Not Allowed. Use POST to run code.' });
 });
 
 app.post('/api/run', (req, res) => {
-    const { filePath, sessionId } = req.body;
+  const { filePath, sessionId } = req.body;
 
-    if (!filePath) {
-        return res.status(400).json({ error: 'File path is required' });
-    }
+  if (!filePath) {
+    return res.status(400).json({ error: 'File path is required' });
+  }
 
-    if (!isValidPath(filePath)) {
-        return res.status(403).json({ error: 'Access denied: Invalid file path' });
-    }
+  if (!isValidPath(filePath)) {
+    return res.status(403).json({ error: 'Access denied: Invalid file path' });
+  }
 
-    // 세션 ID가 있으면 해당 세션의 작업 디렉토리 사용
-    let workingDir = PROJECT_ROOT;
-    if (sessionId) {
-        workingDir = path.join(PROJECT_ROOT, sessionId);
-    }
+  // 세션 ID가 있으면 해당 세션의 작업 디렉토리 사용
+  let workingDir = PROJECT_ROOT;
+  if (sessionId) {
+    workingDir = path.join(PROJECT_ROOT, sessionId);
+  }
 
-    const absoluteFilePath = path.join(workingDir, filePath);
-    const fileExtension = path.extname(absoluteFilePath);
+  const absoluteFilePath = path.join(workingDir, filePath);
+  const fileExtension = path.extname(absoluteFilePath);
 
-    // 파일 존재 확인
-    if (!fsSync.existsSync(absoluteFilePath)) {
-        return res.status(404).json({ 
-            error: `File not found: ${filePath}`,
-            execError: `파일을 찾을 수 없습니다: ${filePath}\n작업 디렉토리: ${workingDir}`
-        });
-    }
-
-    const useDocker = process.env.USE_DOCKER === 'true';
-    const container = dockerContainers.get(sessionId);
-    
-    let command;
-    
-    if (useDocker && container) {
-        // 🐳 Docker 컨테이너 내부에서 실행
-        const containerFilePath = `/workspace/${filePath}`;
-        
-        switch (fileExtension) {
-            case '.js':
-                command = `docker exec ${container.containerName} node ${containerFilePath}`;
-                break;
-            case '.py':
-                command = `docker exec ${container.containerName} python3 ${containerFilePath}`;
-                break;
-            case '.sh':
-                command = `docker exec ${container.containerName} bash ${containerFilePath}`;
-                break;
-            default:
-                return res.status(400).json({ error: `Unsupported file type: ${fileExtension}` });
-        }
-    } else {
-        // 일반 모드: 호스트에서 직접 실행
-        switch (fileExtension) {
-            case '.js':
-                command = `node "${absoluteFilePath}"`;
-                break;
-            case '.py':
-                command = `python3 "${absoluteFilePath}"`;
-                break;
-            case '.sh':
-                command = `bash "${absoluteFilePath}"`;
-                break;
-            default:
-                return res.status(400).json({ error: `Unsupported file type: ${fileExtension}` });
-        }
-    }
-
-    exec(command, { cwd: workingDir }, (error, stdout, stderr) => {
-        if (error) {
-            console.error(`Execution error: ${error}`);
-            return res.status(500).json({ output: stdout, error: stderr, execError: error.message });
-        }
-        res.json({ output: stdout, error: stderr });
+  // 파일 존재 확인
+  if (!fsSync.existsSync(absoluteFilePath)) {
+    return res.status(404).json({
+      error: `File not found: ${filePath}`,
+      execError: `파일을 찾을 수 없습니다: ${filePath}\n작업 디렉토리: ${workingDir}`
     });
+  }
+
+  const useDocker = process.env.USE_DOCKER === 'true';
+  const container = dockerContainers.get(sessionId);
+
+  let command;
+
+  if (useDocker && container) {
+    // 🐳 Docker 컨테이너 내부에서 실행
+    const containerFilePath = `/workspace/${filePath}`;
+
+    switch (fileExtension) {
+    case '.js':
+      command = `docker exec ${container.containerName} node ${containerFilePath}`;
+      break;
+    case '.py':
+      command = `docker exec ${container.containerName} python3 ${containerFilePath}`;
+      break;
+    case '.sh':
+      command = `docker exec ${container.containerName} bash ${containerFilePath}`;
+      break;
+    default:
+      return res.status(400).json({ error: `Unsupported file type: ${fileExtension}` });
+    }
+  } else {
+    // 일반 모드: 호스트에서 직접 실행
+    switch (fileExtension) {
+    case '.js':
+      command = `node "${absoluteFilePath}"`;
+      break;
+    case '.py':
+      command = `python3 "${absoluteFilePath}"`;
+      break;
+    case '.sh':
+      command = `bash "${absoluteFilePath}"`;
+      break;
+    default:
+      return res.status(400).json({ error: `Unsupported file type: ${fileExtension}` });
+    }
+  }
+
+  exec(command, { cwd: workingDir }, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`Execution error: ${error}`);
+      return res.status(500).json({ output: stdout, error: stderr, execError: error.message });
+    }
+    res.json({ output: stdout, error: stderr });
+  });
 });
 
 // Debug session management
@@ -1176,624 +1180,624 @@ let debugSession = null;
 
 // Start debugging session
 app.post('/api/debug/start', (req, res) => {
-    const { filePath, breakpoints } = req.body;
+  const { filePath, breakpoints } = req.body;
 
-    if (!filePath) {
-        return res.status(400).json({ error: 'File path is required' });
-    }
+  if (!filePath) {
+    return res.status(400).json({ error: 'File path is required' });
+  }
 
-    if (!isValidPath(filePath)) {
-        return res.status(403).json({ error: 'Access denied: Invalid file path' });
-    }
+  if (!isValidPath(filePath)) {
+    return res.status(403).json({ error: 'Access denied: Invalid file path' });
+  }
 
-    const absoluteFilePath = path.join(PROJECT_ROOT, filePath);
-    
-    // Start Node.js process with inspector enabled
-    const debugProcess = spawn('node', ['--inspect-brk=9229', absoluteFilePath], {
-        cwd: PROJECT_ROOT,
-        env: process.env
-    });
+  const absoluteFilePath = path.join(PROJECT_ROOT, filePath);
 
-    debugSession = {
-        process: debugProcess,
-        filePath: absoluteFilePath,
-        breakpoints: breakpoints || [],
-        pid: debugProcess.pid
-    };
+  // Start Node.js process with inspector enabled
+  const debugProcess = spawn('node', ['--inspect-brk=9229', absoluteFilePath], {
+    cwd: PROJECT_ROOT,
+    env: process.env
+  });
 
-    let output = '';
-    debugProcess.stdout.on('data', (data) => {
-        output += data.toString();
-    });
+  debugSession = {
+    process: debugProcess,
+    filePath: absoluteFilePath,
+    breakpoints: breakpoints || [],
+    pid: debugProcess.pid
+  };
 
-    debugProcess.stderr.on('data', (data) => {
-        output += data.toString();
-    });
+  let output = '';
+  debugProcess.stdout.on('data', (data) => {
+    output += data.toString();
+  });
 
-    debugProcess.on('close', (code) => {
-        console.log(`Debug process exited with code ${code}`);
-        debugSession = null;
-    });
+  debugProcess.stderr.on('data', (data) => {
+    output += data.toString();
+  });
 
-    res.json({ 
-        success: true, 
-        message: 'Debug session started',
-        pid: debugProcess.pid,
-        debugUrl: 'ws://localhost:9229'
-    });
+  debugProcess.on('close', (code) => {
+    console.log(`Debug process exited with code ${code}`);
+    debugSession = null;
+  });
+
+  res.json({
+    success: true,
+    message: 'Debug session started',
+    pid: debugProcess.pid,
+    debugUrl: 'ws://localhost:9229'
+  });
 });
 
 // Stop debugging session
 app.post('/api/debug/stop', (req, res) => {
-    if (debugSession && debugSession.process) {
-        debugSession.process.kill();
-        debugSession = null;
-        res.json({ success: true, message: 'Debug session stopped' });
-    } else {
-        res.status(404).json({ error: 'No active debug session' });
-    }
+  if (debugSession && debugSession.process) {
+    debugSession.process.kill();
+    debugSession = null;
+    res.json({ success: true, message: 'Debug session stopped' });
+  } else {
+    res.status(404).json({ error: 'No active debug session' });
+  }
 });
 
 // Get debug session status
 app.get('/api/debug/status', (req, res) => {
-    if (debugSession) {
-        res.json({ 
-            active: true, 
-            filePath: debugSession.filePath,
-            pid: debugSession.pid
-        });
-    } else {
-        res.json({ active: false });
-    }
+  if (debugSession) {
+    res.json({
+      active: true,
+      filePath: debugSession.filePath,
+      pid: debugSession.pid
+    });
+  } else {
+    res.json({ active: false });
+  }
 });
 
 // WebSocket for debug communication
 app.ws('/debug', (ws, req) => {
-    console.log('Debug WebSocket connected');
-    
-    ws.on('message', (msg) => {
-        try {
-            const data = JSON.parse(msg);
-            console.log('Debug command:', data);
-            
-            // Handle debug commands (pause, continue, step, etc.)
-            ws.send(JSON.stringify({ type: 'ack', command: data.command }));
-        } catch (err) {
-            console.error('Debug WebSocket error:', err);
-        }
-    });
+  console.log('Debug WebSocket connected');
 
-    ws.on('close', () => {
-        console.log('Debug WebSocket disconnected');
-    });
+  ws.on('message', (msg) => {
+    try {
+      const data = JSON.parse(msg);
+      console.log('Debug command:', data);
+
+      // Handle debug commands (pause, continue, step, etc.)
+      ws.send(JSON.stringify({ type: 'ack', command: data.command }));
+    } catch (err) {
+      console.error('Debug WebSocket error:', err);
+    }
+  });
+
+  ws.on('close', () => {
+    console.log('Debug WebSocket disconnected');
+  });
 });
 
 // Language Server Protocol WebSocket
 app.ws('/lsp', (ws, req) => {
-    console.log('LSP WebSocket connection established');
-    
-    // Spawn language server process
-    const { spawn } = require('child_process');
-    const lspProcess = spawn('node', [path.join(__dirname, 'languageServer.js')], {
-        stdio: ['pipe', 'pipe', 'pipe']
-    });
-    
-    // Forward messages between WebSocket and LSP process
-    ws.on('message', (msg) => {
-        try {
-            lspProcess.stdin.write(msg);
-        } catch (e) {
-            console.error('LSP stdin error:', e);
-        }
-    });
-    
-    lspProcess.stdout.on('data', (data) => {
-        try {
-            ws.send(data.toString());
-        } catch (e) {
-            console.error('LSP WebSocket send error:', e);
-        }
-    });
-    
-    lspProcess.stderr.on('data', (data) => {
-        console.error('LSP stderr:', data.toString());
-    });
-    
-    lspProcess.on('exit', (code) => {
-        console.log('LSP process exited:', code);
-        ws.close();
-    });
-    
-    ws.on('close', () => {
-        console.log('LSP WebSocket closed');
-        lspProcess.kill();
-    });
-    
-    ws.on('error', (error) => {
-        console.error('LSP WebSocket error:', error);
-    });
+  console.log('LSP WebSocket connection established');
+
+  // Spawn language server process
+  const { spawn } = require('child_process');
+  const lspProcess = spawn('node', [path.join(__dirname, 'languageServer.js')], {
+    stdio: ['pipe', 'pipe', 'pipe']
+  });
+
+  // Forward messages between WebSocket and LSP process
+  ws.on('message', (msg) => {
+    try {
+      lspProcess.stdin.write(msg);
+    } catch (e) {
+      console.error('LSP stdin error:', e);
+    }
+  });
+
+  lspProcess.stdout.on('data', (data) => {
+    try {
+      ws.send(data.toString());
+    } catch (e) {
+      console.error('LSP WebSocket send error:', e);
+    }
+  });
+
+  lspProcess.stderr.on('data', (data) => {
+    console.error('LSP stderr:', data.toString());
+  });
+
+  lspProcess.on('exit', (code) => {
+    console.log('LSP process exited:', code);
+    ws.close();
+  });
+
+  ws.on('close', () => {
+    console.log('LSP WebSocket closed');
+    lspProcess.kill();
+  });
+
+  ws.on('error', (error) => {
+    console.error('LSP WebSocket error:', error);
+  });
 });
 
 // Interactive code execution with WebSocket
 const activeProcesses = new Map();
 
 app.ws('/api/execute', (ws, req) => {
-    let currentProcess = null;
-    const processId = Date.now().toString();
+  let currentProcess = null;
+  const processId = Date.now().toString();
 
-    ws.on('message', async (msg) => {
-        try {
-            const data = JSON.parse(msg);
+  ws.on('message', async (msg) => {
+    try {
+      const data = JSON.parse(msg);
 
-            if (data.type === 'execute' || data.type === 'run') {
-                const { code, language, filename } = data;
-                
-                // Save code to temp file
-                const tempDir = path.join(PROJECT_ROOT, 'temp');
-                if (!fsSync.existsSync(tempDir)) {
-                    fsSync.mkdirSync(tempDir, { recursive: true });
+      if (data.type === 'execute' || data.type === 'run') {
+        const { code, language, filename } = data;
+
+        // Save code to temp file
+        const tempDir = path.join(PROJECT_ROOT, 'temp');
+        if (!fsSync.existsSync(tempDir)) {
+          fsSync.mkdirSync(tempDir, { recursive: true });
+        }
+
+        // Generate proper temp filename with extension
+        let tempFilename;
+        if (filename && filename.includes('.')) {
+          tempFilename = filename;
+        } else {
+          // Map language to extension
+          const extMap = {
+            'c': 'c',
+            'cpp': 'cpp',
+            'python': 'py',
+            'py': 'py',
+            'javascript': 'js',
+            'js': 'js',
+            'java': 'java',
+            'go': 'go',
+            'rust': 'rs',
+            'ruby': 'rb',
+            'php': 'php',
+            'perl': 'pl',
+            'lua': 'lua',
+            'r': 'r',
+            'typescript': 'ts',
+            'ts': 'ts',
+            'bash': 'sh',
+            'sh': 'sh'
+          };
+          const ext = extMap[language] || language;
+          tempFilename = `temp_${processId}.${ext}`;
+        }
+        const tempFile = path.join(tempDir, tempFilename);
+        await fs.writeFile(tempFile, code, 'utf8');
+
+        let command, args;
+
+        // Determine command based on language
+        if (language === 'python' || language === 'py') {
+          // Auto-fix: Add flush=True to print statements before input
+          let modifiedCode = code;
+          if (code.includes('input(')) {
+            // Add flush=True to print before input
+            modifiedCode = code.replace(
+              /(print\s*\([^)]+\))(\s*\n?\s*input\s*\()/g,
+              '$1, flush=True)$2'
+            ).replace(
+              /\), flush=True\)/g,
+              ', flush=True)'
+            );
+
+            await fs.writeFile(tempFile, modifiedCode, 'utf8');
+            console.log('Auto-fixed Python code for interactive I/O');
+          }
+
+          command = 'python3';
+          args = ['-u', tempFile];  // -u for unbuffered
+        } else if (language === 'javascript' || language === 'js') {
+          command = 'node';
+          args = [tempFile];
+        } else if (language === 'c') {
+          // Auto-fix: Add setbuf to disable buffering and fix scanf
+          let modifiedCode = code;
+
+          // Fix scanf format strings - remove trailing \n
+          modifiedCode = modifiedCode.replace(
+            /scanf\s*\(\s*"([^"]*?)\\n"\s*,/g,
+            'scanf("$1",'
+          );
+
+          if (!code.includes('setbuf') && !code.includes('setvbuf')) {
+            // Add setbuf after main() {
+            modifiedCode = modifiedCode.replace(
+              /(int\s+main\s*\([^)]*\)\s*\{)/,
+              '$1\n    setbuf(stdout, NULL);  // Auto-added for interactive I/O\n'
+            );
+
+            // Also add fflush after printf if scanf follows
+            modifiedCode = modifiedCode.replace(
+              /(printf\s*\([^;]+;)(\s*scanf)/g,
+              '$1\n    fflush(stdout);  // Auto-added for interactive I/O\n$2'
+            );
+          }
+
+          // Write modified code
+          await fs.writeFile(tempFile, modifiedCode, 'utf8');
+          console.log('Auto-fixed C code for interactive I/O');
+
+          const outputFile = tempFile.replace(/\.c$/, '.out');
+          // Compile first with standard library includes
+          const compileProcess = spawn('gcc', [
+            tempFile,
+            '-o',
+            outputFile,
+            '-lm',  // Link math library
+            '-std=c11',  // Use C11 standard
+            '-Wall'  // Enable all warnings
+          ]);
+
+          await new Promise((resolve, reject) => {
+            let compileError = '';
+            let compileOutput = '';
+
+            compileProcess.stdout.on('data', (data) => {
+              compileOutput += data.toString();
+            });
+
+            compileProcess.stderr.on('data', (data) => {
+              compileError += data.toString();
+            });
+
+            compileProcess.on('close', (code) => {
+              if (code !== 0) {
+                let errorMsg = '❌ C 컴파일 오류:\n\n';
+                errorMsg += compileError || compileOutput;
+                errorMsg += '\n\n💡 확인사항:\n';
+                errorMsg += '  - 필요한 헤더 파일을 포함했는지 확인하세요\n';
+                errorMsg += '    예: #include <stdio.h>, #include <stdlib.h>, #include <string.h>, #include <math.h>\n';
+                errorMsg += '  - 세미콜론(;) 누락 여부를 확인하세요\n';
+                errorMsg += '  - 변수 선언 및 함수 정의가 올바른지 확인하세요\n';
+                errorMsg += '  - main() 함수가 존재하는지 확인하세요\n';
+
+                ws.send(JSON.stringify({
+                  type: 'error',
+                  data: errorMsg
+                }));
+                reject(new Error('Compilation failed'));
+              } else {
+                if (compileOutput || compileError) {
+                  ws.send(JSON.stringify({
+                    type: 'output',
+                    data: `✅ 컴파일 성공!\n${compileOutput || compileError}\n\n`
+                  }));
                 }
+                resolve();
+              }
+            });
+          });
 
-                // Generate proper temp filename with extension
-                let tempFilename;
-                if (filename && filename.includes('.')) {
-                    tempFilename = filename;
-                } else {
-                    // Map language to extension
-                    const extMap = {
-                        'c': 'c',
-                        'cpp': 'cpp',
-                        'python': 'py',
-                        'py': 'py',
-                        'javascript': 'js',
-                        'js': 'js',
-                        'java': 'java',
-                        'go': 'go',
-                        'rust': 'rs',
-                        'ruby': 'rb',
-                        'php': 'php',
-                        'perl': 'pl',
-                        'lua': 'lua',
-                        'r': 'r',
-                        'typescript': 'ts',
-                        'ts': 'ts',
-                        'bash': 'sh',
-                        'sh': 'sh'
-                    };
-                    const ext = extMap[language] || language;
-                    tempFilename = `temp_${processId}.${ext}`;
+          command = outputFile;
+          args = [];
+        } else if (language === 'cpp') {
+          // Auto-fix: Add cout.flush() and disable buffering
+          let modifiedCode = code;
+          if (!code.includes('setbuf') && !code.includes('sync_with_stdio')) {
+            // Add setbuf after main() {
+            modifiedCode = code.replace(
+              /(int\s+main\s*\([^)]*\)\s*\{)/,
+              '$1\n    setbuf(stdout, NULL);  // Auto-added for interactive I/O\n    std::ios::sync_with_stdio(false);\n'
+            );
+
+            // Add flush after cout if cin follows
+            modifiedCode = modifiedCode.replace(
+              /(cout\s*<<[^;]+;)(\s*cin)/g,
+              '$1\n    cout.flush();  // Auto-added for interactive I/O\n$2'
+            );
+
+            // Write modified code
+            await fs.writeFile(tempFile, modifiedCode, 'utf8');
+            console.log('Auto-fixed C++ code for interactive I/O');
+          }
+
+          const outputFile = tempFile.replace(/\.cpp$/, '.out');
+          const compileProcess = spawn('g++', [
+            tempFile,
+            '-o',
+            outputFile,
+            '-lm',  // Link math library
+            '-std=c++17',  // Use C++17 standard
+            '-Wall'  // Enable all warnings
+          ]);
+
+          await new Promise((resolve, reject) => {
+            let compileError = '';
+            let compileOutput = '';
+
+            compileProcess.stdout.on('data', (data) => {
+              compileOutput += data.toString();
+            });
+
+            compileProcess.stderr.on('data', (data) => {
+              compileError += data.toString();
+            });
+
+            compileProcess.on('close', (code) => {
+              if (code !== 0) {
+                let errorMsg = '❌ C++ 컴파일 오류:\n\n';
+                errorMsg += compileError || compileOutput;
+                errorMsg += '\n\n💡 확인사항:\n';
+                errorMsg += '  - 필요한 헤더 파일을 포함했는지 확인하세요\n';
+                errorMsg += '    예: #include <iostream>, #include <string>, #include <vector>, #include <cmath>\n';
+                errorMsg += '  - 네임스페이스를 사용했는지 확인하세요 (using namespace std;)\n';
+                errorMsg += '  - 세미콜론(;) 누락 여부를 확인하세요\n';
+                errorMsg += '  - main() 함수가 존재하는지 확인하세요\n';
+
+                ws.send(JSON.stringify({
+                  type: 'error',
+                  data: errorMsg
+                }));
+                reject(new Error('Compilation failed'));
+              } else {
+                if (compileOutput || compileError) {
+                  ws.send(JSON.stringify({
+                    type: 'output',
+                    data: `✅ 컴파일 성공!\n${compileOutput || compileError}\n\n`
+                  }));
                 }
-                const tempFile = path.join(tempDir, tempFilename);
-                await fs.writeFile(tempFile, code, 'utf8');
+                resolve();
+              }
+            });
+          });
 
-                let command, args;
+          command = outputFile;
+          args = [];
+        } else if (language === 'java') {
+          // Compile Java
+          const compileProcess = spawn('javac', [tempFile]);
 
-                // Determine command based on language
-                if (language === 'python' || language === 'py') {
-                    // Auto-fix: Add flush=True to print statements before input
-                    let modifiedCode = code;
-                    if (code.includes('input(')) {
-                        // Add flush=True to print before input
-                        modifiedCode = code.replace(
-                            /(print\s*\([^)]+\))(\s*\n?\s*input\s*\()/g,
-                            '$1, flush=True)$2'
-                        ).replace(
-                            /\), flush=True\)/g,
-                            ', flush=True)'
-                        );
-                        
-                        await fs.writeFile(tempFile, modifiedCode, 'utf8');
-                        console.log('Auto-fixed Python code for interactive I/O');
-                    }
-                    
-                    command = 'python3';
-                    args = ['-u', tempFile];  // -u for unbuffered
-                } else if (language === 'javascript' || language === 'js') {
-                    command = 'node';
-                    args = [tempFile];
-                } else if (language === 'c') {
-                    // Auto-fix: Add setbuf to disable buffering and fix scanf
-                    let modifiedCode = code;
-                    
-                    // Fix scanf format strings - remove trailing \n
-                    modifiedCode = modifiedCode.replace(
-                        /scanf\s*\(\s*"([^"]*?)\\n"\s*,/g,
-                        'scanf("$1",'
-                    );
-                    
-                    if (!code.includes('setbuf') && !code.includes('setvbuf')) {
-                        // Add setbuf after main() {
-                        modifiedCode = modifiedCode.replace(
-                            /(int\s+main\s*\([^)]*\)\s*\{)/,
-                            '$1\n    setbuf(stdout, NULL);  // Auto-added for interactive I/O\n'
-                        );
-                        
-                        // Also add fflush after printf if scanf follows
-                        modifiedCode = modifiedCode.replace(
-                            /(printf\s*\([^;]+;)(\s*scanf)/g,
-                            '$1\n    fflush(stdout);  // Auto-added for interactive I/O\n$2'
-                        );
-                    }
-                    
-                    // Write modified code
-                    await fs.writeFile(tempFile, modifiedCode, 'utf8');
-                    console.log('Auto-fixed C code for interactive I/O');
-                    
-                    const outputFile = tempFile.replace(/\.c$/, '.out');
-                    // Compile first with standard library includes
-                    const compileProcess = spawn('gcc', [
-                        tempFile,
-                        '-o',
-                        outputFile,
-                        '-lm',  // Link math library
-                        '-std=c11',  // Use C11 standard
-                        '-Wall'  // Enable all warnings
-                    ]);
+          await new Promise((resolve, reject) => {
+            let compileError = '';
+            compileProcess.stderr.on('data', (data) => {
+              compileError += data.toString();
+            });
+            compileProcess.on('close', (code) => {
+              if (code !== 0) {
+                ws.send(JSON.stringify({
+                  type: 'error',
+                  data: `Compilation error:\n${compileError}`
+                }));
+                reject(new Error('Compilation failed'));
+              } else {
+                resolve();
+              }
+            });
+          });
 
-                    await new Promise((resolve, reject) => {
-                        let compileError = '';
-                        let compileOutput = '';
+          const className = path.basename(tempFile, '.java');
+          command = 'java';
+          args = ['-cp', tempDir, className];
+        } else if (language === 'go') {
+          command = 'go';
+          args = ['run', tempFile];
+        } else if (language === 'rust' || language === 'rs') {
+          const outputFile = tempFile.replace(/\.rs$/, '.out');
+          const compileProcess = spawn('rustc', [tempFile, '-o', outputFile]);
 
-                        compileProcess.stdout.on('data', (data) => {
-                            compileOutput += data.toString();
-                        });
+          await new Promise((resolve, reject) => {
+            let compileError = '';
+            compileProcess.stderr.on('data', (data) => {
+              compileError += data.toString();
+            });
+            compileProcess.on('close', (code) => {
+              if (code !== 0) {
+                ws.send(JSON.stringify({
+                  type: 'error',
+                  data: `Compilation error:\n${compileError}`
+                }));
+                reject(new Error('Compilation failed'));
+              } else {
+                resolve();
+              }
+            });
+          });
 
-                        compileProcess.stderr.on('data', (data) => {
-                            compileError += data.toString();
-                        });
+          command = outputFile;
+          args = [];
+        } else if (language === 'ruby' || language === 'rb') {
+          command = 'ruby';
+          args = [tempFile];
+        } else if (language === 'php') {
+          command = 'php';
+          args = [tempFile];
+        } else if (language === 'perl') {
+          command = 'perl';
+          args = [tempFile];
+        } else if (language === 'swift') {
+          command = 'swift';
+          args = [tempFile];
+        } else if (language === 'kotlin' || language === 'kt') {
+          const outputFile = tempFile.replace(/\.kt$/, '.jar');
+          const compileProcess = spawn('kotlinc', [tempFile, '-include-runtime', '-d', outputFile]);
 
-                        compileProcess.on('close', (code) => {
-                            if (code !== 0) {
-                                let errorMsg = '❌ C 컴파일 오류:\n\n';
-                                errorMsg += compileError || compileOutput;
-                                errorMsg += '\n\n💡 확인사항:\n';
-                                errorMsg += '  - 필요한 헤더 파일을 포함했는지 확인하세요\n';
-                                errorMsg += '    예: #include <stdio.h>, #include <stdlib.h>, #include <string.h>, #include <math.h>\n';
-                                errorMsg += '  - 세미콜론(;) 누락 여부를 확인하세요\n';
-                                errorMsg += '  - 변수 선언 및 함수 정의가 올바른지 확인하세요\n';
-                                errorMsg += '  - main() 함수가 존재하는지 확인하세요\n';
+          await new Promise((resolve, reject) => {
+            let compileError = '';
+            compileProcess.stderr.on('data', (data) => {
+              compileError += data.toString();
+            });
+            compileProcess.on('close', (code) => {
+              if (code !== 0) {
+                ws.send(JSON.stringify({
+                  type: 'error',
+                  data: `Compilation error:\n${compileError}`
+                }));
+                reject(new Error('Compilation failed'));
+              } else {
+                resolve();
+              }
+            });
+          });
 
-                                ws.send(JSON.stringify({
-                                    type: 'error',
-                                    data: errorMsg
-                                }));
-                                reject(new Error('Compilation failed'));
-                            } else {
-                                if (compileOutput || compileError) {
-                                    ws.send(JSON.stringify({
-                                        type: 'output',
-                                        data: `✅ 컴파일 성공!\n${compileOutput || compileError}\n\n`
-                                    }));
-                                }
-                                resolve();
-                            }
-                        });
-                    });
+          command = 'java';
+          args = ['-jar', outputFile];
+        } else if (language === 'typescript' || language === 'ts') {
+          command = 'ts-node';
+          args = [tempFile];
+        } else if (language === 'bash' || language === 'sh') {
+          command = 'bash';
+          args = [tempFile];
+        } else if (language === 'lua') {
+          command = 'lua';
+          args = [tempFile];
+        } else if (language === 'r') {
+          command = 'Rscript';
+          args = [tempFile];
+        } else if (language === 'scala') {
+          command = 'scala';
+          args = [tempFile];
+        } else if (language === 'haskell' || language === 'hs') {
+          const outputFile = tempFile.replace(/\.hs$/, '.out');
+          const compileProcess = spawn('ghc', [tempFile, '-o', outputFile]);
 
-                    command = outputFile;
-                    args = [];
-                } else if (language === 'cpp') {
-                    // Auto-fix: Add cout.flush() and disable buffering
-                    let modifiedCode = code;
-                    if (!code.includes('setbuf') && !code.includes('sync_with_stdio')) {
-                        // Add setbuf after main() {
-                        modifiedCode = code.replace(
-                            /(int\s+main\s*\([^)]*\)\s*\{)/,
-                            '$1\n    setbuf(stdout, NULL);  // Auto-added for interactive I/O\n    std::ios::sync_with_stdio(false);\n'
-                        );
-                        
-                        // Add flush after cout if cin follows
-                        modifiedCode = modifiedCode.replace(
-                            /(cout\s*<<[^;]+;)(\s*cin)/g,
-                            '$1\n    cout.flush();  // Auto-added for interactive I/O\n$2'
-                        );
-                        
-                        // Write modified code
-                        await fs.writeFile(tempFile, modifiedCode, 'utf8');
-                        console.log('Auto-fixed C++ code for interactive I/O');
-                    }
-                    
-                    const outputFile = tempFile.replace(/\.cpp$/, '.out');
-                    const compileProcess = spawn('g++', [
-                        tempFile,
-                        '-o',
-                        outputFile,
-                        '-lm',  // Link math library
-                        '-std=c++17',  // Use C++17 standard
-                        '-Wall'  // Enable all warnings
-                    ]);
+          await new Promise((resolve, reject) => {
+            let compileError = '';
+            compileProcess.stderr.on('data', (data) => {
+              compileError += data.toString();
+            });
+            compileProcess.on('close', (code) => {
+              if (code !== 0) {
+                ws.send(JSON.stringify({
+                  type: 'error',
+                  data: `Compilation error:\n${compileError}`
+                }));
+                reject(new Error('Compilation failed'));
+              } else {
+                resolve();
+              }
+            });
+          });
 
-                    await new Promise((resolve, reject) => {
-                        let compileError = '';
-                        let compileOutput = '';
+          command = outputFile;
+          args = [];
+        } else {
+          ws.send(JSON.stringify({
+            type: 'error',
+            data: `Unsupported language: ${language}`
+          }));
+          return;
+        }
 
-                        compileProcess.stdout.on('data', (data) => {
-                            compileOutput += data.toString();
-                        });
+        // Run the program with PTY for interactive I/O
+        const ptyEnv = Object.assign({}, process.env, {
+          TERM: 'xterm-256color',
+          COLORTERM: 'truecolor',
+          FORCE_COLOR: '1'
+        });
 
-                        compileProcess.stderr.on('data', (data) => {
-                            compileError += data.toString();
-                        });
+        // Use shell wrapper to ensure proper stdin/stdout handling
+        let ptyCommand, ptyArgs;
+        if (process.platform === 'win32') {
+          ptyCommand = 'cmd.exe';
+          ptyArgs = ['/c', command, ...args];
+        } else {
+          // Use bash to wrap the command for better I/O handling
+          ptyCommand = '/bin/bash';
+          ptyArgs = ['-c', `${command} ${args.join(' ')}`];
+        }
 
-                        compileProcess.on('close', (code) => {
-                            if (code !== 0) {
-                                let errorMsg = '❌ C++ 컴파일 오류:\n\n';
-                                errorMsg += compileError || compileOutput;
-                                errorMsg += '\n\n💡 확인사항:\n';
-                                errorMsg += '  - 필요한 헤더 파일을 포함했는지 확인하세요\n';
-                                errorMsg += '    예: #include <iostream>, #include <string>, #include <vector>, #include <cmath>\n';
-                                errorMsg += '  - 네임스페이스를 사용했는지 확인하세요 (using namespace std;)\n';
-                                errorMsg += '  - 세미콜론(;) 누락 여부를 확인하세요\n';
-                                errorMsg += '  - main() 함수가 존재하는지 확인하세요\n';
+        console.log('Spawning PTY:', ptyCommand, ptyArgs);
 
-                                ws.send(JSON.stringify({
-                                    type: 'error',
-                                    data: errorMsg
-                                }));
-                                reject(new Error('Compilation failed'));
-                            } else {
-                                if (compileOutput || compileError) {
-                                    ws.send(JSON.stringify({
-                                        type: 'output',
-                                        data: `✅ 컴파일 성공!\n${compileOutput || compileError}\n\n`
-                                    }));
-                                }
-                                resolve();
-                            }
-                        });
-                    });
+        currentProcess = pty.spawn(ptyCommand, ptyArgs, {
+          name: 'xterm-256color',
+          cols: 80,
+          rows: 30,
+          cwd: tempDir,
+          env: ptyEnv,
+          encoding: null  // Use raw buffer mode
+        });
 
-                    command = outputFile;
-                    args = [];
-                } else if (language === 'java') {
-                    // Compile Java
-                    const compileProcess = spawn('javac', [tempFile]);
-                    
-                    await new Promise((resolve, reject) => {
-                        let compileError = '';
-                        compileProcess.stderr.on('data', (data) => {
-                            compileError += data.toString();
-                        });
-                        compileProcess.on('close', (code) => {
-                            if (code !== 0) {
-                                ws.send(JSON.stringify({
-                                    type: 'error',
-                                    data: `Compilation error:\n${compileError}`
-                                }));
-                                reject(new Error('Compilation failed'));
-                            } else {
-                                resolve();
-                            }
-                        });
-                    });
+        activeProcesses.set(processId, currentProcess);
 
-                    const className = path.basename(tempFile, '.java');
-                    command = 'java';
-                    args = ['-cp', tempDir, className];
-                } else if (language === 'go') {
-                    command = 'go';
-                    args = ['run', tempFile];
-                } else if (language === 'rust' || language === 'rs') {
-                    const outputFile = tempFile.replace(/\.rs$/, '.out');
-                    const compileProcess = spawn('rustc', [tempFile, '-o', outputFile]);
-                    
-                    await new Promise((resolve, reject) => {
-                        let compileError = '';
-                        compileProcess.stderr.on('data', (data) => {
-                            compileError += data.toString();
-                        });
-                        compileProcess.on('close', (code) => {
-                            if (code !== 0) {
-                                ws.send(JSON.stringify({
-                                    type: 'error',
-                                    data: `Compilation error:\n${compileError}`
-                                }));
-                                reject(new Error('Compilation failed'));
-                            } else {
-                                resolve();
-                            }
-                        });
-                    });
+        // Send output to client
+        currentProcess.onData((data) => {
+          // Convert buffer to string if needed
+          const output = typeof data === 'string' ? data : data.toString('utf8');
+          console.log('PTY output:', output);
+          ws.send(JSON.stringify({
+            type: 'output',
+            data: output
+          }));
+        });
 
-                    command = outputFile;
-                    args = [];
-                } else if (language === 'ruby' || language === 'rb') {
-                    command = 'ruby';
-                    args = [tempFile];
-                } else if (language === 'php') {
-                    command = 'php';
-                    args = [tempFile];
-                } else if (language === 'perl') {
-                    command = 'perl';
-                    args = [tempFile];
-                } else if (language === 'swift') {
-                    command = 'swift';
-                    args = [tempFile];
-                } else if (language === 'kotlin' || language === 'kt') {
-                    const outputFile = tempFile.replace(/\.kt$/, '.jar');
-                    const compileProcess = spawn('kotlinc', [tempFile, '-include-runtime', '-d', outputFile]);
-                    
-                    await new Promise((resolve, reject) => {
-                        let compileError = '';
-                        compileProcess.stderr.on('data', (data) => {
-                            compileError += data.toString();
-                        });
-                        compileProcess.on('close', (code) => {
-                            if (code !== 0) {
-                                ws.send(JSON.stringify({
-                                    type: 'error',
-                                    data: `Compilation error:\n${compileError}`
-                                }));
-                                reject(new Error('Compilation failed'));
-                            } else {
-                                resolve();
-                            }
-                        });
-                    });
+        // Handle process exit
+        currentProcess.onExit(({ exitCode, signal }) => {
+          ws.send(JSON.stringify({
+            type: 'exit',
+            exitCode,
+            signal
+          }));
+          activeProcesses.delete(processId);
 
-                    command = 'java';
-                    args = ['-jar', outputFile];
-                } else if (language === 'typescript' || language === 'ts') {
-                    command = 'ts-node';
-                    args = [tempFile];
-                } else if (language === 'bash' || language === 'sh') {
-                    command = 'bash';
-                    args = [tempFile];
-                } else if (language === 'lua') {
-                    command = 'lua';
-                    args = [tempFile];
-                } else if (language === 'r') {
-                    command = 'Rscript';
-                    args = [tempFile];
-                } else if (language === 'scala') {
-                    command = 'scala';
-                    args = [tempFile];
-                } else if (language === 'haskell' || language === 'hs') {
-                    const outputFile = tempFile.replace(/\.hs$/, '.out');
-                    const compileProcess = spawn('ghc', [tempFile, '-o', outputFile]);
-                    
-                    await new Promise((resolve, reject) => {
-                        let compileError = '';
-                        compileProcess.stderr.on('data', (data) => {
-                            compileError += data.toString();
-                        });
-                        compileProcess.on('close', (code) => {
-                            if (code !== 0) {
-                                ws.send(JSON.stringify({
-                                    type: 'error',
-                                    data: `Compilation error:\n${compileError}`
-                                }));
-                                reject(new Error('Compilation failed'));
-                            } else {
-                                resolve();
-                            }
-                        });
-                    });
-
-                    command = outputFile;
-                    args = [];
-                } else {
-                    ws.send(JSON.stringify({
-                        type: 'error',
-                        data: `Unsupported language: ${language}`
-                    }));
-                    return;
-                }
-
-                // Run the program with PTY for interactive I/O
-                const ptyEnv = Object.assign({}, process.env, {
-                    TERM: 'xterm-256color',
-                    COLORTERM: 'truecolor',
-                    FORCE_COLOR: '1'
-                });
-                
-                // Use shell wrapper to ensure proper stdin/stdout handling
-                let ptyCommand, ptyArgs;
-                if (process.platform === 'win32') {
-                    ptyCommand = 'cmd.exe';
-                    ptyArgs = ['/c', command, ...args];
-                } else {
-                    // Use bash to wrap the command for better I/O handling
-                    ptyCommand = '/bin/bash';
-                    ptyArgs = ['-c', `${command} ${args.join(' ')}`];
-                }
-                
-                console.log('Spawning PTY:', ptyCommand, ptyArgs);
-                
-                currentProcess = pty.spawn(ptyCommand, ptyArgs, {
-                    name: 'xterm-256color',
-                    cols: 80,
-                    rows: 30,
-                    cwd: tempDir,
-                    env: ptyEnv,
-                    encoding: null  // Use raw buffer mode
-                });
-
-                activeProcesses.set(processId, currentProcess);
-
-                // Send output to client
-                currentProcess.onData((data) => {
-                    // Convert buffer to string if needed
-                    const output = typeof data === 'string' ? data : data.toString('utf8');
-                    console.log('PTY output:', output);
-                    ws.send(JSON.stringify({
-                        type: 'output',
-                        data: output
-                    }));
-                });
-
-                // Handle process exit
-                currentProcess.onExit(({ exitCode, signal }) => {
-                    ws.send(JSON.stringify({
-                        type: 'exit',
-                        exitCode,
-                        signal
-                    }));
-                    activeProcesses.delete(processId);
-                    
-                    // Cleanup temp files
-                    try {
-                        fsSync.unlinkSync(tempFile);
-                        if (language === 'c' || language === 'cpp') {
-                            const outputFile = tempFile.replace(/\.(c|cpp)$/, '.out');
-                            if (fsSync.existsSync(outputFile)) {
-                                fsSync.unlinkSync(outputFile);
-                            }
-                        }
-                        // Cleanup other compiled files
-                        if (language === 'rust' || language === 'rs' || language === 'haskell' || language === 'hs') {
-                            const outputFile = tempFile.replace(/\.(rs|hs)$/, '.out');
-                            if (fsSync.existsSync(outputFile)) {
-                                fsSync.unlinkSync(outputFile);
-                            }
-                        }
-                        if (language === 'kotlin' || language === 'kt') {
-                            const outputFile = tempFile.replace(/\.kt$/, '.jar');
-                            if (fsSync.existsSync(outputFile)) {
-                                fsSync.unlinkSync(outputFile);
-                            }
-                        }
-                    } catch (e) {
-                        console.error('Cleanup error:', e);
-                    }
-                });
-
-            } else if (data.type === 'input') {
-                // Send input to the running process
-                if (currentProcess) {
-                    console.log('Received input from client:', data.data);
-                    currentProcess.write(data.data);
-                    console.log('Input written to PTY');
-                } else {
-                    console.error('No active process to send input to');
-                }
-            } else if (data.type === 'kill') {
-                // Kill the running process
-                if (currentProcess) {
-                    currentProcess.kill();
-                    activeProcesses.delete(processId);
-                }
+          // Cleanup temp files
+          try {
+            fsSync.unlinkSync(tempFile);
+            if (language === 'c' || language === 'cpp') {
+              const outputFile = tempFile.replace(/\.(c|cpp)$/, '.out');
+              if (fsSync.existsSync(outputFile)) {
+                fsSync.unlinkSync(outputFile);
+              }
             }
-        } catch (error) {
-            console.error('Execution error:', error);
-            ws.send(JSON.stringify({
-                type: 'error',
-                data: error.message
-            }));
-            // Don't close connection on error, let client decide
-        }
-    });
+            // Cleanup other compiled files
+            if (language === 'rust' || language === 'rs' || language === 'haskell' || language === 'hs') {
+              const outputFile = tempFile.replace(/\.(rs|hs)$/, '.out');
+              if (fsSync.existsSync(outputFile)) {
+                fsSync.unlinkSync(outputFile);
+              }
+            }
+            if (language === 'kotlin' || language === 'kt') {
+              const outputFile = tempFile.replace(/\.kt$/, '.jar');
+              if (fsSync.existsSync(outputFile)) {
+                fsSync.unlinkSync(outputFile);
+              }
+            }
+          } catch (e) {
+            console.error('Cleanup error:', e);
+          }
+        });
 
-    ws.on('close', () => {
+      } else if (data.type === 'input') {
+        // Send input to the running process
         if (currentProcess) {
-            currentProcess.kill();
-            activeProcesses.delete(processId);
+          console.log('Received input from client:', data.data);
+          currentProcess.write(data.data);
+          console.log('Input written to PTY');
+        } else {
+          console.error('No active process to send input to');
         }
-    });
+      } else if (data.type === 'kill') {
+        // Kill the running process
+        if (currentProcess) {
+          currentProcess.kill();
+          activeProcesses.delete(processId);
+        }
+      }
+    } catch (error) {
+      console.error('Execution error:', error);
+      ws.send(JSON.stringify({
+        type: 'error',
+        data: error.message
+      }));
+      // Don't close connection on error, let client decide
+    }
+  });
+
+  ws.on('close', () => {
+    if (currentProcess) {
+      currentProcess.kill();
+      activeProcesses.delete(processId);
+    }
+  });
 });
 
 app.listen(port, () => {
-    console.log(`
+  console.log(`
 ╔════════════════════════════════════════════════════════════╗
 ║  🚀 덕영고등학교 VS Code 서버 시작됨                        ║
 ╠════════════════════════════════════════════════════════════╣
@@ -1804,9 +1808,9 @@ app.listen(port, () => {
 ║  GitHub 연동: 활성화 🐙                                     ║
 ╚════════════════════════════════════════════════════════════╝
     `);
-    
-    if (!process.env.RAILWAY_VOLUME_MOUNT_PATH && process.env.NODE_ENV === 'production') {
-        console.warn(`
+
+  if (!process.env.RAILWAY_VOLUME_MOUNT_PATH && process.env.NODE_ENV === 'production') {
+    console.warn(`
 ⚠️  경고: Railway Volume이 설정되지 않았습니다!
    - 현재 /tmp 디렉토리 사용 중 (서버 재시작 시 모든 파일 삭제됨)
    - 영구 저장을 위해 Railway Volume을 추가하세요:
@@ -1814,5 +1818,5 @@ app.listen(port, () => {
      2. Mount Path: /data
      3. Size: 1GB 이상
         `);
-    }
+  }
 });

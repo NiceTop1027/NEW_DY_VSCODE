@@ -2,62 +2,62 @@
 // Breadcrumbs navigation system
 
 class BreadcrumbsManager {
-    constructor() {
-        this.container = null;
-        this.currentPath = '';
-        this.symbols = [];
-    }
+  constructor() {
+    this.container = null;
+    this.currentPath = '';
+    this.symbols = [];
+  }
 
-    // Initialize breadcrumbs
-    init(containerId = 'breadcrumb') {
-        this.container = document.getElementById(containerId);
-        if (!this.container) {
-            this.createContainer();
-        }
-        
-        this.injectStyles();
-        console.log('✅ Breadcrumbs initialized');
+  // Initialize breadcrumbs
+  init(containerId = 'breadcrumb') {
+    this.container = document.getElementById(containerId);
+    if (!this.container) {
+      this.createContainer();
     }
+        
+    this.injectStyles();
+    console.log('✅ Breadcrumbs initialized');
+  }
 
-    // Create breadcrumbs container
-    createContainer() {
-        const editorGroup = document.getElementById('editor-group');
-        if (!editorGroup) return;
+  // Create breadcrumbs container
+  createContainer() {
+    const editorGroup = document.getElementById('editor-group');
+    if (!editorGroup) return;
         
-        const container = document.createElement('div');
-        container.id = 'breadcrumb';
-        container.className = 'breadcrumb-container';
+    const container = document.createElement('div');
+    container.id = 'breadcrumb';
+    container.className = 'breadcrumb-container';
         
-        // Insert before editor
-        const editor = editorGroup.querySelector('#editor');
-        if (editor) {
-            editorGroup.insertBefore(container, editor);
-        } else {
-            editorGroup.appendChild(container);
-        }
-        
-        this.container = container;
+    // Insert before editor
+    const editor = editorGroup.querySelector('#editor');
+    if (editor) {
+      editorGroup.insertBefore(container, editor);
+    } else {
+      editorGroup.appendChild(container);
     }
+        
+    this.container = container;
+  }
 
-    // Update breadcrumbs for file
-    updateForFile(filePath) {
-        if (!this.container) return;
+  // Update breadcrumbs for file
+  updateForFile(filePath) {
+    if (!this.container) return;
         
-        this.currentPath = filePath;
-        const parts = filePath.split('/').filter(p => p);
+    this.currentPath = filePath;
+    const parts = filePath.split('/').filter(p => p);
         
-        this.container.innerHTML = `
+    this.container.innerHTML = `
             <div class="breadcrumb-items">
                 <div class="breadcrumb-item root" data-path="">
                     <span class="codicon codicon-folder"></span>
                     <span>프로젝트</span>
                 </div>
                 ${parts.map((part, index) => {
-                    const path = parts.slice(0, index + 1).join('/');
-                    const isLast = index === parts.length - 1;
-                    const isFile = isLast && part.includes('.');
+    const path = parts.slice(0, index + 1).join('/');
+    const isLast = index === parts.length - 1;
+    const isFile = isLast && part.includes('.');
                     
-                    return `
+    return `
                         <div class="breadcrumb-separator">
                             <span class="codicon codicon-chevron-right"></span>
                         </div>
@@ -66,27 +66,27 @@ class BreadcrumbsManager {
                             <span>${part}</span>
                         </div>
                     `;
-                }).join('')}
+  }).join('')}
             </div>
             <div class="breadcrumb-symbols" id="breadcrumb-symbols"></div>
         `;
         
-        // Add click handlers
-        this.container.querySelectorAll('.breadcrumb-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const path = item.dataset.path;
-                this.navigateTo(path);
-            });
-        });
-    }
+    // Add click handlers
+    this.container.querySelectorAll('.breadcrumb-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const path = item.dataset.path;
+        this.navigateTo(path);
+      });
+    });
+  }
 
-    // Update symbols (functions, classes, etc.)
-    updateSymbols(symbols) {
-        this.symbols = symbols;
-        const symbolsContainer = document.getElementById('breadcrumb-symbols');
-        if (!symbolsContainer || symbols.length === 0) return;
+  // Update symbols (functions, classes, etc.)
+  updateSymbols(symbols) {
+    this.symbols = symbols;
+    const symbolsContainer = document.getElementById('breadcrumb-symbols');
+    if (!symbolsContainer || symbols.length === 0) return;
         
-        symbolsContainer.innerHTML = `
+    symbolsContainer.innerHTML = `
             <div class="breadcrumb-separator">
                 <span class="codicon codicon-chevron-right"></span>
             </div>
@@ -107,71 +107,71 @@ class BreadcrumbsManager {
             </div>
         `;
         
-        // Toggle dropdown
-        const btn = symbolsContainer.querySelector('.breadcrumb-symbols-btn');
-        const menu = symbolsContainer.querySelector('.breadcrumb-symbols-menu');
+    // Toggle dropdown
+    const btn = symbolsContainer.querySelector('.breadcrumb-symbols-btn');
+    const menu = symbolsContainer.querySelector('.breadcrumb-symbols-menu');
         
-        btn?.addEventListener('click', () => {
-            menu.classList.toggle('show');
-        });
+    btn?.addEventListener('click', () => {
+      menu.classList.toggle('show');
+    });
         
-        // Symbol navigation
-        symbolsContainer.querySelectorAll('.symbol-item').forEach(item => {
-            item.addEventListener('click', () => {
-                const line = parseInt(item.dataset.line);
-                this.goToLine(line);
-                menu.classList.remove('show');
-            });
-        });
+    // Symbol navigation
+    symbolsContainer.querySelectorAll('.symbol-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const line = parseInt(item.dataset.line);
+        this.goToLine(line);
+        menu.classList.remove('show');
+      });
+    });
         
-        // Close on outside click
-        document.addEventListener('click', (e) => {
-            if (!symbolsContainer.contains(e.target)) {
-                menu?.classList.remove('show');
-            }
-        });
-    }
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+      if (!symbolsContainer.contains(e.target)) {
+        menu?.classList.remove('show');
+      }
+    });
+  }
 
-    // Get symbol icon
-    getSymbolIcon(kind) {
-        const icons = {
-            'function': 'symbol-method',
-            'method': 'symbol-method',
-            'class': 'symbol-class',
-            'interface': 'symbol-interface',
-            'variable': 'symbol-variable',
-            'constant': 'symbol-constant',
-            'property': 'symbol-property',
-            'enum': 'symbol-enum'
-        };
-        return icons[kind] || 'symbol-misc';
-    }
+  // Get symbol icon
+  getSymbolIcon(kind) {
+    const icons = {
+      'function': 'symbol-method',
+      'method': 'symbol-method',
+      'class': 'symbol-class',
+      'interface': 'symbol-interface',
+      'variable': 'symbol-variable',
+      'constant': 'symbol-constant',
+      'property': 'symbol-property',
+      'enum': 'symbol-enum'
+    };
+    return icons[kind] || 'symbol-misc';
+  }
 
-    // Navigate to path
-    navigateTo(path) {
-        console.log('Navigate to:', path);
-        // TODO: Implement navigation
-    }
+  // Navigate to path
+  navigateTo(path) {
+    console.log('Navigate to:', path);
+    // TODO: Implement navigation
+  }
 
-    // Go to line
-    goToLine(line) {
-        console.log('Go to line:', line);
-        // TODO: Implement line navigation
-    }
+  // Go to line
+  goToLine(line) {
+    console.log('Go to line:', line);
+    // TODO: Implement line navigation
+  }
 
-    // Clear breadcrumbs
-    clear() {
-        if (this.container) {
-            this.container.innerHTML = '';
-        }
-        this.currentPath = '';
-        this.symbols = [];
+  // Clear breadcrumbs
+  clear() {
+    if (this.container) {
+      this.container.innerHTML = '';
     }
+    this.currentPath = '';
+    this.symbols = [];
+  }
 
-    // Inject styles
-    injectStyles() {
-        const style = document.createElement('style');
-        style.textContent = `
+  // Inject styles
+  injectStyles() {
+    const style = document.createElement('style');
+    style.textContent = `
             .breadcrumb-container {
                 display: flex;
                 align-items: center;
@@ -289,8 +289,8 @@ class BreadcrumbsManager {
                 color: var(--primary-color);
             }
         `;
-        document.head.appendChild(style);
-    }
+    document.head.appendChild(style);
+  }
 }
 
 export const breadcrumbs = new BreadcrumbsManager();

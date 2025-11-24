@@ -6,32 +6,32 @@ import gsap from 'gsap';
 import anime from 'animejs';
 
 class PremiumUI {
-    constructor() {
-        this.theme = 'premium-dark';
-        this.animations = true;
-        this.particles = true;
-        this.glassmorphism = true;
-    }
+  constructor() {
+    this.theme = 'premium-dark';
+    this.animations = true;
+    this.particles = true;
+    this.glassmorphism = true;
+  }
 
-    // Initialize premium UI
-    init() {
-        this.injectPremiumStyles();
-        this.enhanceActivityBar();
-        this.enhanceEditor();
-        this.enhanceSidebar();
-        this.enhanceStatusBar();
-        this.addFloatingElements();
-        this.addContextMenus();
-        this.addCommandPalette();
-        this.addMiniWidgets();
-        console.log('✨ Premium UI initialized');
-    }
+  // Initialize premium UI
+  init() {
+    this.injectPremiumStyles();
+    this.enhanceActivityBar();
+    this.enhanceEditor();
+    this.enhanceSidebar();
+    this.enhanceStatusBar();
+    this.addFloatingElements();
+    this.addContextMenus();
+    this.addCommandPalette();
+    this.addMiniWidgets();
+    console.log('✨ Premium UI initialized');
+  }
 
-    // Inject premium styles
-    injectPremiumStyles() {
-        const style = document.createElement('style');
-        style.id = 'premium-ui-styles';
-        style.textContent = `
+  // Inject premium styles
+  injectPremiumStyles() {
+    const style = document.createElement('style');
+    style.id = 'premium-ui-styles';
+    style.textContent = `
             /* Premium Theme Variables */
             :root {
                 --premium-gradient-1: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -389,68 +389,68 @@ class PremiumUI {
                 50% { opacity: 0.7; }
             }
         `;
-        document.head.appendChild(style);
-    }
+    document.head.appendChild(style);
+  }
 
-    // Enhance Activity Bar
-    enhanceActivityBar() {
-        const activityBar = document.getElementById('activity-bar');
-        if (!activityBar) return;
+  // Enhance Activity Bar
+  enhanceActivityBar() {
+    const activityBar = document.getElementById('activity-bar');
+    if (!activityBar) return;
 
-        activityBar.classList.add('animate__animated', 'animate__fadeInLeft');
+    activityBar.classList.add('animate__animated', 'animate__fadeInLeft');
         
-        // Add interactive effects
-        const icons = activityBar.querySelectorAll('.activity-icon');
-        icons.forEach((icon, index) => {
-            icon.classList.add('interactive');
-            icon.style.animationDelay = `${index * 0.1}s`;
-        });
-    }
+    // Add interactive effects
+    const icons = activityBar.querySelectorAll('.activity-icon');
+    icons.forEach((icon, index) => {
+      icon.classList.add('interactive');
+      icon.style.animationDelay = `${index * 0.1}s`;
+    });
+  }
 
-    // Enhance Editor
-    enhanceEditor() {
-        const editor = document.getElementById('editor');
-        if (!editor) return;
+  // Enhance Editor
+  enhanceEditor() {
+    const editor = document.getElementById('editor');
+    if (!editor) return;
 
-        editor.classList.add('animate__animated', 'animate__fadeIn');
-    }
+    editor.classList.add('animate__animated', 'animate__fadeIn');
+  }
 
-    // Enhance Sidebar
-    enhanceSidebar() {
-        const sidebar = document.getElementById('sidebar');
-        if (!sidebar) return;
+  // Enhance Sidebar
+  enhanceSidebar() {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
 
-        sidebar.classList.add('animate__animated', 'animate__fadeInLeft');
-    }
+    sidebar.classList.add('animate__animated', 'animate__fadeInLeft');
+  }
 
-    // Enhance Status Bar
-    enhanceStatusBar() {
-        const statusBar = document.getElementById('status-bar');
-        if (!statusBar) return;
+  // Enhance Status Bar
+  enhanceStatusBar() {
+    const statusBar = document.getElementById('status-bar');
+    if (!statusBar) return;
 
-        statusBar.classList.add('animate__animated', 'animate__fadeInUp');
-    }
+    statusBar.classList.add('animate__animated', 'animate__fadeInUp');
+  }
 
-    // Add Floating Elements
-    addFloatingElements() {
-        // Floating Action Button
-        const fab = document.createElement('div');
-        fab.className = 'fab';
-        fab.innerHTML = '<i class="codicon codicon-rocket" style="font-size: 24px; color: white;"></i>';
-        fab.title = 'Quick Actions';
+  // Add Floating Elements
+  addFloatingElements() {
+    // Floating Action Button
+    const fab = document.createElement('div');
+    fab.className = 'fab';
+    fab.innerHTML = '<i class="codicon codicon-rocket" style="font-size: 24px; color: white;"></i>';
+    fab.title = 'Quick Actions';
         
-        fab.addEventListener('click', () => {
-            this.showQuickActions();
-        });
+    fab.addEventListener('click', () => {
+      this.showQuickActions();
+    });
         
-        document.body.appendChild(fab);
-    }
+    document.body.appendChild(fab);
+  }
 
-    // Show Quick Actions
-    showQuickActions() {
-        const menu = document.createElement('div');
-        menu.className = 'glass-effect';
-        menu.style.cssText = `
+  // Show Quick Actions
+  showQuickActions() {
+    const menu = document.createElement('div');
+    menu.className = 'glass-effect';
+    menu.style.cssText = `
             position: fixed;
             bottom: 100px;
             right: 30px;
@@ -460,7 +460,7 @@ class PremiumUI {
             animation: slideUp 0.3s ease;
         `;
 
-        menu.innerHTML = `
+    menu.innerHTML = `
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <button class="btn-primary interactive" id="quick-format" style="padding: 10px 20px; border-radius: 8px;">
                     ✨ Format Code
@@ -477,65 +477,65 @@ class PremiumUI {
             </div>
         `;
 
-        document.body.appendChild(menu);
+    document.body.appendChild(menu);
 
-        // Event listeners
-        document.getElementById('quick-format')?.addEventListener('click', () => {
-            showNotification('✨ Code formatted', 'success');
-            menu.remove();
-        });
+    // Event listeners
+    document.getElementById('quick-format')?.addEventListener('click', () => {
+      showNotification('✨ Code formatted', 'success');
+      menu.remove();
+    });
 
-        document.getElementById('quick-save')?.addEventListener('click', () => {
-            showNotification('💾 All files saved', 'success');
-            menu.remove();
-        });
+    document.getElementById('quick-save')?.addEventListener('click', () => {
+      showNotification('💾 All files saved', 'success');
+      menu.remove();
+    });
 
-        document.getElementById('quick-run')?.addEventListener('click', () => {
-            document.getElementById('run-code-btn')?.click();
-            menu.remove();
-        });
+    document.getElementById('quick-run')?.addEventListener('click', () => {
+      document.getElementById('run-code-btn')?.click();
+      menu.remove();
+    });
 
-        document.getElementById('quick-split')?.addEventListener('click', () => {
-            import('./editorSplit.js').then(({ editorSplit }) => {
-                editorSplit.showSplitMenu();
-            });
-            menu.remove();
-        });
+    document.getElementById('quick-split')?.addEventListener('click', () => {
+      import('./editorSplit.js').then(({ editorSplit }) => {
+        editorSplit.showSplitMenu();
+      });
+      menu.remove();
+    });
 
-        // Close on outside click
-        setTimeout(() => {
-            document.addEventListener('click', function closeMenu(e) {
-                if (!menu.contains(e.target) && !e.target.closest('.fab')) {
-                    menu.remove();
-                    document.removeEventListener('click', closeMenu);
-                }
-            });
-        }, 100);
-    }
+    // Close on outside click
+    setTimeout(() => {
+      document.addEventListener('click', function closeMenu(e) {
+        if (!menu.contains(e.target) && !e.target.closest('.fab')) {
+          menu.remove();
+          document.removeEventListener('click', closeMenu);
+        }
+      });
+    }, 100);
+  }
 
-    // Add Context Menus
-    addContextMenus() {
-        // Right-click context menu enhancement
-        document.addEventListener('contextmenu', (e) => {
-            // Let default context menus work
-        });
-    }
+  // Add Context Menus
+  addContextMenus() {
+    // Right-click context menu enhancement
+    document.addEventListener('contextmenu', (e) => {
+      // Let default context menus work
+    });
+  }
 
-    // Add Command Palette
-    addCommandPalette() {
-        document.addEventListener('keydown', (e) => {
-            if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'P') {
-                e.preventDefault();
-                this.showCommandPalette();
-            }
-        });
-    }
+  // Add Command Palette
+  addCommandPalette() {
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'P') {
+        e.preventDefault();
+        this.showCommandPalette();
+      }
+    });
+  }
 
-    // Show Command Palette
-    showCommandPalette() {
-        const palette = document.createElement('div');
-        palette.className = 'glass-effect';
-        palette.style.cssText = `
+  // Show Command Palette
+  showCommandPalette() {
+    const palette = document.createElement('div');
+    palette.className = 'glass-effect';
+    palette.style.cssText = `
             position: fixed;
             top: 20%;
             left: 50%;
@@ -548,46 +548,46 @@ class PremiumUI {
             animation: slideUp 0.3s ease;
         `;
 
-        palette.innerHTML = `
+    palette.innerHTML = `
             <input type="text" id="command-input" placeholder="Type a command..." 
                 style="width: 100%; padding: 15px; background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text-color); font-size: 16px;">
             <div id="command-results" style="margin-top: 15px; max-height: 400px; overflow-y: auto;"></div>
         `;
 
-        document.body.appendChild(palette);
+    document.body.appendChild(palette);
 
-        const input = document.getElementById('command-input');
-        input?.focus();
+    const input = document.getElementById('command-input');
+    input?.focus();
 
-        // Close on Escape
-        input?.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                palette.remove();
-            }
-        });
+    // Close on Escape
+    input?.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        palette.remove();
+      }
+    });
 
-        // Close on outside click
-        setTimeout(() => {
-            document.addEventListener('click', function closePalette(e) {
-                if (!palette.contains(e.target)) {
-                    palette.remove();
-                    document.removeEventListener('click', closePalette);
-                }
-            });
-        }, 100);
-    }
+    // Close on outside click
+    setTimeout(() => {
+      document.addEventListener('click', function closePalette(e) {
+        if (!palette.contains(e.target)) {
+          palette.remove();
+          document.removeEventListener('click', closePalette);
+        }
+      });
+    }, 100);
+  }
 
-    // Add Mini Widgets
-    addMiniWidgets() {
-        // Add clock widget
-        this.addClockWidget();
-    }
+  // Add Mini Widgets
+  addMiniWidgets() {
+    // Add clock widget
+    this.addClockWidget();
+  }
 
-    // Add Clock Widget
-    addClockWidget() {
-        const clock = document.createElement('div');
-        clock.className = 'glass-effect';
-        clock.style.cssText = `
+  // Add Clock Widget
+  addClockWidget() {
+    const clock = document.createElement('div');
+    clock.className = 'glass-effect';
+    clock.style.cssText = `
             position: fixed;
             top: 20px;
             right: 20px;
@@ -599,19 +599,19 @@ class PremiumUI {
             animation: fadeIn 0.5s ease;
         `;
 
-        const updateClock = () => {
-            const now = new Date();
-            clock.textContent = now.toLocaleTimeString('ko-KR', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-            });
-        };
+    const updateClock = () => {
+      const now = new Date();
+      clock.textContent = now.toLocaleTimeString('ko-KR', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      });
+    };
 
-        updateClock();
-        setInterval(updateClock, 1000);
+    updateClock();
+    setInterval(updateClock, 1000);
 
-        document.body.appendChild(clock);
-    }
+    document.body.appendChild(clock);
+  }
 }
 
 export const premiumUI = new PremiumUI();
