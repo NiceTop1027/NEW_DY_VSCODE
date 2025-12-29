@@ -30,7 +30,8 @@ app.use(helmet({
       connectSrc: ['\'self\'', 'ws:', 'wss:', 'https:'],
       workerSrc: ['\'self\'', 'blob:'],
       frameSrc: ['\'self\'', 'blob:'],
-      childSrc: ['\'self\'', 'blob:']
+      childSrc: ['\'self\'', 'blob:'],
+      frameAncestors: ['\'self\'', 'https://dukyoungtaja.netlify.app', 'http://localhost:*', 'https://localhost:*']
     }
   },
   hsts: {
