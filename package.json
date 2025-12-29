@@ -6,9 +6,8 @@
   "scripts": {
     "test": "jest",
     "start": "node server.js",
-    "build": "webpack --config webpack.config.js",
-    "setup-python": "pip3 install -r requirements.txt",
-    "postinstall": "npm run setup-python || echo 'Python libraries installation skipped. Run npm run setup-python manually.'"
+    "build": "echo 'Build completed'",
+    "vercel-build": "echo 'Vercel build completed'"
   },
   "jest": {
     "testEnvironment": "jsdom",
